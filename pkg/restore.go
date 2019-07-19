@@ -1,16 +1,19 @@
 package pkg
 
 import (
+	"encoding/json"
 	"fmt"
 	"path/filepath"
 
 	"github.com/appscode/go/flags"
+	"github.com/appscode/go/log"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	appcatalog_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
+	"kubedb.dev/apimachinery/apis/config/v1alpha1"
 	"stash.appscode.dev/stash/pkg/restic"
 	"stash.appscode.dev/stash/pkg/util"
 )
@@ -23,11 +26,14 @@ func NewCmdRestore() *cobra.Command {
 		appBindingName string
 		outputDir      string
 		mongoArgs      string
-		setupOpt       = restic.SetupOptions{
+		maxConcurrency int
+
+		dumpOpts []restic.DumpOptions
+		setupOpt = restic.SetupOptions{
 			ScratchDir:  restic.DefaultScratchDir,
 			EnableCache: false,
 		}
-		dumpOpt = restic.DumpOptions{
+		defaultDumpOpt = restic.DumpOptions{
 			Host:     restic.DefaultHost,
 			FileName: MongoDumpFile,
 		}
@@ -78,6 +84,75 @@ func NewCmdRestore() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			MongoDBRootUser = string(appBindingSecret.Data[MongoUserKey])
+			MongoDBRootPassword = string(appBindingSecret.Data[MongoPasswordKey])
+
+			getDumpOpts := func(mongoDSN, hostKey string, isStandalone bool) restic.DumpOptions {
+				log.Infoln("processing backupOptions for ", mongoDSN)
+				dumpOpt := restic.DumpOptions{
+					Host:     hostKey,
+					FileName: defaultDumpOpt.FileName,
+					Snapshot: defaultDumpOpt.Snapshot,
+				}
+
+				// setup pipe command
+				dumpOpt.StdoutPipeCommand = restic.Command{
+					Name: MongoRestoreCMD,
+					Args: []interface{}{
+						"--host=" + mongoDSN,
+						"--username=" + string(appBindingSecret.Data[MongoUserKey]),
+						"--password=" + string(appBindingSecret.Data[MongoPasswordKey]),
+						"--archive",
+					},
+				}
+				if isStandalone {
+					dumpOpt.StdoutPipeCommand.Args = append(dumpOpt.StdoutPipeCommand.Args, "--port="+fmt.Sprint(appBinding.Spec.ClientConfig.Service.Port))
+				} else {
+					// - port is already added in mongoDSN with replicasetName/host:port format.
+					// - oplog is enabled automatically for replicasets.
+					dumpOpt.StdoutPipeCommand.Args = append(dumpOpt.StdoutPipeCommand.Args, "--oplogReplay")
+				}
+				if mongoArgs != "" {
+					dumpOpt.StdoutPipeCommand.Args = append(dumpOpt.StdoutPipeCommand.Args, mongoArgs)
+				}
+				return dumpOpt
+			}
+
+			// unmarshal parameter is the field has value
+			parameters := v1alpha1.MongoDBConfiguration{}
+			if appBinding.Spec.Parameters != nil {
+				if err = json.Unmarshal(appBinding.Spec.Parameters.Raw, &parameters); err != nil {
+					log.Errorf("unable to unmarshal appBinding.Spec.Parameters.Raw. Reason: %v", err)
+				}
+			}
+
+			// set maxConcurrency
+			if len(parameters.ReplicaSets) <= 1 {
+				maxConcurrency = 1
+			}
+
+			// If parameters.ReplicaSets is not empty, then replicaset hosts are given in key:value pair,
+			// where, keys are host-0,host-1 etc and values are the replicaset dsn of one replicaset component
+			//
+			// Procedure of restore in a sharded or replicaset cluster
+			// - Restore the CSRS primary mongod data files.
+			// - Restore Each Shard Replica Set
+			// ref: https://docs.mongodb.com/manual/tutorial/backup-sharded-cluster-with-database-dumps/
+
+			if parameters.ConfigServer != "" {
+				dumpOpts = append(dumpOpts, getDumpOpts(parameters.ConfigServer, MongoConfigSVRHostKey, false))
+			}
+
+			for key, host := range parameters.ReplicaSets {
+				dumpOpts = append(dumpOpts, getDumpOpts(host, key, false))
+			}
+
+			// if parameters.ReplicaSets is nil, then perform normal backup with clientconfig.Service.Name mongo dsn
+			if parameters.ReplicaSets == nil {
+				dumpOpts = append(dumpOpts, getDumpOpts(appBinding.Spec.ClientConfig.Service.Name, restic.DefaultHost, true))
+			}
+
+			log.Infoln("processing restore.")
 
 			// init restic wrapper
 			resticWrapper, err := restic.NewResticWrapper(setupOpt)
@@ -87,26 +162,8 @@ func NewCmdRestore() *cobra.Command {
 			// hide password, don't print cmd
 			resticWrapper.HideCMD()
 
-			// setup pipe command
-			dumpOpt.StdoutPipeCommand = restic.Command{
-				Name: MongoRestoreCMD,
-				Args: []interface{}{
-					"--host", appBinding.Spec.ClientConfig.Service.Name,
-					"--port", fmt.Sprint(appBinding.Spec.ClientConfig.Service.Port),
-					"--username", string(appBindingSecret.Data[MongoUser]),
-					"--password=" + string(appBindingSecret.Data[MongoPassword]),
-					"--archive",
-				},
-			}
-			if mongoArgs != "" {
-				dumpOpt.StdoutPipeCommand.Args = append(dumpOpt.StdoutPipeCommand.Args, mongoArgs)
-			}
-
-			// wait for DB ready
-			waitForDBReady(appBinding.Spec.ClientConfig.Service.Name, appBinding.Spec.ClientConfig.Service.Port)
-
 			// Run dump
-			dumpOutput, backupErr := resticWrapper.Dump(dumpOpt)
+			dumpOutput, backupErr := resticWrapper.ParallelDump(dumpOpts, maxConcurrency)
 			// If metrics are enabled then generate metrics
 			if metrics.Enabled {
 				err := dumpOutput.HandleMetrics(&metrics, backupErr)
@@ -131,6 +188,7 @@ func NewCmdRestore() *cobra.Command {
 	cmd.Flags().StringVar(&kubeconfigPath, "kubeconfig", kubeconfigPath, "Path to kubeconfig file with authorization information (the master location is set by the master flag).")
 	cmd.Flags().StringVar(&namespace, "namespace", "default", "Namespace of Backup/Restore Session")
 	cmd.Flags().StringVar(&appBindingName, "app-binding", appBindingName, "Name of the app binding")
+	cmd.Flags().IntVar(&maxConcurrency, "max-concurrency", 3, "maximum concurrent backup process to run to take backup from each replicasets")
 
 	cmd.Flags().StringVar(&setupOpt.Provider, "provider", setupOpt.Provider, "Backend provider (i.e. gcs, s3, azure etc)")
 	cmd.Flags().StringVar(&setupOpt.Bucket, "bucket", setupOpt.Bucket, "Name of the cloud bucket/container (keep empty for local backend)")
@@ -142,9 +200,8 @@ func NewCmdRestore() *cobra.Command {
 	cmd.Flags().BoolVar(&setupOpt.EnableCache, "enable-cache", setupOpt.EnableCache, "Specify whether to enable caching for restic")
 	cmd.Flags().IntVar(&setupOpt.MaxConnections, "max-connections", setupOpt.MaxConnections, "Specify maximum concurrent connections for GCS, Azure and B2 backend")
 
-	cmd.Flags().StringVar(&dumpOpt.Host, "hostname", dumpOpt.Host, "Name of the host machine")
-	// TODO: sliceVar
-	cmd.Flags().StringVar(&dumpOpt.Snapshot, "snapshot", dumpOpt.Snapshot, "Snapshot to dump")
+	cmd.Flags().StringVar(&defaultDumpOpt.Host, "hostname", defaultDumpOpt.Host, "Name of the host machine")
+	cmd.Flags().StringVar(&defaultDumpOpt.Snapshot, "snapshot", defaultDumpOpt.Snapshot, "Snapshot to dump")
 
 	cmd.Flags().StringVar(&outputDir, "output-dir", outputDir, "Directory where output.json file will be written (keep empty if you don't need to write output in file)")
 

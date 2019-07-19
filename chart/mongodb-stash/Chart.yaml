@@ -1,0 +1,12 @@
+apiVersion: v1
+description: 'mongodb-stash by AppsCode - MongoDB database backup and restore plugin for Stash.'
+name: mongodb-stash
+version: 3.6
+appVersion: 3.6
+home: https://github.com/stashed/mongodb
+icon: https://cdn.appscode.com/images/icon/stash.png
+sources:
+  - https://github.com/stashed/mongodb
+maintainers:
+  - name: appscode
+    email: support@appscode.com

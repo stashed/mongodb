@@ -334,19 +334,19 @@ message CephFSVolumeSource {
 // Cinder volumes support ownership management and SELinux relabeling.
 message CinderPersistentVolumeSource {
   // volume id used to identify the volume in cinder
-  // More info: https://releases.k8s.io/HEAD/examples/mongodb-cinder-pd/README.md
+  // More info: https://releases.k8s.io/HEAD/examples/mysql-cinder-pd/README.md
   optional string volumeID = 1;
 
   // Filesystem type to mount.
   // Must be a filesystem type supported by the host operating system.
   // Examples: "ext4", "xfs", "ntfs". Implicitly inferred to be "ext4" if unspecified.
-  // More info: https://releases.k8s.io/HEAD/examples/mongodb-cinder-pd/README.md
+  // More info: https://releases.k8s.io/HEAD/examples/mysql-cinder-pd/README.md
   // +optional
   optional string fsType = 2;
 
   // Optional: Defaults to false (read/write). ReadOnly here will force
   // the ReadOnly setting in VolumeMounts.
-  // More info: https://releases.k8s.io/HEAD/examples/mongodb-cinder-pd/README.md
+  // More info: https://releases.k8s.io/HEAD/examples/mysql-cinder-pd/README.md
   // +optional
   optional bool readOnly = 3;
 
@@ -362,19 +362,19 @@ message CinderPersistentVolumeSource {
 // Cinder volumes support ownership management and SELinux relabeling.
 message CinderVolumeSource {
   // volume id used to identify the volume in cinder
-  // More info: https://releases.k8s.io/HEAD/examples/mongodb-cinder-pd/README.md
+  // More info: https://releases.k8s.io/HEAD/examples/mysql-cinder-pd/README.md
   optional string volumeID = 1;
 
   // Filesystem type to mount.
   // Must be a filesystem type supported by the host operating system.
   // Examples: "ext4", "xfs", "ntfs". Implicitly inferred to be "ext4" if unspecified.
-  // More info: https://releases.k8s.io/HEAD/examples/mongodb-cinder-pd/README.md
+  // More info: https://releases.k8s.io/HEAD/examples/mysql-cinder-pd/README.md
   // +optional
   optional string fsType = 2;
 
   // Optional: Defaults to false (read/write). ReadOnly here will force
   // the ReadOnly setting in VolumeMounts.
-  // More info: https://releases.k8s.io/HEAD/examples/mongodb-cinder-pd/README.md
+  // More info: https://releases.k8s.io/HEAD/examples/mysql-cinder-pd/README.md
   // +optional
   optional bool readOnly = 3;
 
@@ -2466,7 +2466,7 @@ message PersistentVolumeSource {
   optional ISCSIPersistentVolumeSource iscsi = 7;
 
   // Cinder represents a cinder volume attached and mounted on kubelets host machine
-  // More info: https://releases.k8s.io/HEAD/examples/mongodb-cinder-pd/README.md
+  // More info: https://releases.k8s.io/HEAD/examples/mysql-cinder-pd/README.md
   // +optional
   optional CinderPersistentVolumeSource cinder = 8;
 
@@ -4133,7 +4133,7 @@ message SerializedReference {
   optional ObjectReference reference = 1;
 }
 
-// Service is a named abstraction of software service (for example, mongodb) consisting of local port
+// Service is a named abstraction of software service (for example, mysql) consisting of local port
 // (for example 3306) that the proxy listens on, and the selector that determines which pods
 // will answer requests sent through the proxy.
 message Service {
@@ -4750,7 +4750,7 @@ message VolumeSource {
   optional FlexVolumeSource flexVolume = 12;
 
   // Cinder represents a cinder volume attached and mounted on kubelets host machine
-  // More info: https://releases.k8s.io/HEAD/examples/mongodb-cinder-pd/README.md
+  // More info: https://releases.k8s.io/HEAD/examples/mysql-cinder-pd/README.md
   // +optional
   optional CinderVolumeSource cinder = 13;
 
