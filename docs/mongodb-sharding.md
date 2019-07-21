@@ -12,9 +12,9 @@ menu_name: product_stash_0.8.3
 section_menu_id: guides
 ---
 
-# Backup and Restore MongoDB Sharding Clusters using Stash
+# Backup and Restore MongoDB Sharded Clusters using Stash
 
-Stash supports taking [backup](https://docs.mongodb.com/manual/tutorial/backup-sharded-cluster-with-database-dumps/) and [restores](https://docs.mongodb.com/manual/tutorial/restore-sharded-cluster/) MongoDB Sharding clusters in ["idiomatic" way](https://docs.mongodb.com/manual/administration/backup-sharded-clusters/). This guide will show you how you can backup and restore your MongoDB Sharding clusters with Stash.
+Stash 0.9.0+ supports taking [backup](https://docs.mongodb.com/manual/tutorial/backup-sharded-cluster-with-database-dumps/) and [restores](https://docs.mongodb.com/manual/tutorial/restore-sharded-cluster/) MongoDB Sharded clusters in ["idiomatic" way](https://docs.mongodb.com/manual/administration/backup-sharded-clusters/). This guide will show you how you can backup and restore your MongoDB Sharded clusters with Stash.
 
 ## Before You Begin
 
@@ -42,7 +42,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
->Note: YAML files used in this tutorial are stored [here](https://github.com/stashed/mongodb/examples/).
+> Note: YAML files used in this tutorial are stored [here](https://github.com/stashed/mongodb/tree/master/docs/examples).
 
 ## Install MongoDB Catalog for Stash
 
@@ -92,7 +92,7 @@ mg-restore-4.1  10s
 
 Now, Stash is ready to backup MongoDB clusters.
 
-## Backup MongoDB Sharding
+## Backup Sharded MongoDB Cluster
 
 This section will demonstrate how to backup MongoDB cluster. We are going to use [KubeDB](https://kubedb.com) to deploy a sample database. You can deploy your MongoDB cluster using any method you want. We are using `KubeDB` because it automates some tasks that you have to do manually otherwise.
 
@@ -133,7 +133,6 @@ spec:
             storage: 1Gi
         storageClassName: standard
   terminationPolicy: WipeOut
-
 ```
 
 Create the above `MongoDB` crd,
@@ -205,11 +204,11 @@ metadata:
   name: sample-mgo-sh
   namespace: demo
   ownerReferences:
-  - apiVersion: kubedb.com/v1alpha1
-    blockOwnerDeletion: false
-    kind: MongoDB
-    name: sample-mgo-sh
-    uid: d1e72f6d-a94c-11e9-acf7-42010a8000dc
+    - apiVersion: kubedb.com/v1alpha1
+      blockOwnerDeletion: false
+      kind: MongoDB
+      name: sample-mgo-sh
+      uid: d1e72f6d-a94c-11e9-acf7-42010a8000dc
   resourceVersion: "870217"
   selfLink: /apis/appcatalog.appscode.com/v1alpha1/namespaces/demo/appbindings/sample-mgo-sh
   uid: c247c3bd-a94d-11e9-acf7-42010a8000dc
@@ -334,7 +333,6 @@ spec:
       bucket: appscode-qa
       prefix: demo/mongodb/sample-mgo-sh
     storageSecretName: gcs-secret
-
 ```
 
 Let's create the `Repository` we have shown above,
@@ -405,7 +403,7 @@ sample-mgo-sh-backup   */5 * * * *   False     0        <none>          13s
 
 The `sample-mgo-sh-backup` CronJob will trigger a backup on each schedule by creating a `BackpSession` crd.
 
-Wait for a schedule to appear. Run the following command to watch `BackupSession` crd,
+Wait for the next schedule. Run the following command to watch `BackupSession` crd,
 
 ```console
 $ kubectl get backupsession -n demo -w
@@ -510,7 +508,7 @@ NAME               AGE
 restored-mgo-sh    29s
 ```
 
-NB. The appbinding `restored-mgo-sh` also contains `spec.parametrs` field. the number of hosts in `spec.parameters.replicaSets` needs to be similar to the old appbinding. Otherwise, the sharding recover may not be accurate.   
+NB. The appbinding `restored-mgo-sh` also contains `spec.parametrs` field. the number of hosts in `spec.parameters.replicaSets` needs to be similar to the old appbinding. Otherwise, the sharding recover may not be accurate.
 
 > If you are not using KubeDB to deploy database, create the AppBinding manually.
 
@@ -535,7 +533,7 @@ spec:
       kind: AppBinding
       name: restored-mgo-sh
   rules:
-  - snapshots: [latest]
+    - snapshots: [latest]
 ```
 
 Here,
@@ -638,7 +636,7 @@ So, from the above output, we can see the database `newdb` that we had created i
 
 It is possible to take backup of a MongoDB Sharded Cluster and restore it into a standalone database, but user need to create the appbinding for this process.
 
-### To backup a sharded cluster,
+### Backup a sharded cluster
 
 Keep all the fields of appbinding that is explained earlier in this guide, except `spec.parameter`. Do not set `spec.parameter.configServer` and `spec.parameter.replicaSet`. By doing this, the job will use `spec.clientConfig.service.name` as host, which is `mongos` router DSN. So, the backup will treat this cluster as a standalone and will skip the [`idiomatic way` of taking backups of a sharded cluster](https://docs.mongodb.com/manual/tutorial/backup-sharded-cluster-with-database-dumps/). Then follow the rest of the procedure as described above.
 
@@ -694,7 +692,7 @@ spec:
 ```
 
 ```console
-$ kubectl create -f ./docs/examples/backup/sharding/standalone-backup.yaml 
+$ kubectl create -f ./docs/examples/backup/sharding/standalone-backup.yaml
 appbinding.appcatalog.appscode.com/sample-mgo-sh-custom created
 repository.stash.appscode.com/gcs-repo-custom created
 backupconfiguration.stash.appscode.com/sample-mgo-sh-backup2 created
@@ -705,12 +703,12 @@ NAME                              BACKUPCONFIGURATION    PHASE       AGE
 sample-mgo-sh-backup-1563528902   sample-mgo-sh-backup   Succeeded   35s
 
 
-$ kubectl get repository -n demo gcs-repo-custom 
+$ kubectl get repository -n demo gcs-repo-custom
 NAME              INTEGRITY   SIZE         SNAPSHOT-COUNT   LAST-SUCCESSFUL-BACKUP   AGE
 gcs-repo-custom   true        22.160 KiB   4                1m                       2m
 ```
 
-### To restore to a standalone database,
+### Restore to a standalone database
 
 No additional configuration is needed to restore the sharded cluster to a standalone database. Follow the normal procedure of restoring a MongoDB Database.
 
@@ -730,7 +728,7 @@ spec:
   storage:
     storageClassName: "standard"
     accessModes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
@@ -761,18 +759,18 @@ spec:
       kind: AppBinding
       name: restored-mongodb
   rules:
-  - snapshots: [latest]
+    - snapshots: [latest]
 ```
 
 ```console
-$ kubectl create -f ./docs/examples/restore/sharding/restored-standalone.yaml 
+$ kubectl create -f ./docs/examples/restore/sharding/restored-standalone.yaml
 mongodb.kubedb.com/restored-mongodb created
 
 $ kubectl get mg -n demo restored-mongodb
 NAME               VERSION   STATUS         AGE
 restored-mongodb   3.6-v4    Initializing   56s
 
-$ kubectl create -f ./docs/examples/restore/sharding/restoresession-standalone.yaml 
+$ kubectl create -f ./docs/examples/restore/sharding/restoresession-standalone.yaml
 restoresession.stash.appscode.com/sample-mongodb-restore created
 
 $ kubectl get mg -n demo restored-mongodb

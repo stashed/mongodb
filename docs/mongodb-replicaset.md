@@ -42,7 +42,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> Note: YAML files used in this tutorial are stored [here](https://github.com/stashed/mongodb/examples/).
+> Note: YAML files used in this tutorial are stored [here](https://github.com/stashed/mongodb/tree/master/docs/examples).
 
 ## Install MongoDB Catalog for Stash
 
@@ -118,7 +118,7 @@ spec:
   storage:
     storageClassName: "standard"
     accessModes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
@@ -190,11 +190,11 @@ metadata:
   name: sample-mgo-rs
   namespace: demo
   ownerReferences:
-  - apiVersion: kubedb.com/v1alpha1
-    blockOwnerDeletion: false
-    kind: MongoDB
-    name: sample-mgo-rs
-    uid: 42dd1639-aa1f-11e9-acf7-42010a8000dc
+    - apiVersion: kubedb.com/v1alpha1
+      blockOwnerDeletion: false
+      kind: MongoDB
+      name: sample-mgo-rs
+      uid: 42dd1639-aa1f-11e9-acf7-42010a8000dc
   resourceVersion: "1137355"
   selfLink: /apis/appcatalog.appscode.com/v1alpha1/namespaces/demo/appbindings/sample-mgo-rs
   uid: 7af03255-aa1f-11e9-acf7-42010a8000dc
@@ -319,7 +319,6 @@ spec:
       bucket: appscode-qa
       prefix: demo/mongodb/sample-mgo-rs
     storageSecretName: gcs-secret
-
 ```
 
 Let's create the `Repository` we have shown above,
@@ -390,7 +389,7 @@ sample-mgo-rs-backup   */5 * * * *   False     0        <none>          62s
 
 The `sample-mgo-rs-backup` CronJob will trigger a backup on each schedule by creating a `BackpSession` crd.
 
-Wait for a schedule to appear. Run the following command to watch `BackupSession` crd,
+Wait for the next schedule. Run the following command to watch `BackupSession` crd,
 
 ```console
 $ kubectl get backupsession -n demo -w
@@ -444,7 +443,7 @@ spec:
   storage:
     storageClassName: "standard"
     accessModes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
@@ -485,7 +484,7 @@ NAME               AGE
 restored-mgo-rs    29s
 ```
 
-NB. The appbinding `restored-mgo-rs` also contains `spec.parametrs` field. the number of hosts in `spec.parameters.replicaSets` needs to be similar to the old appbinding. Otherwise, the replicaset recover may not be accurate.   
+NB. The appbinding `restored-mgo-rs` also contains `spec.parametrs` field. the number of hosts in `spec.parameters.replicaSets` needs to be similar to the old appbinding. Otherwise, the replicaset recover may not be accurate.
 
 > If you are not using KubeDB to deploy database, create the AppBinding manually.
 
@@ -510,7 +509,7 @@ spec:
       kind: AppBinding
       name: restored-mgo-rs
   rules:
-  - snapshots: [latest]
+    - snapshots: [latest]
 ```
 
 Here,
@@ -607,7 +606,7 @@ So, from the above output, we can see the database `newdb` that we had created i
 
 It is possible to take backup of a MongoDB ReplicaSet Cluster and restore it into a standalone database, but user need to create the appbinding for this process.
 
-### To backup a replicaset cluster,
+### Backup a replicaset cluster
 
 Keep all the fields of appbinding that is explained earlier in this guide, except `spec.parameter`. Do not set `spec.parameter.configServer` and `spec.parameter.replicaSet`. By doing this, the job will use `spec.clientConfig.service.name` as host, which is replicaset DSN. So, the backup will treat this cluster as a standalone and will skip the [`idiomatic way` of taking backups of a replicaset cluster](https://docs.mongodb.com/manual/tutorial/restore-replica-set-from-backup/). Then follow the rest of the procedure as described above.
 
@@ -663,7 +662,7 @@ spec:
 ```
 
 ```console
-$ kubectl create -f ./docs/examples/backup/replicaset/standalone-backup.yaml 
+$ kubectl create -f ./docs/examples/backup/replicaset/standalone-backup.yaml
 appbinding.appcatalog.appscode.com/sample-mgo-rs-custom created
 repository.stash.appscode.com/gcs-repo-custom created
 backupconfiguration.stash.appscode.com/sample-mgo-rs-backup2 created
@@ -674,12 +673,12 @@ NAME                               BACKUPCONFIGURATION    PHASE       AGE
 sample-mgo-rs-backup2-1563541509   sample-mgo-rs-backup   Succeeded   35s
 
 
-$ kubectl get repository -n demo gcs-repo-custom 
+$ kubectl get repository -n demo gcs-repo-custom
 NAME              INTEGRITY   SIZE        SNAPSHOT-COUNT   LAST-SUCCESSFUL-BACKUP   AGE
 gcs-repo-custom   true        1.640 KiB   1                1m                       5m
 ```
 
-### To restore to a standalone database,
+### Restore to a standalone database
 
 No additional configuration is needed to restore the replicaset cluster to a standalone database. Follow the normal procedure of restoring a MongoDB Database.
 
@@ -699,7 +698,7 @@ spec:
   storage:
     storageClassName: "standard"
     accessModes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
@@ -730,18 +729,18 @@ spec:
       kind: AppBinding
       name: restored-mongodb
   rules:
-  - snapshots: [latest]
+    - snapshots: [latest]
 ```
 
 ```console
-$ kubectl create -f ./docs/examples/restore/replicaset/restored-standalone.yaml 
+$ kubectl create -f ./docs/examples/restore/replicaset/restored-standalone.yaml
 mongodb.kubedb.com/restored-mongodb created
 
 $ kubectl get mg -n demo restored-mongodb
 NAME               VERSION   STATUS         AGE
 restored-mongodb   3.6-v4    Initializing   56s
 
-$ kubectl create -f ./docs/examples/restore/replicaset/restoresession-standalone.yaml 
+$ kubectl create -f ./docs/examples/restore/replicaset/restoresession-standalone.yaml
 restoresession.stash.appscode.com/sample-mongodb-restore created
 
 $ kubectl get mg -n demo restored-mongodb

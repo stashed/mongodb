@@ -383,7 +383,7 @@ sample-mongodb-backup   */5 * * * *   False     0        <none>          61s
 
 The `sample-mongodb-backup` CronJob will trigger a backup on each schedule by creating a `BackpSession` crd.
 
-Wait for a schedule to appear. Run the following command to watch `BackupSession` crd,
+Wait for the next schedule. Run the following command to watch `BackupSession` crd,
 
 ```console
 $ kubectl get backupsession -n demo -w
