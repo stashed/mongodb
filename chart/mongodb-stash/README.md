@@ -1,6 +1,6 @@
 # MongoDB-stash
 
-[mongodb-stash by AppsCode](https://github.com/stashed/mongodb-stash) - MongoDB database backup/restore plugin for [Stash](https://github.com/stashed/).
+[mongodb-stash](https://github.com/stashed/mongodb-stash) - MongoDB database backup/restore plugin for [Stash by AppsCode](https://appscode.com/products/stash/).
 
 ## TL;DR;
 
@@ -16,7 +16,7 @@ This chart installs necessary `Function` and `Task` definition to backup or rest
 
 ## Prerequisites
 
-- Kubernetes 1.9+
+- Kubernetes 1.11+
 
 ## Installing the Chart
 

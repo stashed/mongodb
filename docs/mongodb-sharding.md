@@ -61,7 +61,7 @@ helm install appscode/mongodb-catalog --name mongodb-catalog
 Once installed, this will create `mg-backup-*` and `mg-recovery-*` Functions for all supported MongoDB versions. Verify that the Functions has been created successfully by,
 
 ```console
-$ kubectl get function
+$ kubectl get functions.stash.appscode.com
 NAME             AGE
 mg-backup-3.4    6s
 mg-backup-3.6   6s
@@ -77,7 +77,7 @@ update-status    6d19h
 This will also create `mg-backup-*` and `mg-restore-*` Tasks for all supported MongoDB versions. Verify that they have been created successfully by,
 
 ```console
-$ kubectl get task
+$ kubectl get tasks.stash.appscode.com
 NAME             AGE
 NAME             AGE
 mg-backup-3.4    10s
@@ -243,7 +243,7 @@ If you deploy MongoDB database without KubeDB, you have to create the AppBinding
 
 **Insert Sample Data:**
 
-Now, we will exec into the database pod and create some sample data. At first, find out the database pod using the following command,
+Now, we are going to exec into the database pod and create some sample data. At first, find out the database pod using the following command,
 
 ```console
 $ kubectl get pods -n demo --selector="mongodb.kubedb.com/node.mongos=sample-mgo-sh-mongos"
@@ -414,7 +414,7 @@ sample-mgo-sh-backup-1563512707   sample-mgo-sh-backup   Running     5m19s
 sample-mgo-sh-backup-1563512707   sample-mgo-sh-backup   Succeeded   5m45s
 ```
 
-We can see above that the backup session has succeeded. Now, we will verify that the backed up data has been stored in the backend.
+We can see above that the backup session has succeeded. Now, we are going to verify that the backed up data has been stored in the backend.
 
 **Verify Backup:**
 
@@ -426,19 +426,19 @@ NAME                INTEGRITY   SIZE         SNAPSHOT-COUNT   LAST-SUCCESSFUL-BA
 gcs-repo-sharding   true        66.453 KiB   12               1m                       20m
 ```
 
-Now, if we navigate to the GCS bucket, we will see backed up data has been stored in `demo/mongodb/sample-mgo-sh` directory as specified by `spec.backend.gcs.prefix` field of Repository crd.
+Now, if we navigate to the GCS bucket, we are going to see backed up data has been stored in `demo/mongodb/sample-mgo-sh` directory as specified by `spec.backend.gcs.prefix` field of Repository crd.
 
 > Note: Stash keeps all the backed up data encrypted. So, data in the backend will not make any sense until they are decrypted.
 
 ## Restore MongoDB Sharding
 
-We will restore the database from the backup we have taken in the previous section. We will deploy a new sharded database and initialize it from the backup.
+We are going to restore the database from the backup we have taken in the previous section. We are going to deploy a new sharded database and initialize it from the backup.
 
 **Deploy Restored Database:**
 
 Now, we have to deploy the restored database similarly as we have deployed the original `sample-psotgres` database. However, this time there will be the following differences:
 
-- We have to use the same secret that was used in the original database. We will specify it using `spec.databaseSecret` field.
+- We have to use the same secret that was used in the original database. We are going to specify it using `spec.databaseSecret` field.
 - We have to specify `spec.init` section to tell KubeDB that we are going to use Stash to initialize this database from backup. KubeDB will keep the database phase to `Initializing` until Stash finishes its initialization.
 
 Below is the YAML for `MongoDB` crd we are going deploy to initialize from backup,
@@ -543,10 +543,10 @@ Here,
 - `metadata.labels` specifies a `kubedb.com/kind: MongoDB` label that is used by KubeDB to watch this `RestoreSession`.
 - `spec.task.name` specifies the name of the `Task` crd that specifies the Functions and their execution order to restore a MongoDB database.
 - `spec.repository.name` specifies the `Repository` crd that holds the backend information where our backed up data has been stored.
-- `spec.target.ref` refers to the AppBinding crd for the `restored-mgo-sh` databse.
+- `spec.target.ref` refers to the AppBinding crd for the `restored-mgo-sh` database.
 - `spec.rules` specifies that we are restoring from the latest backup snapshot of the database.
 
-> **Warning:** Label `kubedb.com/kind: MongoDB` is mandatory if you are uisng KubeDB to deploy the databse. Otherwise, the database will be stuck in `Initializing` state.
+> **Warning:** Label `kubedb.com/kind: MongoDB` is mandatory if you are uisng KubeDB to deploy the database. Otherwise, the database will be stuck in `Initializing` state.
 
 Let's create the `RestoreSession` crd we have shown above,
 
@@ -570,7 +570,7 @@ So, we can see from the output of the above command that the restore process suc
 
 **Verify Restored Data:**
 
-In this section, we will verify that the desired data has been restored successfully. We will connect to `mongos` and check whether the table we had created in the original database is restored or not.
+In this section, we are going to verify that the desired data has been restored successfully. We are going to connect to `mongos` and check whether the table we had created in the original database is restored or not.
 
 At first, check if the database has gone into `Running` state by the following command,
 

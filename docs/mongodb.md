@@ -10,12 +10,11 @@ menu:
 product_name: stash
 menu_name: product_stash_0.8.3
 section_menu_id: guides
-
 ---
 
 # Backup and Restore MongoDB database using Stash
 
-Stash supports backup and restores MongoDB database. This guide will show you how you can backup and restore your MongoDB database with Stash.
+Stash 0.9.0+ supports backup and restoration of MongoDB databases. This guide will show you how you can backup and restore your MongoDB database with Stash.
 
 ## Before You Begin
 
@@ -43,7 +42,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
->Note: YAML files used in this tutorial are stored [here](https://github.com/stashed/mongodb/examples/).
+> Note: YAML files used in this tutorial are stored [here](https://github.com/stashed/mongodb/tree/master/docs/examples).
 
 ## Install MongoDB Catalog for Stash
 
@@ -62,7 +61,7 @@ helm install appscode/mongodb-catalog --name mongodb-catalog
 Once installed, this will create `mg-backup-*` and `mg-recovery-*` Functions for all supported MongoDB versions. Verify that the Functions has been created successfully by,
 
 ```console
-$ kubectl get function
+$ kubectl get functions.stash.appscode.com
 NAME             AGE
 mg-backup-3.4    6s
 mg-backup-3.6   6s
@@ -78,7 +77,7 @@ update-status    6d19h
 This will also create `mg-backup-*` and `mg-restore-*` Tasks for all supported MongoDB versions. Verify that they have been created successfully by,
 
 ```console
-$ kubectl get task
+$ kubectl get tasks.stash.appscode.com
 NAME             AGE
 NAME             AGE
 mg-backup-3.4    10s
@@ -95,7 +94,7 @@ Now, Stash is ready to backup MongoDB database.
 
 ## Backup MongoDB
 
-This section will demonstrate how to backup MongoDB databse. We are going to use [KubeDB](https://kubedb.com) to deploy a sample database. You can deploy your database using any method you want. We are using `KubeDB` because it automates some tasks that you have to do manually otherwise.
+This section will demonstrate how to backup MongoDB database. We are going to use [KubeDB](https://kubedb.com) to deploy a sample database. You can deploy your database using any method you want. We are using `KubeDB` because it automates some tasks that you have to do manually otherwise.
 
 ### Deploy Sample MongoDB Database
 
@@ -117,7 +116,7 @@ spec:
   storage:
     storageClassName: "standard"
     accessModes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
@@ -225,7 +224,7 @@ spec:
 
 **Insert Sample Data:**
 
-Now, we will exec into the database pod and create some sample data. At first, find out the database pod using the following command,
+Now, we are going to exec into the database pod and create some sample data. At first, find out the database pod using the following command,
 
 ```console
 $ kubectl get pods -n demo --selector="kubedb.com/name=sample-mongodb"
@@ -358,7 +357,7 @@ spec:
 Here,
 
 - `spec.schedule` specifies that we want to backup the database at 5 minutes interval.
-- `spec.task.name` specifies the name of the task crd that specifies the necessary Function and their execution order to backup a MongoDB databse.
+- `spec.task.name` specifies the name of the task crd that specifies the necessary Function and their execution order to backup a MongoDB database.
 - `spec.target.ref` refers to the `AppBinding` crd that was created for `sample-mongodb` database.
 
 Let's create the `BackupConfiguration` crd we have shown above,
@@ -393,7 +392,7 @@ sample-mongodb-backup-1561974001   sample-mongodb-backup   Running     5m19s
 sample-mongodb-backup-1561974001   sample-mongodb-backup   Succeeded   5m45s
 ```
 
-We can see above that the backup session has succeeded. Now, we will verify that the backed up data has been stored in the backend.
+We can see above that the backup session has succeeded. Now, we are going to verify that the backed up data has been stored in the backend.
 
 **Verify Backup:**
 
@@ -405,19 +404,19 @@ NAME       INTEGRITY   SIZE        SNAPSHOT-COUNT   LAST-SUCCESSFUL-BACKUP   AGE
 gcs-repo   true        1.611 KiB   1                33s                      33m
 ```
 
-Now, if we navigate to the GCS bucket, we will see backed up data has been stored in `demo/mongodb/sample-mongodb` directory as specified by `spec.backend.gcs.prefix` field of Repository crd.
+Now, if we navigate to the GCS bucket, we are going to see backed up data has been stored in `demo/mongodb/sample-mongodb` directory as specified by `spec.backend.gcs.prefix` field of Repository crd.
 
->Note: Stash keeps all the backed up data encrypted. So, data in the backend will not make any sense until they are decrypted.
+> Note: Stash keeps all the backed up data encrypted. So, data in the backend will not make any sense until they are decrypted.
 
 ## Restore MongoDB
 
-We will restore the database from the backup we have taken in the previous section. We will deploy a new database and initialize it from the backup.
+We are going to restore the database from the backup we have taken in the previous section. We are going to deploy a new database and initialize it from the backup.
 
 **Deploy Restored Database:**
 
 Now, we have to deploy the restored database similarly as we have deployed the original `sample-psotgres` database. However, this time there will be the following differences:
 
-- We have to use the same secret that was used in the original database. We will specify it using `spec.databaseSecret` field.
+- We have to use the same secret that was used in the original database. We are going to specify it using `spec.databaseSecret` field.
 - We have to specify `spec.init` section to tell KubeDB that we are going to use Stash to initialize this database from backup. KubeDB will keep the database phase to `Initializing` until Stash finishes its initialization.
 
 Below is the YAML for `MongoDB` crd we are going deploy to initialize from backup,
@@ -436,7 +435,7 @@ spec:
   storage:
     storageClassName: "standard"
     accessModes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
@@ -477,7 +476,7 @@ NAME               AGE
 restored-mongodb   29s
 ```
 
->If you are not using KubeDB to deploy database, create the AppBinding manually.
+> If you are not using KubeDB to deploy database, create the AppBinding manually.
 
 Below is the YAML for the `RestoreSession` crd that we are going to create to restore backed up data into `restored-mongodb` database.
 
@@ -500,7 +499,7 @@ spec:
       kind: AppBinding
       name: restored-mongodb
   rules:
-  - snapshots: [latest]
+    - snapshots: [latest]
 ```
 
 Here,
@@ -508,10 +507,10 @@ Here,
 - `metadata.labels` specifies a `kubedb.com/kind: MongoDB` label that is used by KubeDB to watch this `RestoreSession`.
 - `spec.task.name` specifies the name of the `Task` crd that specifies the Functions and their execution order to restore a MongoDB database.
 - `spec.repository.name` specifies the `Repository` crd that holds the backend information where our backed up data has been stored.
-- `spec.target.ref` refers to the AppBinding crd for the `restored-mongodb` databse.
+- `spec.target.ref` refers to the AppBinding crd for the `restored-mongodb` database.
 - `spec.rules` specifies that we are restoring from the latest backup snapshot of the database.
 
-> **Warning:** Label `kubedb.com/kind: MongoDB` is mandatory if you are uisng KubeDB to deploy the databse. Otherwise, the database will be stuck in `Initializing` state.
+> **Warning:** Label `kubedb.com/kind: MongoDB` is mandatory if you are uisng KubeDB to deploy the database. Otherwise, the database will be stuck in `Initializing` state.
 
 Let's create the `RestoreSession` crd we have shown above,
 
@@ -535,7 +534,7 @@ So, we can see from the output of the above command that the restore process suc
 
 **Verify Restored Data:**
 
-In this section, we will verify that the desired data has been restored successfully. We will connect to the database and check whether the table we had created in the original database is restored or not.
+In this section, we are going to verify that the desired data has been restored successfully. We are going to connect to the database and check whether the table we had created in the original database is restored or not.
 
 At first, check if the database has gone into `Running` state by the following command,
 
