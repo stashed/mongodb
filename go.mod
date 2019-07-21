@@ -22,14 +22,11 @@ require (
 	kmodules.xyz/client-go v0.0.0-20190715080709-7162a6c90b04
 	kmodules.xyz/custom-resources v0.0.0-20190508103408-464e8324c3ec
 	kubedb.dev/apimachinery v0.0.0-20190718012505-6973f90fefd0
-	stash.appscode.dev/stash v0.0.0-20190717091949-1c51a7c58f08
+	stash.appscode.dev/stash v0.0.0-20190718155146-3de534baa0a0
 )
 
 replace (
-	github.com/Azure/go-autorest => github.com/Azure/go-autorest v12.2.0+incompatible
-	github.com/go-xorm/core v0.6.3 => xorm.io/core v0.6.3
-	github.com/graymeta/stow => github.com/appscode/stow v0.0.0-20190506085026-ca5baa008ea3
-	gopkg.in/robfig/cron.v2 => github.com/appscode/cron v0.0.0-20170717094345-ca60c6d796d4
+	github.com/Azure/go-autorest => github.com/Azure/go-autorest v12.3.0+incompatible
 	k8s.io/api => k8s.io/api v0.0.0-20190313235455-40a48860b5ab
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.0.0-20190315093550-53c4693659ed
 	k8s.io/apimachinery => github.com/kmodules/apimachinery v0.0.0-20190508045248-a52a97a7a2bf
