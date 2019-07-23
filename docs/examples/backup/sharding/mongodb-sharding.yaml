@@ -26,3 +26,5 @@ spec:
             storage: 1Gi
         storageClassName: standard
   terminationPolicy: WipeOut
+  clusterAuthMode: x509
+  sslMode: requireSSL

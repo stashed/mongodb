@@ -31,3 +31,5 @@ spec:
     stashRestoreSession:
       name: sample-mgo-sh-restore
   terminationPolicy: WipeOut
+  clusterAuthMode: x509
+  sslMode: requireSSL

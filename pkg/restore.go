@@ -3,13 +3,16 @@ package pkg
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"github.com/appscode/go/flags"
 	"github.com/appscode/go/log"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/errors"
+	kerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	appcatalog_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
@@ -87,6 +90,33 @@ func NewCmdRestore() *cobra.Command {
 			MongoDBRootUser = string(appBindingSecret.Data[MongoUserKey])
 			MongoDBRootPassword = string(appBindingSecret.Data[MongoPasswordKey])
 
+			// unmarshal parameter is the field has value
+			parameters := v1alpha1.MongoDBConfiguration{}
+			if appBinding.Spec.Parameters != nil {
+				if err = json.Unmarshal(appBinding.Spec.Parameters.Raw, &parameters); err != nil {
+					log.Errorf("unable to unmarshal appBinding.Spec.Parameters.Raw. Reason: %v", err)
+				}
+			}
+
+			if appBinding.Spec.ClientConfig.CABundle != nil {
+				if err := ioutil.WriteFile(filepath.Join(setupOpt.ScratchDir, MongoCACertFile), appBinding.Spec.ClientConfig.CABundle, os.ModePerm); err != nil {
+					return errors.Wrap(err, "failed to write key for CA certificate")
+				}
+				tlsArgs = fmt.Sprintf("--ssl --sslCAFile=%v", filepath.Join(setupOpt.ScratchDir, MongoCACertFile))
+
+				if parameters.CertificateSecret != "" {
+					// get certificate secret to get client certificate
+					certificateSecret, err := kubeClient.CoreV1().Secrets(namespace).Get(parameters.CertificateSecret, metav1.GetOptions{})
+					if err != nil {
+						return err
+					}
+					if err := ioutil.WriteFile(filepath.Join(setupOpt.ScratchDir, MongoClientCertFile), certificateSecret.Data[parameters.ClientCertKey], os.ModePerm); err != nil {
+						return errors.Wrap(err, "failed to write client certificate")
+					}
+					tlsArgs += fmt.Sprintf(" --sslPEMKeyFile=%v", filepath.Join(setupOpt.ScratchDir, MongoClientCertFile))
+				}
+			}
+
 			getDumpOpts := func(mongoDSN, hostKey string, isStandalone bool) restic.DumpOptions {
 				log.Infoln("processing backupOptions for ", mongoDSN)
 				dumpOpt := restic.DumpOptions{
@@ -103,6 +133,8 @@ func NewCmdRestore() *cobra.Command {
 						"--username=" + string(appBindingSecret.Data[MongoUserKey]),
 						"--password=" + string(appBindingSecret.Data[MongoPasswordKey]),
 						"--archive",
+						tlsArgs,
+						mongoArgs,
 					},
 				}
 				if isStandalone {
@@ -112,18 +144,7 @@ func NewCmdRestore() *cobra.Command {
 					// - oplog is enabled automatically for replicasets.
 					dumpOpt.StdoutPipeCommand.Args = append(dumpOpt.StdoutPipeCommand.Args, "--oplogReplay")
 				}
-				if mongoArgs != "" {
-					dumpOpt.StdoutPipeCommand.Args = append(dumpOpt.StdoutPipeCommand.Args, mongoArgs)
-				}
 				return dumpOpt
-			}
-
-			// unmarshal parameter is the field has value
-			parameters := v1alpha1.MongoDBConfiguration{}
-			if appBinding.Spec.Parameters != nil {
-				if err = json.Unmarshal(appBinding.Spec.Parameters.Raw, &parameters); err != nil {
-					log.Errorf("unable to unmarshal appBinding.Spec.Parameters.Raw. Reason: %v", err)
-				}
 			}
 
 			// set maxConcurrency
@@ -168,7 +189,7 @@ func NewCmdRestore() *cobra.Command {
 			if metrics.Enabled {
 				err := dumpOutput.HandleMetrics(&metrics, backupErr)
 				if err != nil {
-					return errors.NewAggregate([]error{backupErr, err})
+					return kerrors.NewAggregate([]error{backupErr, err})
 				}
 			}
 			// If output directory specified, then write the output in "output.json" file in the specified directory
