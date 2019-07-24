@@ -258,11 +258,11 @@ $ kubectl get secrets -n demo sample-mgo-sh-auth -o jsonpath='{.data.\username}'
 root
 
 $ kubectl get secrets -n demo sample-mgo-sh-auth -o jsonpath='{.data.\password}' | base64 -d
-erwDW4Mcf4bNicjI
+JJPcMxNKJev0SzgX
 
 $ kubectl exec -it -n demo sample-mgo-sh-mongos-9459cfc44-4jthd bash
 
-mongodb@sample-mgo-sh-0:/$ mongo admin -u root -p erwDW4Mcf4bNicjI
+mongodb@sample-mgo-sh-0:/$ mongo admin -u root -p JJPcMxNKJev0SzgX
 
 mongos> show dbs
 admin   0.000GB
@@ -594,11 +594,11 @@ $ kubectl get secrets -n demo sample-mgo-sh-auth -o jsonpath='{.data.\username}'
 root
 
 $ kubectl get secrets -n demo sample-mgo-sh-auth -o jsonpath='{.data.\password}' | base64 -d
-erwDW4Mcf4bNicjI
+JJPcMxNKJev0SzgX
 
 $ kubectl exec -it -n demo restored-mgo-sh-mongos-7bccd5d684-2z5xs bash
 
-mongodb@restored-mgo-sh-0:/$ mongo admin -u root -p erwDW4Mcf4bNicjI
+mongodb@restored-mgo-sh-0:/$ mongo admin -u root -p JJPcMxNKJev0SzgX
 
 mongos> show dbs
 admin   0.000GB
@@ -785,11 +785,11 @@ $ kubectl get secrets -n demo sample-mgo-sh-auth -o jsonpath='{.data.\username}'
 root
 
 $ kubectl get secrets -n demo sample-mgo-sh-auth -o jsonpath='{.data.\password}' | base64 -d
-erwDW4Mcf4bNicjI
+JJPcMxNKJev0SzgX
 
 $ kubectl exec -it -n demo restored-mongodb-0 bash
 
-mongodb@restored-mongodb-0:/$ mongo admin -u root -p erwDW4Mcf4bNicjI
+mongodb@restored-mongodb-0:/$ mongo admin -u root -p JJPcMxNKJev0SzgX
 
 > show dbs
 admin   0.000GB

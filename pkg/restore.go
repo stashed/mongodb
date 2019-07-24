@@ -102,7 +102,7 @@ func NewCmdRestore() *cobra.Command {
 				if err := ioutil.WriteFile(filepath.Join(setupOpt.ScratchDir, MongoCACertFile), appBinding.Spec.ClientConfig.CABundle, os.ModePerm); err != nil {
 					return errors.Wrap(err, "failed to write key for CA certificate")
 				}
-				tlsArgs = fmt.Sprintf("--ssl --sslCAFile=%v", filepath.Join(setupOpt.ScratchDir, MongoCACertFile))
+				tlsArgs = append(tlsArgs, []string{"--ssl", "--sslCAFile", filepath.Join(setupOpt.ScratchDir, MongoCACertFile)}...)
 
 				if parameters.CertificateSecret != "" {
 					// get certificate secret to get client certificate
@@ -113,7 +113,7 @@ func NewCmdRestore() *cobra.Command {
 					if err := ioutil.WriteFile(filepath.Join(setupOpt.ScratchDir, MongoClientCertFile), certificateSecret.Data[parameters.ClientCertKey], os.ModePerm); err != nil {
 						return errors.Wrap(err, "failed to write client certificate")
 					}
-					tlsArgs += fmt.Sprintf(" --sslPEMKeyFile=%v", filepath.Join(setupOpt.ScratchDir, MongoClientCertFile))
+					tlsArgs = append(tlsArgs, []string{"--sslPEMKeyFile", filepath.Join(setupOpt.ScratchDir, MongoClientCertFile)}...)
 				}
 			}
 
@@ -133,9 +133,15 @@ func NewCmdRestore() *cobra.Command {
 						"--username=" + string(appBindingSecret.Data[MongoUserKey]),
 						"--password=" + string(appBindingSecret.Data[MongoPasswordKey]),
 						"--archive",
-						tlsArgs,
-						mongoArgs,
 					},
+				}
+				if tlsArgs != nil {
+					s := make([]interface{}, len(tlsArgs))
+					for i, v := range tlsArgs {
+						s[i] = v
+					}
+
+					dumpOpt.StdoutPipeCommand.Args = append(dumpOpt.StdoutPipeCommand.Args, s...)
 				}
 				if isStandalone {
 					dumpOpt.StdoutPipeCommand.Args = append(dumpOpt.StdoutPipeCommand.Args, "--port="+fmt.Sprint(appBinding.Spec.ClientConfig.Service.Port))
@@ -143,6 +149,9 @@ func NewCmdRestore() *cobra.Command {
 					// - port is already added in mongoDSN with replicasetName/host:port format.
 					// - oplog is enabled automatically for replicasets.
 					dumpOpt.StdoutPipeCommand.Args = append(dumpOpt.StdoutPipeCommand.Args, "--oplogReplay")
+				}
+				if mongoArgs != "" {
+					dumpOpt.StdoutPipeCommand.Args = append(dumpOpt.StdoutPipeCommand.Args, mongoArgs)
 				}
 				return dumpOpt
 			}

@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/appscode/go/flags"
@@ -38,7 +39,7 @@ const (
 var (
 	MongoDBRootUser     string
 	MongoDBRootPassword string
-	tlsArgs             string
+	tlsArgs             []string
 )
 
 func NewCmdBackup() *cobra.Command {
@@ -122,7 +123,7 @@ func NewCmdBackup() *cobra.Command {
 				if err := ioutil.WriteFile(filepath.Join(setupOpt.ScratchDir, MongoCACertFile), appBinding.Spec.ClientConfig.CABundle, os.ModePerm); err != nil {
 					return errors.Wrap(err, "failed to write key for CA certificate")
 				}
-				tlsArgs = fmt.Sprintf("--ssl --sslCAFile=%v", filepath.Join(setupOpt.ScratchDir, MongoCACertFile))
+				tlsArgs = append(tlsArgs, []string{"--ssl", "--sslCAFile", filepath.Join(setupOpt.ScratchDir, MongoCACertFile)}...)
 
 				if parameters.CertificateSecret != "" {
 					// get certificate secret to get client certificate
@@ -133,7 +134,7 @@ func NewCmdBackup() *cobra.Command {
 					if err := ioutil.WriteFile(filepath.Join(setupOpt.ScratchDir, MongoClientCertFile), certificateSecret.Data[parameters.ClientCertKey], os.ModePerm); err != nil {
 						return errors.Wrap(err, "failed to write client certificate")
 					}
-					tlsArgs += fmt.Sprintf(" --sslPEMKeyFile=%v", filepath.Join(setupOpt.ScratchDir, MongoClientCertFile))
+					tlsArgs = append(tlsArgs, []string{"--sslPEMKeyFile", filepath.Join(setupOpt.ScratchDir, MongoClientCertFile)}...)
 				}
 			}
 
@@ -154,9 +155,15 @@ func NewCmdBackup() *cobra.Command {
 						"--username=" + string(appBindingSecret.Data[MongoUserKey]),
 						"--password=" + string(appBindingSecret.Data[MongoPasswordKey]),
 						"--archive",
-						tlsArgs,
-						mongoArgs,
 					},
+				}
+				if tlsArgs != nil {
+					s := make([]interface{}, len(tlsArgs))
+					for i, v := range tlsArgs {
+						s[i] = v
+					}
+
+					backupOpt.StdinPipeCommand.Args = append(backupOpt.StdinPipeCommand.Args, s...)
 				}
 				if isStandalone {
 					backupOpt.StdinPipeCommand.Args = append(backupOpt.StdinPipeCommand.Args, "--port="+fmt.Sprint(appBinding.Spec.ClientConfig.Service.Port))
@@ -164,6 +171,9 @@ func NewCmdBackup() *cobra.Command {
 					// - port is already added in mongoDSN with replicasetName/host:port format.
 					// - oplog is enabled automatically for replicasets.
 					backupOpt.StdinPipeCommand.Args = append(backupOpt.StdinPipeCommand.Args, "--oplog")
+				}
+				if mongoArgs != "" {
+					backupOpt.StdinPipeCommand.Args = append(backupOpt.StdinPipeCommand.Args, mongoArgs)
 				}
 				return backupOpt
 			}
@@ -269,7 +279,7 @@ func NewCmdBackup() *cobra.Command {
 				return err
 			}
 			// hide password, don't print cmd
-			//resticWrapper.HideCMD() //todo: undo
+			resticWrapper.HideCMD()
 
 			// Run backup
 			backupOutput, backupErr := resticWrapper.RunParallelBackup(backupOpts, maxConcurrency)
@@ -335,25 +345,13 @@ func getPrimaryNSecondaryMember(mongoDSN string) (primary, secondary string, err
 	log.Infoln("finding primary and secondary instances of", mongoDSN)
 	v := make(map[string]interface{})
 
-	// stop balancer
-	//if err := sh.Command("sh", "-c",
-	//	fmt.Sprintf(`mongo config %v --host=%v -u %v -p %v --quiet --authenticationDatabase admin --eval "JSON.stringify(rs.isMaster())"`, tlsArgs, mongoDSN, MongoDBRootUser, MongoDBRootPassword),
-	//	// even --quiet doesn't skip replicaset PrimaryConnection log. so take tha last line. issue tracker: https://jira.mongodb.org/browse/SERVER-27159
-	//).Command("tail", "-1").UnmarshalJSON(&v); err != nil {
-	//	return "", "", err
-	//}
-
-	// debug. ============ start
-	cmd := sh.Command("sh", "-c",
-		fmt.Sprintf(`mongo config %v --host=%v -u %v -p %v --quiet --authenticationDatabase admin --eval "JSON.stringify(rs.isMaster())"`, tlsArgs, mongoDSN, MongoDBRootUser, MongoDBRootPassword),
+	//stop balancer
+	if err := sh.Command("sh", "-c",
+		fmt.Sprintf(`mongo config %v --host=%v -u %v -p %v --quiet --authenticationDatabase admin --eval "JSON.stringify(rs.isMaster())"`, strings.Join(tlsArgs, " "), mongoDSN, MongoDBRootUser, MongoDBRootPassword),
 		// even --quiet doesn't skip replicaset PrimaryConnection log. so take tha last line. issue tracker: https://jira.mongodb.org/browse/SERVER-27159
-	)
-	cmd.ShowCMD=true
-
-	if err := cmd.Command("tail", "-1").UnmarshalJSON(&v); err != nil {
-			return "", "", err
-		}
-	// ========== end
+	).Command("tail", "-1").UnmarshalJSON(&v); err != nil {
+		return "", "", err
+	}
 
 	primary, ok := v["primary"].(string)
 	if !ok || primary == "" {
@@ -387,7 +385,7 @@ func disabelBalancer(mongosHost string) error {
 
 	// disable balancer
 	if err := sh.Command("sh", "-c",
-		fmt.Sprintf(`mongo config %v --host=%v -u %v -p %v --quiet --authenticationDatabase admin --eval "JSON.stringify(sh.stopBalancer())"`, tlsArgs, mongosHost, MongoDBRootUser, MongoDBRootPassword),
+		fmt.Sprintf(`mongo config %v --host=%v -u %v -p %v --quiet --authenticationDatabase admin --eval "JSON.stringify(sh.stopBalancer())"`, strings.Join(tlsArgs, " "), mongosHost, MongoDBRootUser, MongoDBRootPassword),
 	).UnmarshalJSON(&v); err != nil {
 		return err
 	}
@@ -398,7 +396,7 @@ func disabelBalancer(mongosHost string) error {
 
 	// wait for balancer to stop
 	if err := sh.Command("sh", "-c",
-		fmt.Sprintf(`mongo config %v --host=%v -u %v -p %v --quiet --authenticationDatabase admin --eval "while(sh.isBalancerRunning()){ print('waiting for balancer to stop...'); sleep(1000);}"`, tlsArgs, mongosHost, MongoDBRootUser, MongoDBRootPassword),
+		fmt.Sprintf(`mongo config %v --host=%v -u %v -p %v --quiet --authenticationDatabase admin --eval "while(sh.isBalancerRunning()){ print('waiting for balancer to stop...'); sleep(1000);}"`, strings.Join(tlsArgs, " "), mongosHost, MongoDBRootUser, MongoDBRootPassword),
 	).Run(); err != nil {
 		return err
 	}
@@ -412,7 +410,7 @@ func enableBalancer(mongosHost string) error {
 
 	// enable balancer
 	if err := sh.Command("sh", "-c",
-		fmt.Sprintf(`mongo config %v --host=%v -u %v -p %v --quiet --authenticationDatabase admin --eval "JSON.stringify(sh.setBalancerState(true))"`, tlsArgs, mongosHost, MongoDBRootUser, MongoDBRootPassword),
+		fmt.Sprintf(`mongo config %v --host=%v -u %v -p %v --quiet --authenticationDatabase admin --eval "JSON.stringify(sh.setBalancerState(true))"`, strings.Join(tlsArgs, " "), mongosHost, MongoDBRootUser, MongoDBRootPassword),
 	).UnmarshalJSON(&v); err != nil {
 		return err
 	}
@@ -435,7 +433,7 @@ func lockConfigServer(configSVRDSN, secondaryHost string) error {
 
 	// findAndModify BackupControlDocument
 	if err := sh.Command("sh", "-c",
-		fmt.Sprintf(`mongo config %v --host=%v -u %v -p %v --quiet --authenticationDatabase admin --eval 'db.BackupControl.findAndModify({query: { _id: '"'"'BackupControlDocument'"'"' }, update: { $inc: { counter : 1 } }, new: true, upsert: true, writeConcern: { w: '"'"'majority'"'"', wtimeout: 15000 }});'`, tlsArgs, configSVRDSN, MongoDBRootUser, MongoDBRootPassword),
+		fmt.Sprintf(`mongo config %v --host=%v -u %v -p %v --quiet --authenticationDatabase admin --eval 'db.BackupControl.findAndModify({query: { _id: '"'"'BackupControlDocument'"'"' }, update: { $inc: { counter : 1 } }, new: true, upsert: true, writeConcern: { w: '"'"'majority'"'"', wtimeout: 15000 }});'`, strings.Join(tlsArgs, " "), configSVRDSN, MongoDBRootUser, MongoDBRootPassword),
 	).Command("tail", "-1").UnmarshalJSON(&v); err != nil {
 		return err
 	}
@@ -451,7 +449,7 @@ func lockConfigServer(configSVRDSN, secondaryHost string) error {
 		timer++
 		// find backupDocument from secondary configServer
 		if err := sh.Command("sh", "-c",
-			fmt.Sprintf(`mongo config %v --host=%v -u %v -p %v --quiet --authenticationDatabase admin --eval "rs.slaveOk(); db.BackupControl.find({ '_id' : 'BackupControlDocument' }).readConcern('majority');"`, tlsArgs, secondaryHost, MongoDBRootUser, MongoDBRootPassword),
+			fmt.Sprintf(`mongo config %v --host=%v -u %v -p %v --quiet --authenticationDatabase admin --eval "rs.slaveOk(); db.BackupControl.find({ '_id' : 'BackupControlDocument' }).readConcern('majority');"`, strings.Join(tlsArgs, " "), secondaryHost, MongoDBRootUser, MongoDBRootPassword),
 		).UnmarshalJSON(&v); err != nil {
 			return err
 		}
@@ -484,7 +482,7 @@ func lockSecondaryMember(mongohost string) error {
 
 	// lock file
 	if err := sh.Command("sh", "-c",
-		fmt.Sprintf(`mongo config %v --host=%v -u %v -p %v --quiet --authenticationDatabase admin --eval "JSON.stringify(db.fsyncLock())"`, tlsArgs, mongohost, MongoDBRootUser, MongoDBRootPassword),
+		fmt.Sprintf(`mongo config %v --host=%v -u %v -p %v --quiet --authenticationDatabase admin --eval "JSON.stringify(db.fsyncLock())"`, strings.Join(tlsArgs, " "), mongohost, MongoDBRootUser, MongoDBRootPassword),
 	).UnmarshalJSON(&v); err != nil {
 		return err
 	}
@@ -506,7 +504,7 @@ func unlockSecondaryMember(mongohost string) error {
 
 	// unlock file
 	if err := sh.Command("sh", "-c",
-		fmt.Sprintf(`mongo config %v --host=%v -u %v -p %v --quiet --authenticationDatabase admin --eval "JSON.stringify(db.fsyncUnlock())"`, tlsArgs, mongohost, MongoDBRootUser, MongoDBRootPassword),
+		fmt.Sprintf(`mongo config %v --host=%v -u %v -p %v --quiet --authenticationDatabase admin --eval "JSON.stringify(db.fsyncUnlock())"`, strings.Join(tlsArgs, " "), mongohost, MongoDBRootUser, MongoDBRootPassword),
 	).UnmarshalJSON(&v); err != nil {
 		return err
 	}
