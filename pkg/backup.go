@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/appscode/go/flags"
@@ -40,6 +42,7 @@ var (
 	MongoDBRootUser     string
 	MongoDBRootPassword string
 	tlsArgs             []string
+	cleanupFuncs        []func()error
 )
 
 func NewCmdBackup() *cobra.Command {
@@ -71,7 +74,19 @@ func NewCmdBackup() *cobra.Command {
 		Short:             "Takes a backup of Mongo DB",
 		DisableAutoGenTag: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			defer cleanup()
+
 			flags.EnsureRequiredFlags(cmd, "app-binding", "provider", "secret-dir")
+
+			// catch sigkill signals and gracefully terminate so that cleanup functions are executed.
+			sigChan := make(chan os.Signal)
+			signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+			go func() {
+				rcvSig := <-sigChan
+				cleanup()
+				log.Errorf("Received signal: %s, exiting\n", rcvSig)
+				os.Exit(1)
+			}()
 
 			// apply nice, ionice settings from env
 			var err error
@@ -205,12 +220,10 @@ func NewCmdBackup() *cobra.Command {
 
 				// connect to mongos to disable/enable balancer
 				err = disabelBalancer(appBinding.Spec.ClientConfig.Service.Name)
-				defer func() {
+				cleanupFuncs = append(cleanupFuncs, func() error {
 					// even if error occurs, try to enable the balancer on exiting the program.
-					if err := enableBalancer(appBinding.Spec.ClientConfig.Service.Name); err != nil {
-						log.Errorln(err)
-					}
-				}()
+					return enableBalancer(appBinding.Spec.ClientConfig.Service.Name)
+				})
 				if err != nil {
 					return err
 				}
@@ -223,12 +236,10 @@ func NewCmdBackup() *cobra.Command {
 				}
 
 				err = lockConfigServer(parameters.ConfigServer, secondary)
-				defer func() {
+				cleanupFuncs = append(cleanupFuncs, func() error {
 					// even if error occurs, try to unlock the server
-					if err := unlockSecondaryMember(secondary); err != nil {
-						log.Errorln(err)
-					}
-				}()
+					return unlockSecondaryMember(secondary)
+				})
 				if err != nil {
 					return err
 				}
@@ -252,12 +263,10 @@ func NewCmdBackup() *cobra.Command {
 				}
 
 				err = lockSecondaryMember(secondary)
-				defer func() {
+				cleanupFuncs = append(cleanupFuncs, func() error {
 					// even if error occurs, try to unlock the server
-					if err := unlockSecondaryMember(secondary); err != nil {
-						log.Errorln(err)
-					}
-				}()
+					return unlockSecondaryMember(secondary)
+				})
 				if err != nil {
 					log.Errorf("error while processing %v. error: %v", host, err)
 					return err
@@ -339,6 +348,15 @@ func NewCmdBackup() *cobra.Command {
 	cmd.Flags().StringSliceVar(&metrics.Labels, "metrics-labels", metrics.Labels, "Labels to apply in exported metrics")
 
 	return cmd
+}
+
+// cleanup usually unlocks the locked servers
+func cleanup() {
+	for _, f := range cleanupFuncs {
+		if err:=f(); err != nil {
+			log.Errorln(err)
+		}
+	}
 }
 
 func getPrimaryNSecondaryMember(mongoDSN string) (primary, secondary string, err error) {

@@ -124,7 +124,7 @@ github.com/imdario/mergo
 github.com/inconshreveable/mousetrap
 # github.com/jpillora/go-ogle-analytics v0.0.0-20161213085824-14b04e0594ef
 github.com/jpillora/go-ogle-analytics
-# github.com/json-iterator/go v1.1.6
+# github.com/json-iterator/go v1.1.7
 github.com/json-iterator/go
 # github.com/kubernetes-csi/external-snapshotter v1.1.0
 github.com/kubernetes-csi/external-snapshotter/pkg/client/clientset/versioned

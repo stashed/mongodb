@@ -11,6 +11,7 @@ require (
 	github.com/go-openapi/swag v0.19.4 // indirect
 	github.com/golang/protobuf v1.3.2 // indirect
 	github.com/gophercloud/gophercloud v0.0.0-20190520235722-e87e5f90e7e6 // indirect
+	github.com/json-iterator/go v1.1.7 // indirect
 	github.com/pkg/errors v0.8.1
 	github.com/prometheus/procfs v0.0.3 // indirect
 	github.com/spf13/cobra v0.0.5
