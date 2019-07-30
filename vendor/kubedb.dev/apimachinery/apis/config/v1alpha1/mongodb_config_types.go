@@ -35,11 +35,4 @@ type MongoDBConfiguration struct {
 	// but only one replicaset, then ReplicaSets field contains only one key-value pair where the key is
 	// host-0 and the value is dsn of that replicaset.
 	ReplicaSets map[string]string `json:"replicaSets,omitempty"`
-
-	// CertificateSecret is the CertificateSecretName for mongodb. If SSL is enabled, Mongodb will have
-	// a certificate secret, which contains ca cert, client pem file that contains both the TLS/SSL certificate and key.
-	CertificateSecret string `json:"certificateSecret,omitempty"`
-
-	// ClientCertKey is the key value which is used in CertificateSecret to store the client pem file. ex: client.pem
-	ClientCertKey string `json:"clientCertKey,omitempty"`
 }

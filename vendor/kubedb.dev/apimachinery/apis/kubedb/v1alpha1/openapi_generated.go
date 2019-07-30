@@ -345,9 +345,95 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"kmodules.xyz/offshoot-api/api/v1.ServicePort":                                schema_kmodulesxyz_offshoot_api_api_v1_ServicePort(ref),
 		"kmodules.xyz/offshoot-api/api/v1.ServiceSpec":                                schema_kmodulesxyz_offshoot_api_api_v1_ServiceSpec(ref),
 		"kmodules.xyz/offshoot-api/api/v1.ServiceTemplateSpec":                        schema_kmodulesxyz_offshoot_api_api_v1_ServiceTemplateSpec(ref),
-		"kubedb.dev/apimachinery/apis/config/v1alpha1.MongoDBConfiguration":           schema_apimachinery_apis_config_v1alpha1_MongoDBConfiguration(ref),
-		"kubedb.dev/apimachinery/apis/config/v1alpha1.MySQLConfiguration":             schema_apimachinery_apis_config_v1alpha1_MySQLConfiguration(ref),
-		"kubedb.dev/apimachinery/apis/config/v1alpha1.PostgresConfiguration":          schema_apimachinery_apis_config_v1alpha1_PostgresConfiguration(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.BackupScheduleSpec":             schema_apimachinery_apis_kubedb_v1alpha1_BackupScheduleSpec(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.DormantDatabase":                schema_apimachinery_apis_kubedb_v1alpha1_DormantDatabase(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.DormantDatabaseList":            schema_apimachinery_apis_kubedb_v1alpha1_DormantDatabaseList(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.DormantDatabaseSpec":            schema_apimachinery_apis_kubedb_v1alpha1_DormantDatabaseSpec(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.DormantDatabaseStatus":          schema_apimachinery_apis_kubedb_v1alpha1_DormantDatabaseStatus(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Elasticsearch":                  schema_apimachinery_apis_kubedb_v1alpha1_Elasticsearch(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.ElasticsearchClusterTopology":   schema_apimachinery_apis_kubedb_v1alpha1_ElasticsearchClusterTopology(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.ElasticsearchList":              schema_apimachinery_apis_kubedb_v1alpha1_ElasticsearchList(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.ElasticsearchNode":              schema_apimachinery_apis_kubedb_v1alpha1_ElasticsearchNode(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.ElasticsearchSpec":              schema_apimachinery_apis_kubedb_v1alpha1_ElasticsearchSpec(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.ElasticsearchStatus":            schema_apimachinery_apis_kubedb_v1alpha1_ElasticsearchStatus(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.ElasticsearchSummary":           schema_apimachinery_apis_kubedb_v1alpha1_ElasticsearchSummary(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Etcd":                           schema_apimachinery_apis_kubedb_v1alpha1_Etcd(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.EtcdList":                       schema_apimachinery_apis_kubedb_v1alpha1_EtcdList(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.EtcdSpec":                       schema_apimachinery_apis_kubedb_v1alpha1_EtcdSpec(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.EtcdStatus":                     schema_apimachinery_apis_kubedb_v1alpha1_EtcdStatus(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.InitSpec":                       schema_apimachinery_apis_kubedb_v1alpha1_InitSpec(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.LeaderElectionConfig":           schema_apimachinery_apis_kubedb_v1alpha1_LeaderElectionConfig(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MariaDB":                        schema_apimachinery_apis_kubedb_v1alpha1_MariaDB(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MariaDBList":                    schema_apimachinery_apis_kubedb_v1alpha1_MariaDBList(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MariaDBSpec":                    schema_apimachinery_apis_kubedb_v1alpha1_MariaDBSpec(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MariaDBStatus":                  schema_apimachinery_apis_kubedb_v1alpha1_MariaDBStatus(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MemberSecret":                   schema_apimachinery_apis_kubedb_v1alpha1_MemberSecret(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Memcached":                      schema_apimachinery_apis_kubedb_v1alpha1_Memcached(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MemcachedList":                  schema_apimachinery_apis_kubedb_v1alpha1_MemcachedList(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MemcachedSpec":                  schema_apimachinery_apis_kubedb_v1alpha1_MemcachedSpec(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MemcachedStatus":                schema_apimachinery_apis_kubedb_v1alpha1_MemcachedStatus(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MongoDB":                        schema_apimachinery_apis_kubedb_v1alpha1_MongoDB(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MongoDBConfigNode":              schema_apimachinery_apis_kubedb_v1alpha1_MongoDBConfigNode(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MongoDBList":                    schema_apimachinery_apis_kubedb_v1alpha1_MongoDBList(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MongoDBMongosNode":              schema_apimachinery_apis_kubedb_v1alpha1_MongoDBMongosNode(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MongoDBNode":                    schema_apimachinery_apis_kubedb_v1alpha1_MongoDBNode(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MongoDBReplicaSet":              schema_apimachinery_apis_kubedb_v1alpha1_MongoDBReplicaSet(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MongoDBShardNode":               schema_apimachinery_apis_kubedb_v1alpha1_MongoDBShardNode(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MongoDBShardingTopology":        schema_apimachinery_apis_kubedb_v1alpha1_MongoDBShardingTopology(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MongoDBSpec":                    schema_apimachinery_apis_kubedb_v1alpha1_MongoDBSpec(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MongoDBStatus":                  schema_apimachinery_apis_kubedb_v1alpha1_MongoDBStatus(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MySQL":                          schema_apimachinery_apis_kubedb_v1alpha1_MySQL(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MySQLClusterTopology":           schema_apimachinery_apis_kubedb_v1alpha1_MySQLClusterTopology(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MySQLGroupSpec":                 schema_apimachinery_apis_kubedb_v1alpha1_MySQLGroupSpec(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MySQLList":                      schema_apimachinery_apis_kubedb_v1alpha1_MySQLList(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MySQLSpec":                      schema_apimachinery_apis_kubedb_v1alpha1_MySQLSpec(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MySQLStatus":                    schema_apimachinery_apis_kubedb_v1alpha1_MySQLStatus(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Origin":                         schema_apimachinery_apis_kubedb_v1alpha1_Origin(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.OriginSpec":                     schema_apimachinery_apis_kubedb_v1alpha1_OriginSpec(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Percona":                        schema_apimachinery_apis_kubedb_v1alpha1_Percona(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.PerconaList":                    schema_apimachinery_apis_kubedb_v1alpha1_PerconaList(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.PerconaSpec":                    schema_apimachinery_apis_kubedb_v1alpha1_PerconaSpec(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.PerconaStatus":                  schema_apimachinery_apis_kubedb_v1alpha1_PerconaStatus(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Postgres":                       schema_apimachinery_apis_kubedb_v1alpha1_Postgres(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.PostgresArchiverSpec":           schema_apimachinery_apis_kubedb_v1alpha1_PostgresArchiverSpec(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.PostgresList":                   schema_apimachinery_apis_kubedb_v1alpha1_PostgresList(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.PostgresSchemaInfo":             schema_apimachinery_apis_kubedb_v1alpha1_PostgresSchemaInfo(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.PostgresSpec":                   schema_apimachinery_apis_kubedb_v1alpha1_PostgresSpec(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.PostgresStatus":                 schema_apimachinery_apis_kubedb_v1alpha1_PostgresStatus(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.PostgresSummary":                schema_apimachinery_apis_kubedb_v1alpha1_PostgresSummary(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.PostgresTableInfo":              schema_apimachinery_apis_kubedb_v1alpha1_PostgresTableInfo(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.PostgresWALSourceSpec":          schema_apimachinery_apis_kubedb_v1alpha1_PostgresWALSourceSpec(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.RecoveryTarget":                 schema_apimachinery_apis_kubedb_v1alpha1_RecoveryTarget(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Redis":                          schema_apimachinery_apis_kubedb_v1alpha1_Redis(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.RedisClusterSpec":               schema_apimachinery_apis_kubedb_v1alpha1_RedisClusterSpec(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.RedisList":                      schema_apimachinery_apis_kubedb_v1alpha1_RedisList(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.RedisSpec":                      schema_apimachinery_apis_kubedb_v1alpha1_RedisSpec(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.RedisStatus":                    schema_apimachinery_apis_kubedb_v1alpha1_RedisStatus(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.ScriptSourceSpec":               schema_apimachinery_apis_kubedb_v1alpha1_ScriptSourceSpec(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Snapshot":                       schema_apimachinery_apis_kubedb_v1alpha1_Snapshot(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.SnapshotList":                   schema_apimachinery_apis_kubedb_v1alpha1_SnapshotList(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.SnapshotSourceSpec":             schema_apimachinery_apis_kubedb_v1alpha1_SnapshotSourceSpec(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.SnapshotSpec":                   schema_apimachinery_apis_kubedb_v1alpha1_SnapshotSpec(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.SnapshotStatus":                 schema_apimachinery_apis_kubedb_v1alpha1_SnapshotStatus(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.TLSPolicy":                      schema_apimachinery_apis_kubedb_v1alpha1_TLSPolicy(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.elasticsearchApp":               schema_apimachinery_apis_kubedb_v1alpha1_elasticsearchApp(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.elasticsearchStatsService":      schema_apimachinery_apis_kubedb_v1alpha1_elasticsearchStatsService(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.etcdApp":                        schema_apimachinery_apis_kubedb_v1alpha1_etcdApp(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.etcdStatsService":               schema_apimachinery_apis_kubedb_v1alpha1_etcdStatsService(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.mariadbApp":                     schema_apimachinery_apis_kubedb_v1alpha1_mariadbApp(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.mariadbStatsService":            schema_apimachinery_apis_kubedb_v1alpha1_mariadbStatsService(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.memcachedApp":                   schema_apimachinery_apis_kubedb_v1alpha1_memcachedApp(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.memcachedStatsService":          schema_apimachinery_apis_kubedb_v1alpha1_memcachedStatsService(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.mongoDBApp":                     schema_apimachinery_apis_kubedb_v1alpha1_mongoDBApp(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.mongoDBStatsService":            schema_apimachinery_apis_kubedb_v1alpha1_mongoDBStatsService(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.mysqlApp":                       schema_apimachinery_apis_kubedb_v1alpha1_mysqlApp(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.mysqlStatsService":              schema_apimachinery_apis_kubedb_v1alpha1_mysqlStatsService(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.perconaApp":                     schema_apimachinery_apis_kubedb_v1alpha1_perconaApp(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.perconaStatsService":            schema_apimachinery_apis_kubedb_v1alpha1_perconaStatsService(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.postgresApp":                    schema_apimachinery_apis_kubedb_v1alpha1_postgresApp(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.postgresStatsService":           schema_apimachinery_apis_kubedb_v1alpha1_postgresStatsService(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.redisApp":                       schema_apimachinery_apis_kubedb_v1alpha1_redisApp(ref),
+		"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.redisStatsService":              schema_apimachinery_apis_kubedb_v1alpha1_redisStatsService(ref),
 	}
 }
 
@@ -15625,11 +15711,1829 @@ func schema_kmodulesxyz_offshoot_api_api_v1_ServiceTemplateSpec(ref common.Refer
 	}
 }
 
-func schema_apimachinery_apis_config_v1alpha1_MongoDBConfiguration(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_apimachinery_apis_kubedb_v1alpha1_BackupScheduleSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "MongoDBConfiguration defines a MongoDB app configuration. https://www.vaultproject.io/api/secret/databases/index.html https://www.vaultproject.io/api/secret/databases/mongodb.html#configure-connection",
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"cronExpression": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"storageSecretName": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"local": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kmodules.xyz/objectstore-api/api/v1.LocalSpec"),
+						},
+					},
+					"s3": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kmodules.xyz/objectstore-api/api/v1.S3Spec"),
+						},
+					},
+					"gcs": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kmodules.xyz/objectstore-api/api/v1.GCSSpec"),
+						},
+					},
+					"azure": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kmodules.xyz/objectstore-api/api/v1.AzureSpec"),
+						},
+					},
+					"swift": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kmodules.xyz/objectstore-api/api/v1.SwiftSpec"),
+						},
+					},
+					"b2": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kmodules.xyz/objectstore-api/api/v1.B2Spec"),
+						},
+					},
+					"rest": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kmodules.xyz/objectstore-api/api/v1.RestServerSpec"),
+						},
+					},
+					"storageType": {
+						SchemaProps: spec.SchemaProps{
+							Description: "StorageType can be durable or ephemeral. If not given, database storage type will be used.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"podTemplate": {
+						SchemaProps: spec.SchemaProps{
+							Description: "PodTemplate is an optional configuration for pods used to take database snapshots",
+							Ref:         ref("kmodules.xyz/offshoot-api/api/v1.PodTemplateSpec"),
+						},
+					},
+					"podVolumeClaimSpec": {
+						SchemaProps: spec.SchemaProps{
+							Description: "PodVolumeClaimSpec is used to specify temporary storage for backup/restore Job. If not given, database's PvcSpec will be used. If storageType is durable, then a PVC will be created using this PVCSpec. If storageType is ephemeral, then an empty directory will be created of size PvcSpec.Resources.Requests[core.ResourceStorage].",
+							Ref:         ref("k8s.io/api/core/v1.PersistentVolumeClaimSpec"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/api/core/v1.PersistentVolumeClaimSpec", "kmodules.xyz/objectstore-api/api/v1.AzureSpec", "kmodules.xyz/objectstore-api/api/v1.B2Spec", "kmodules.xyz/objectstore-api/api/v1.GCSSpec", "kmodules.xyz/objectstore-api/api/v1.LocalSpec", "kmodules.xyz/objectstore-api/api/v1.RestServerSpec", "kmodules.xyz/objectstore-api/api/v1.S3Spec", "kmodules.xyz/objectstore-api/api/v1.SwiftSpec", "kmodules.xyz/offshoot-api/api/v1.PodTemplateSpec"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_DormantDatabase(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+						},
+					},
+					"spec": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.DormantDatabaseSpec"),
+						},
+					},
+					"status": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.DormantDatabaseStatus"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.DormantDatabaseSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.DormantDatabaseStatus"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_DormantDatabaseList(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"),
+						},
+					},
+					"items": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Items is a list of DormantDatabase CRD objects",
+							Type:        []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.DormantDatabase"),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.DormantDatabase"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_DormantDatabaseSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"wipeOut": {
+						SchemaProps: spec.SchemaProps{
+							Description: "If true, invoke wipe out operation",
+							Type:        []string{"boolean"},
+							Format:      "",
+						},
+					},
+					"origin": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Origin to store original database information",
+							Ref:         ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Origin"),
+						},
+					},
+				},
+				Required: []string{"origin"},
+			},
+		},
+		Dependencies: []string{
+			"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Origin"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_DormantDatabaseStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"pausingTime": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.Time"),
+						},
+					},
+					"wipeOutTime": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.Time"),
+						},
+					},
+					"phase": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"reason": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"observedGeneration": {
+						SchemaProps: spec.SchemaProps{
+							Description: "observedGeneration is the most recent generation observed for this resource. It corresponds to the resource's generation, which is updated on mutation by the API Server.",
+							Ref:         ref("github.com/appscode/go/encoding/json/types.IntHash"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"github.com/appscode/go/encoding/json/types.IntHash", "k8s.io/apimachinery/pkg/apis/meta/v1.Time"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_Elasticsearch(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+						},
+					},
+					"spec": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.ElasticsearchSpec"),
+						},
+					},
+					"status": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.ElasticsearchStatus"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.ElasticsearchSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.ElasticsearchStatus"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_ElasticsearchClusterTopology(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"master": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.ElasticsearchNode"),
+						},
+					},
+					"data": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.ElasticsearchNode"),
+						},
+					},
+					"client": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.ElasticsearchNode"),
+						},
+					},
+				},
+				Required: []string{"master", "data", "client"},
+			},
+		},
+		Dependencies: []string{
+			"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.ElasticsearchNode"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_ElasticsearchList(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"),
+						},
+					},
+					"items": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Items is a list of Elasticsearch CRD objects",
+							Type:        []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Elasticsearch"),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Elasticsearch"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_ElasticsearchNode(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"replicas": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Replicas represents number of replica for this specific type of node",
+							Type:        []string{"integer"},
+							Format:      "int32",
+						},
+					},
+					"prefix": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"storage": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Storage to specify how storage shall be used.",
+							Ref:         ref("k8s.io/api/core/v1.PersistentVolumeClaimSpec"),
+						},
+					},
+					"resources": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Compute Resources required by the sidecar container.",
+							Ref:         ref("k8s.io/api/core/v1.ResourceRequirements"),
+						},
+					},
+					"maxUnavailable": {
+						SchemaProps: spec.SchemaProps{
+							Description: "An eviction is allowed if at most \"maxUnavailable\" pods selected by \"selector\" are unavailable after the eviction, i.e. even in absence of the evicted pod. For example, one can prevent all voluntary evictions by specifying 0. This is a mutually exclusive setting with \"minAvailable\".",
+							Ref:         ref("k8s.io/apimachinery/pkg/util/intstr.IntOrString"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/api/core/v1.PersistentVolumeClaimSpec", "k8s.io/api/core/v1.ResourceRequirements", "k8s.io/apimachinery/pkg/util/intstr.IntOrString"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_ElasticsearchSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"version": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Version of Elasticsearch to be deployed.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"replicas": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Number of instances to deploy for a Elasticsearch database.",
+							Type:        []string{"integer"},
+							Format:      "int32",
+						},
+					},
+					"topology": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Elasticsearch topology for node specification",
+							Ref:         ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.ElasticsearchClusterTopology"),
+						},
+					},
+					"enableSSL": {
+						SchemaProps: spec.SchemaProps{
+							Description: "To enable ssl in transport & http layer",
+							Type:        []string{"boolean"},
+							Format:      "",
+						},
+					},
+					"certificateSecret": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Secret with SSL certificates",
+							Ref:         ref("k8s.io/api/core/v1.SecretVolumeSource"),
+						},
+					},
+					"authPlugin": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Authentication plugin used by Elasticsearch cluster. If unset, defaults to SearchGuard.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"databaseSecret": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Database authentication secret",
+							Ref:         ref("k8s.io/api/core/v1.SecretVolumeSource"),
+						},
+					},
+					"storageType": {
+						SchemaProps: spec.SchemaProps{
+							Description: "StorageType can be durable (default) or ephemeral",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"storage": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Storage to specify how storage shall be used.",
+							Ref:         ref("k8s.io/api/core/v1.PersistentVolumeClaimSpec"),
+						},
+					},
+					"init": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Init is used to initialize database",
+							Ref:         ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.InitSpec"),
+						},
+					},
+					"backupSchedule": {
+						SchemaProps: spec.SchemaProps{
+							Description: "BackupSchedule spec to specify how database backup will be taken",
+							Ref:         ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.BackupScheduleSpec"),
+						},
+					},
+					"monitor": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Monitor is used monitor database instance",
+							Ref:         ref("kmodules.xyz/monitoring-agent-api/api/v1.AgentSpec"),
+						},
+					},
+					"configSource": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ConfigSource is an optional field to provide custom configuration file for database. If specified, this file will be used as configuration file otherwise default configuration file will be used.",
+							Ref:         ref("k8s.io/api/core/v1.VolumeSource"),
+						},
+					},
+					"podTemplate": {
+						SchemaProps: spec.SchemaProps{
+							Description: "PodTemplate is an optional configuration for pods used to expose database",
+							Ref:         ref("kmodules.xyz/offshoot-api/api/v1.PodTemplateSpec"),
+						},
+					},
+					"serviceTemplate": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ServiceTemplate is an optional configuration for service used to expose database",
+							Ref:         ref("kmodules.xyz/offshoot-api/api/v1.ServiceTemplateSpec"),
+						},
+					},
+					"maxUnavailable": {
+						SchemaProps: spec.SchemaProps{
+							Description: "An eviction is allowed if at most \"maxUnavailable\" pods selected by \"selector\" are unavailable after the eviction, i.e. even in absence of the evicted pod. For example, one can prevent all voluntary evictions by specifying 0. This is a mutually exclusive setting with \"minAvailable\".",
+							Ref:         ref("k8s.io/apimachinery/pkg/util/intstr.IntOrString"),
+						},
+					},
+					"updateStrategy": {
+						SchemaProps: spec.SchemaProps{
+							Description: "updateStrategy indicates the StatefulSetUpdateStrategy that will be employed to update Pods in the StatefulSet when a revision is made to Template.",
+							Ref:         ref("k8s.io/api/apps/v1.StatefulSetUpdateStrategy"),
+						},
+					},
+					"terminationPolicy": {
+						SchemaProps: spec.SchemaProps{
+							Description: "TerminationPolicy controls the delete operation for database",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+				},
+				Required: []string{"version"},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/api/apps/v1.StatefulSetUpdateStrategy", "k8s.io/api/core/v1.PersistentVolumeClaimSpec", "k8s.io/api/core/v1.SecretVolumeSource", "k8s.io/api/core/v1.VolumeSource", "k8s.io/apimachinery/pkg/util/intstr.IntOrString", "kmodules.xyz/monitoring-agent-api/api/v1.AgentSpec", "kmodules.xyz/offshoot-api/api/v1.PodTemplateSpec", "kmodules.xyz/offshoot-api/api/v1.ServiceTemplateSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.BackupScheduleSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.ElasticsearchClusterTopology", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.InitSpec"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_ElasticsearchStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"phase": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"reason": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"observedGeneration": {
+						SchemaProps: spec.SchemaProps{
+							Description: "observedGeneration is the most recent generation observed for this resource. It corresponds to the resource's generation, which is updated on mutation by the API Server.",
+							Ref:         ref("github.com/appscode/go/encoding/json/types.IntHash"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"github.com/appscode/go/encoding/json/types.IntHash"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_ElasticsearchSummary(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "Following structure is used for audit summary report",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"idCount": {
+						SchemaProps: spec.SchemaProps{
+							Type: []string{"object"},
+							AdditionalProperties: &spec.SchemaOrBool{
+								Allows: true,
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Type:   []string{"integer"},
+										Format: "int64",
+									},
+								},
+							},
+						},
+					},
+					"mapping": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"object"},
+							Format: "",
+						},
+					},
+					"setting": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"object"},
+							Format: "",
+						},
+					},
+				},
+				Required: []string{"idCount", "mapping", "setting"},
+			},
+		},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_Etcd(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+						},
+					},
+					"spec": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.EtcdSpec"),
+						},
+					},
+					"status": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.EtcdStatus"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.EtcdSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.EtcdStatus"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_EtcdList(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"),
+						},
+					},
+					"items": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Items is a list of Etcd TPR objects",
+							Type:        []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Etcd"),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Etcd"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_EtcdSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"version": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Version of Etcd to be deployed.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"replicas": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Number of instances to deploy for a Etcd database.",
+							Type:        []string{"integer"},
+							Format:      "int32",
+						},
+					},
+					"storageType": {
+						SchemaProps: spec.SchemaProps{
+							Description: "StorageType can be durable (default) or ephemeral",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"storage": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Storage spec to specify how storage shall be used.",
+							Ref:         ref("k8s.io/api/core/v1.PersistentVolumeClaimSpec"),
+						},
+					},
+					"databaseSecret": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Database authentication secret",
+							Ref:         ref("k8s.io/api/core/v1.SecretVolumeSource"),
+						},
+					},
+					"init": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Init is used to initialize database",
+							Ref:         ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.InitSpec"),
+						},
+					},
+					"backupSchedule": {
+						SchemaProps: spec.SchemaProps{
+							Description: "BackupSchedule spec to specify how database backup will be taken",
+							Ref:         ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.BackupScheduleSpec"),
+						},
+					},
+					"monitor": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Monitor is used monitor database instance",
+							Ref:         ref("kmodules.xyz/monitoring-agent-api/api/v1.AgentSpec"),
+						},
+					},
+					"tls": {
+						SchemaProps: spec.SchemaProps{
+							Description: "etcd cluster TLS configuration",
+							Ref:         ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.TLSPolicy"),
+						},
+					},
+					"podTemplate": {
+						SchemaProps: spec.SchemaProps{
+							Description: "PodTemplate is an optional configuration for pods used to expose database",
+							Ref:         ref("kmodules.xyz/offshoot-api/api/v1.PodTemplateSpec"),
+						},
+					},
+					"serviceTemplate": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ServiceTemplate is an optional configuration for service used to expose database",
+							Ref:         ref("kmodules.xyz/offshoot-api/api/v1.ServiceTemplateSpec"),
+						},
+					},
+					"updateStrategy": {
+						SchemaProps: spec.SchemaProps{
+							Description: "updateStrategy indicates the StatefulSetUpdateStrategy that will be employed to update Pods in the StatefulSet when a revision is made to Template.",
+							Ref:         ref("k8s.io/api/apps/v1.StatefulSetUpdateStrategy"),
+						},
+					},
+					"terminationPolicy": {
+						SchemaProps: spec.SchemaProps{
+							Description: "TerminationPolicy controls the delete operation for database",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+				},
+				Required: []string{"version"},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/api/apps/v1.StatefulSetUpdateStrategy", "k8s.io/api/core/v1.PersistentVolumeClaimSpec", "k8s.io/api/core/v1.SecretVolumeSource", "kmodules.xyz/monitoring-agent-api/api/v1.AgentSpec", "kmodules.xyz/offshoot-api/api/v1.PodTemplateSpec", "kmodules.xyz/offshoot-api/api/v1.ServiceTemplateSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.BackupScheduleSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.InitSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.TLSPolicy"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_EtcdStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"phase": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"reason": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"observedGeneration": {
+						SchemaProps: spec.SchemaProps{
+							Description: "observedGeneration is the most recent generation observed for this resource. It corresponds to the resource's generation, which is updated on mutation by the API Server.",
+							Ref:         ref("github.com/appscode/go/encoding/json/types.IntHash"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"github.com/appscode/go/encoding/json/types.IntHash"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_InitSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"scriptSource": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.ScriptSourceSpec"),
+						},
+					},
+					"snapshotSource": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Deprecated",
+							Ref:         ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.SnapshotSourceSpec"),
+						},
+					},
+					"postgresWAL": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.PostgresWALSourceSpec"),
+						},
+					},
+					"stashRestoreSession": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Name of stash restoreSession in same namespace of kubedb object. ref: https://github.com/stashed/stash/blob/09af5d319bb5be889186965afb04045781d6f926/apis/stash/v1beta1/restore_session_types.go#L22",
+							Ref:         ref("k8s.io/api/core/v1.LocalObjectReference"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/api/core/v1.LocalObjectReference", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.PostgresWALSourceSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.ScriptSourceSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.SnapshotSourceSpec"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_LeaderElectionConfig(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "LeaderElectionConfig contains essential attributes of leader election. ref: https://github.com/kubernetes/client-go/blob/6134db91200ea474868bc6775e62cc294a74c6c6/tools/leaderelection/leaderelection.go#L105-L114",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"leaseDurationSeconds": {
+						SchemaProps: spec.SchemaProps{
+							Description: "LeaseDuration is the duration in second that non-leader candidates will wait to force acquire leadership. This is measured against time of last observed ack. Default 15",
+							Type:        []string{"integer"},
+							Format:      "int32",
+						},
+					},
+					"renewDeadlineSeconds": {
+						SchemaProps: spec.SchemaProps{
+							Description: "RenewDeadline is the duration in second that the acting master will retry refreshing leadership before giving up. Normally, LeaseDuration * 2 / 3. Default 10",
+							Type:        []string{"integer"},
+							Format:      "int32",
+						},
+					},
+					"retryPeriodSeconds": {
+						SchemaProps: spec.SchemaProps{
+							Description: "RetryPeriod is the duration in second the LeaderElector clients should wait between tries of actions. Normally, LeaseDuration / 3. Default 2",
+							Type:        []string{"integer"},
+							Format:      "int32",
+						},
+					},
+				},
+				Required: []string{"leaseDurationSeconds", "renewDeadlineSeconds", "retryPeriodSeconds"},
+			},
+		},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_MariaDB(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+						},
+					},
+					"spec": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MariaDBSpec"),
+						},
+					},
+					"status": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MariaDBStatus"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MariaDBSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MariaDBStatus"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_MariaDBList(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"),
+						},
+					},
+					"items": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Items is a list of MariaDB TPR objects",
+							Type:        []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MariaDB"),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MariaDB"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_MariaDBSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"version": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Version of MariaDB to be deployed.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"replicas": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Number of instances to deploy for a MariaDB database.",
+							Type:        []string{"integer"},
+							Format:      "int32",
+						},
+					},
+					"storageType": {
+						SchemaProps: spec.SchemaProps{
+							Description: "StorageType can be durable (default) or ephemeral",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"storage": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Storage spec to specify how storage shall be used.",
+							Ref:         ref("k8s.io/api/core/v1.PersistentVolumeClaimSpec"),
+						},
+					},
+					"databaseSecret": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Database authentication secret",
+							Ref:         ref("k8s.io/api/core/v1.SecretVolumeSource"),
+						},
+					},
+					"init": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Init is used to initialize database",
+							Ref:         ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.InitSpec"),
+						},
+					},
+					"monitor": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Monitor is used monitor database instance",
+							Ref:         ref("kmodules.xyz/monitoring-agent-api/api/v1.AgentSpec"),
+						},
+					},
+					"configSource": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ConfigSource is an optional field to provide custom configuration file for database (i.e custom-mysql.cnf). If specified, this file will be used as configuration file otherwise default configuration file will be used.",
+							Ref:         ref("k8s.io/api/core/v1.VolumeSource"),
+						},
+					},
+					"podTemplate": {
+						SchemaProps: spec.SchemaProps{
+							Description: "PodTemplate is an optional configuration for pods used to expose database",
+							Ref:         ref("kmodules.xyz/offshoot-api/api/v1.PodTemplateSpec"),
+						},
+					},
+					"serviceTemplate": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ServiceTemplate is an optional configuration for service used to expose database",
+							Ref:         ref("kmodules.xyz/offshoot-api/api/v1.ServiceTemplateSpec"),
+						},
+					},
+					"updateStrategy": {
+						SchemaProps: spec.SchemaProps{
+							Description: "updateStrategy indicates the StatefulSetUpdateStrategy that will be employed to update Pods in the StatefulSet when a revision is made to Template.",
+							Ref:         ref("k8s.io/api/apps/v1.StatefulSetUpdateStrategy"),
+						},
+					},
+					"terminationPolicy": {
+						SchemaProps: spec.SchemaProps{
+							Description: "TerminationPolicy controls the delete operation for database",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+				},
+				Required: []string{"version"},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/api/apps/v1.StatefulSetUpdateStrategy", "k8s.io/api/core/v1.PersistentVolumeClaimSpec", "k8s.io/api/core/v1.SecretVolumeSource", "k8s.io/api/core/v1.VolumeSource", "kmodules.xyz/monitoring-agent-api/api/v1.AgentSpec", "kmodules.xyz/offshoot-api/api/v1.PodTemplateSpec", "kmodules.xyz/offshoot-api/api/v1.ServiceTemplateSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.InitSpec"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_MariaDBStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"phase": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"reason": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"observedGeneration": {
+						SchemaProps: spec.SchemaProps{
+							Description: "observedGeneration is the most recent generation observed for this resource. It corresponds to the resource's generation, which is updated on mutation by the API Server.",
+							Ref:         ref("github.com/appscode/go/encoding/json/types.IntHash"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"github.com/appscode/go/encoding/json/types.IntHash"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_MemberSecret(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"peerSecret": {
+						SchemaProps: spec.SchemaProps{
+							Description: "PeerSecret is the secret containing TLS certs used by each etcd member pod for the communication between etcd peers.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"serverSecret": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ServerSecret is the secret containing TLS certs used by each etcd member pod for the communication between etcd server and its clients.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_Memcached(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+						},
+					},
+					"spec": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MemcachedSpec"),
+						},
+					},
+					"status": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MemcachedStatus"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MemcachedSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MemcachedStatus"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_MemcachedList(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"),
+						},
+					},
+					"items": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Items is a list of Memcached TPR objects",
+							Type:        []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Memcached"),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Memcached"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_MemcachedSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"version": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Version of Memcached to be deployed.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"replicas": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Number of instances to deploy for a Memcached database.",
+							Type:        []string{"integer"},
+							Format:      "int32",
+						},
+					},
+					"monitor": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Monitor is used monitor database instance",
+							Ref:         ref("kmodules.xyz/monitoring-agent-api/api/v1.AgentSpec"),
+						},
+					},
+					"configSource": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ConfigSource is an optional field to provide custom configuration file for database. If specified, this file will be used as configuration file otherwise default configuration file will be used.",
+							Ref:         ref("k8s.io/api/core/v1.VolumeSource"),
+						},
+					},
+					"podTemplate": {
+						SchemaProps: spec.SchemaProps{
+							Description: "PodTemplate is an optional configuration for pods used to expose database",
+							Ref:         ref("kmodules.xyz/offshoot-api/api/v1.PodTemplateSpec"),
+						},
+					},
+					"serviceTemplate": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ServiceTemplate is an optional configuration for service used to expose database",
+							Ref:         ref("kmodules.xyz/offshoot-api/api/v1.ServiceTemplateSpec"),
+						},
+					},
+					"strategy": {
+						SchemaProps: spec.SchemaProps{
+							Description: "The deployment strategy to use to replace existing pods with new ones.",
+							Ref:         ref("k8s.io/api/apps/v1.DeploymentStrategy"),
+						},
+					},
+					"terminationPolicy": {
+						SchemaProps: spec.SchemaProps{
+							Description: "TerminationPolicy controls the delete operation for database",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+				},
+				Required: []string{"version"},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/api/apps/v1.DeploymentStrategy", "k8s.io/api/core/v1.VolumeSource", "kmodules.xyz/monitoring-agent-api/api/v1.AgentSpec", "kmodules.xyz/offshoot-api/api/v1.PodTemplateSpec", "kmodules.xyz/offshoot-api/api/v1.ServiceTemplateSpec"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_MemcachedStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"phase": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"reason": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"observedGeneration": {
+						SchemaProps: spec.SchemaProps{
+							Description: "observedGeneration is the most recent generation observed for this resource. It corresponds to the resource's generation, which is updated on mutation by the API Server.",
+							Ref:         ref("github.com/appscode/go/encoding/json/types.IntHash"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"github.com/appscode/go/encoding/json/types.IntHash"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_MongoDB(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+						},
+					},
+					"spec": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MongoDBSpec"),
+						},
+					},
+					"status": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MongoDBStatus"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MongoDBSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MongoDBStatus"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_MongoDBConfigNode(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"replicas": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Replicas represents number of replicas of this specific node. If current node has replicaset enabled, then replicas is the amount of replicaset nodes.",
+							Type:        []string{"integer"},
+							Format:      "int32",
+						},
+					},
+					"prefix": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Prefix is the name prefix of this node.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"configSource": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ConfigSource is an optional field to provide custom configuration file for database (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise default configuration file will be used.",
+							Ref:         ref("k8s.io/api/core/v1.VolumeSource"),
+						},
+					},
+					"podTemplate": {
+						SchemaProps: spec.SchemaProps{
+							Description: "PodTemplate is an optional configuration for pods used to expose database",
+							Ref:         ref("kmodules.xyz/offshoot-api/api/v1.PodTemplateSpec"),
+						},
+					},
+					"storage": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Storage to specify how storage shall be used.",
+							Ref:         ref("k8s.io/api/core/v1.PersistentVolumeClaimSpec"),
+						},
+					},
+				},
+				Required: []string{"replicas"},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/api/core/v1.PersistentVolumeClaimSpec", "k8s.io/api/core/v1.VolumeSource", "kmodules.xyz/offshoot-api/api/v1.PodTemplateSpec"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_MongoDBList(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"),
+						},
+					},
+					"items": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Items is a list of MongoDB TPR objects",
+							Type:        []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MongoDB"),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MongoDB"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_MongoDBMongosNode(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"replicas": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Replicas represents number of replicas of this specific node. If current node has replicaset enabled, then replicas is the amount of replicaset nodes.",
+							Type:        []string{"integer"},
+							Format:      "int32",
+						},
+					},
+					"prefix": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Prefix is the name prefix of this node.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"configSource": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ConfigSource is an optional field to provide custom configuration file for database (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise default configuration file will be used.",
+							Ref:         ref("k8s.io/api/core/v1.VolumeSource"),
+						},
+					},
+					"podTemplate": {
+						SchemaProps: spec.SchemaProps{
+							Description: "PodTemplate is an optional configuration for pods used to expose database",
+							Ref:         ref("kmodules.xyz/offshoot-api/api/v1.PodTemplateSpec"),
+						},
+					},
+					"strategy": {
+						SchemaProps: spec.SchemaProps{
+							Description: "The deployment strategy to use to replace existing pods with new ones.",
+							Ref:         ref("k8s.io/api/apps/v1.DeploymentStrategy"),
+						},
+					},
+				},
+				Required: []string{"replicas"},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/api/apps/v1.DeploymentStrategy", "k8s.io/api/core/v1.VolumeSource", "kmodules.xyz/offshoot-api/api/v1.PodTemplateSpec"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_MongoDBNode(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"replicas": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Replicas represents number of replicas of this specific node. If current node has replicaset enabled, then replicas is the amount of replicaset nodes.",
+							Type:        []string{"integer"},
+							Format:      "int32",
+						},
+					},
+					"prefix": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Prefix is the name prefix of this node.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"configSource": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ConfigSource is an optional field to provide custom configuration file for database (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise default configuration file will be used.",
+							Ref:         ref("k8s.io/api/core/v1.VolumeSource"),
+						},
+					},
+					"podTemplate": {
+						SchemaProps: spec.SchemaProps{
+							Description: "PodTemplate is an optional configuration for pods used to expose database",
+							Ref:         ref("kmodules.xyz/offshoot-api/api/v1.PodTemplateSpec"),
+						},
+					},
+				},
+				Required: []string{"replicas"},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/api/core/v1.VolumeSource", "kmodules.xyz/offshoot-api/api/v1.PodTemplateSpec"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_MongoDBReplicaSet(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"name": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Name of replicaset",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"keyFile": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Deprecated: Use spec.certificateSecret",
+							Ref:         ref("k8s.io/api/core/v1.SecretVolumeSource"),
+						},
+					},
+				},
+				Required: []string{"name"},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/api/core/v1.SecretVolumeSource"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_MongoDBShardNode(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"shards": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Shards represents number of shards for shard type of node More info: https://docs.mongodb.com/manual/core/sharded-cluster-shards/",
+							Type:        []string{"integer"},
+							Format:      "int32",
+						},
+					},
+					"replicas": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Replicas represents number of replicas of this specific node. If current node has replicaset enabled, then replicas is the amount of replicaset nodes.",
+							Type:        []string{"integer"},
+							Format:      "int32",
+						},
+					},
+					"prefix": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Prefix is the name prefix of this node.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"configSource": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ConfigSource is an optional field to provide custom configuration file for database (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise default configuration file will be used.",
+							Ref:         ref("k8s.io/api/core/v1.VolumeSource"),
+						},
+					},
+					"podTemplate": {
+						SchemaProps: spec.SchemaProps{
+							Description: "PodTemplate is an optional configuration for pods used to expose database",
+							Ref:         ref("kmodules.xyz/offshoot-api/api/v1.PodTemplateSpec"),
+						},
+					},
+					"storage": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Storage to specify how storage shall be used.",
+							Ref:         ref("k8s.io/api/core/v1.PersistentVolumeClaimSpec"),
+						},
+					},
+				},
+				Required: []string{"shards", "replicas"},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/api/core/v1.PersistentVolumeClaimSpec", "k8s.io/api/core/v1.VolumeSource", "kmodules.xyz/offshoot-api/api/v1.PodTemplateSpec"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_MongoDBShardingTopology(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"shard": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Shard component of mongodb. More info: https://docs.mongodb.com/manual/core/sharded-cluster-shards/",
+							Ref:         ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MongoDBShardNode"),
+						},
+					},
+					"configServer": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Config Server (metadata) component of mongodb. More info: https://docs.mongodb.com/manual/core/sharded-cluster-config-servers/",
+							Ref:         ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MongoDBConfigNode"),
+						},
+					},
+					"mongos": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Mongos (router) component of mongodb. More info: https://docs.mongodb.com/manual/core/sharded-cluster-query-router/",
+							Ref:         ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MongoDBMongosNode"),
+						},
+					},
+				},
+				Required: []string{"shard", "configServer", "mongos"},
+			},
+		},
+		Dependencies: []string{
+			"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MongoDBConfigNode", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MongoDBMongosNode", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MongoDBShardNode"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_MongoDBSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"version": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Version of MongoDB to be deployed.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"replicas": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Number of instances to deploy for a MongoDB database.",
+							Type:        []string{"integer"},
+							Format:      "int32",
+						},
+					},
+					"replicaSet": {
+						SchemaProps: spec.SchemaProps{
+							Description: "MongoDB replica set",
+							Ref:         ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MongoDBReplicaSet"),
+						},
+					},
+					"shardTopology": {
+						SchemaProps: spec.SchemaProps{
+							Description: "MongoDB sharding topology.",
+							Ref:         ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MongoDBShardingTopology"),
+						},
+					},
+					"storageType": {
+						SchemaProps: spec.SchemaProps{
+							Description: "StorageType can be durable (default) or ephemeral",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"storage": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Storage spec to specify how storage shall be used.",
+							Ref:         ref("k8s.io/api/core/v1.PersistentVolumeClaimSpec"),
+						},
+					},
+					"databaseSecret": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Database authentication secret",
+							Ref:         ref("k8s.io/api/core/v1.SecretVolumeSource"),
+						},
+					},
+					"certificateSecret": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Secret for KeyFile or SSL certificates. Contains `tls.pem` or keyfile `key.txt` depending on enableSSL.",
+							Ref:         ref("k8s.io/api/core/v1.SecretVolumeSource"),
+						},
+					},
+					"clusterAuthMode": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ClusterAuthMode for replicaset or sharding. (default will be x509 if sslmode is not `disabled`.) See available ClusterAuthMode: https://docs.mongodb.com/manual/reference/program/mongod/#cmdoption-mongod-clusterauthmode",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"sslMode": {
+						SchemaProps: spec.SchemaProps{
+							Description: "SSLMode for both standalone and clusters. (default, disabled.) See more options: https://docs.mongodb.com/manual/reference/program/mongod/#cmdoption-mongod-sslmode",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"init": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Init is used to initialize database",
+							Ref:         ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.InitSpec"),
+						},
+					},
+					"backupSchedule": {
+						SchemaProps: spec.SchemaProps{
+							Description: "BackupSchedule spec to specify how database backup will be taken",
+							Ref:         ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.BackupScheduleSpec"),
+						},
+					},
+					"monitor": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Monitor is used monitor database instance",
+							Ref:         ref("kmodules.xyz/monitoring-agent-api/api/v1.AgentSpec"),
+						},
+					},
+					"configSource": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ConfigSource is an optional field to provide custom configuration file for database (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise default configuration file will be used.",
+							Ref:         ref("k8s.io/api/core/v1.VolumeSource"),
+						},
+					},
+					"podTemplate": {
+						SchemaProps: spec.SchemaProps{
+							Description: "PodTemplate is an optional configuration for pods used to expose database",
+							Ref:         ref("kmodules.xyz/offshoot-api/api/v1.PodTemplateSpec"),
+						},
+					},
+					"serviceTemplate": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ServiceTemplate is an optional configuration for service used to expose database",
+							Ref:         ref("kmodules.xyz/offshoot-api/api/v1.ServiceTemplateSpec"),
+						},
+					},
+					"updateStrategy": {
+						SchemaProps: spec.SchemaProps{
+							Description: "updateStrategy indicates the StatefulSetUpdateStrategy that will be employed to update Pods in the StatefulSet when a revision is made to Template.",
+							Ref:         ref("k8s.io/api/apps/v1.StatefulSetUpdateStrategy"),
+						},
+					},
+					"terminationPolicy": {
+						SchemaProps: spec.SchemaProps{
+							Description: "TerminationPolicy controls the delete operation for database",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+				},
+				Required: []string{"version"},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/api/apps/v1.StatefulSetUpdateStrategy", "k8s.io/api/core/v1.PersistentVolumeClaimSpec", "k8s.io/api/core/v1.SecretVolumeSource", "k8s.io/api/core/v1.VolumeSource", "kmodules.xyz/monitoring-agent-api/api/v1.AgentSpec", "kmodules.xyz/offshoot-api/api/v1.PodTemplateSpec", "kmodules.xyz/offshoot-api/api/v1.ServiceTemplateSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.BackupScheduleSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.InitSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MongoDBReplicaSet", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MongoDBShardingTopology"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_MongoDBStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"phase": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"reason": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"observedGeneration": {
+						SchemaProps: spec.SchemaProps{
+							Description: "observedGeneration is the most recent generation observed for this resource. It corresponds to the resource's generation, which is updated on mutation by the API Server.",
+							Ref:         ref("github.com/appscode/go/encoding/json/types.IntHash"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"github.com/appscode/go/encoding/json/types.IntHash"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_MySQL(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "Mysql defines a Mysql database.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"kind": {
@@ -15646,40 +17550,1578 @@ func schema_apimachinery_apis_config_v1alpha1_MongoDBConfiguration(ref common.Re
 							Format:      "",
 						},
 					},
-					"pluginName": {
+					"metadata": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Specifies the name of the plugin to use for this connection. Default plugin:\n - for mongodb: mongodb-database-plugin",
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+						},
+					},
+					"spec": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MySQLSpec"),
+						},
+					},
+					"status": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MySQLStatus"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MySQLSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MySQLStatus"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_MySQLClusterTopology(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"mode": {
+						SchemaProps: spec.SchemaProps{
+							Description: "If set to - \"GroupReplication\", GroupSpec is required and MySQL servers will start  a replication group",
 							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
-					"allowedRoles": {
+					"group": {
 						SchemaProps: spec.SchemaProps{
-							Description: "List of the roles allowed to use this connection. Defaults to empty (no roles), if contains a \"*\" any role can use this connection.",
+							Description: "Group replication info for MySQL",
+							Ref:         ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MySQLGroupSpec"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MySQLGroupSpec"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_MySQLGroupSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"mode": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Group Replication can be deployed in either \"Single-Primary\" or \"Multi-Primary\" mode",
 							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
-					"writeConcern": {
+					"name": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Specifies the MongoDB write concern. This is set for the entirety of the session, maintained for the lifecycle of the plugin process.",
+							Description: "Group name is a version 4 UUID ref: https://dev.mysql.com/doc/refman/5.7/en/group-replication-options.html#sysvar_group_replication_group_name",
 							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
-					"configServer": {
+					"baseServerID": {
 						SchemaProps: spec.SchemaProps{
-							Description: "ConfigServer is the dsn of config server of mongodb sharding. The dsn includes the port no too.",
+							Description: "On a replication master and each replication slave, the --server-id option must be specified to establish a unique replication ID in the range from 1 to 2^32 − 1. “Unique”, means that each ID must be different from every other ID in use by any other replication master or slave. ref: https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_server_id\n\nSo, BaseServerID is needed to calculate a unique server_id for each member.",
+							Type:        []string{"integer"},
+							Format:      "int32",
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_MySQLList(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
 							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
-					"replicaSets": {
+					"apiVersion": {
 						SchemaProps: spec.SchemaProps{
-							Description: "ReplicaSets contains the dsn of each replicaset of sharding. The DSNs are in key-value pair, where the keys are host-0, host-1 etc, and the values are DSN of each replicaset. If there is no sharding but only one replicaset, then ReplicaSets field contains only one key-value pair where the key is host-0 and the value is dsn of that replicaset.",
-							Type:        []string{"object"},
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"),
+						},
+					},
+					"items": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Items is a list of MySQL TPR objects",
+							Type:        []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MySQL"),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MySQL"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_MySQLSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"version": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Version of MySQL to be deployed.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"replicas": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Number of instances to deploy for a MySQL database. In case of MySQL group replication, max allowed value is 9 (default 3). (see ref: https://dev.mysql.com/doc/refman/5.7/en/group-replication-frequently-asked-questions.html)",
+							Type:        []string{"integer"},
+							Format:      "int32",
+						},
+					},
+					"topology": {
+						SchemaProps: spec.SchemaProps{
+							Description: "MySQL cluster topology",
+							Ref:         ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MySQLClusterTopology"),
+						},
+					},
+					"storageType": {
+						SchemaProps: spec.SchemaProps{
+							Description: "StorageType can be durable (default) or ephemeral",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"storage": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Storage spec to specify how storage shall be used.",
+							Ref:         ref("k8s.io/api/core/v1.PersistentVolumeClaimSpec"),
+						},
+					},
+					"databaseSecret": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Database authentication secret",
+							Ref:         ref("k8s.io/api/core/v1.SecretVolumeSource"),
+						},
+					},
+					"init": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Init is used to initialize database",
+							Ref:         ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.InitSpec"),
+						},
+					},
+					"backupSchedule": {
+						SchemaProps: spec.SchemaProps{
+							Description: "BackupSchedule spec to specify how database backup will be taken",
+							Ref:         ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.BackupScheduleSpec"),
+						},
+					},
+					"monitor": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Monitor is used monitor database instance",
+							Ref:         ref("kmodules.xyz/monitoring-agent-api/api/v1.AgentSpec"),
+						},
+					},
+					"configSource": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ConfigSource is an optional field to provide custom configuration file for database (i.e custom-mysql.cnf). If specified, this file will be used as configuration file otherwise default configuration file will be used.",
+							Ref:         ref("k8s.io/api/core/v1.VolumeSource"),
+						},
+					},
+					"podTemplate": {
+						SchemaProps: spec.SchemaProps{
+							Description: "PodTemplate is an optional configuration for pods used to expose database",
+							Ref:         ref("kmodules.xyz/offshoot-api/api/v1.PodTemplateSpec"),
+						},
+					},
+					"serviceTemplate": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ServiceTemplate is an optional configuration for service used to expose database",
+							Ref:         ref("kmodules.xyz/offshoot-api/api/v1.ServiceTemplateSpec"),
+						},
+					},
+					"updateStrategy": {
+						SchemaProps: spec.SchemaProps{
+							Description: "updateStrategy indicates the StatefulSetUpdateStrategy that will be employed to update Pods in the StatefulSet when a revision is made to Template.",
+							Ref:         ref("k8s.io/api/apps/v1.StatefulSetUpdateStrategy"),
+						},
+					},
+					"terminationPolicy": {
+						SchemaProps: spec.SchemaProps{
+							Description: "TerminationPolicy controls the delete operation for database",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+				},
+				Required: []string{"version"},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/api/apps/v1.StatefulSetUpdateStrategy", "k8s.io/api/core/v1.PersistentVolumeClaimSpec", "k8s.io/api/core/v1.SecretVolumeSource", "k8s.io/api/core/v1.VolumeSource", "kmodules.xyz/monitoring-agent-api/api/v1.AgentSpec", "kmodules.xyz/offshoot-api/api/v1.PodTemplateSpec", "kmodules.xyz/offshoot-api/api/v1.ServiceTemplateSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.BackupScheduleSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.InitSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MySQLClusterTopology"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_MySQLStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"phase": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"reason": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"observedGeneration": {
+						SchemaProps: spec.SchemaProps{
+							Description: "observedGeneration is the most recent generation observed for this resource. It corresponds to the resource's generation, which is updated on mutation by the API Server.",
+							Ref:         ref("github.com/appscode/go/encoding/json/types.IntHash"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"github.com/appscode/go/encoding/json/types.IntHash"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_Origin(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+						},
+					},
+					"spec": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Origin Spec to store original database Spec",
+							Ref:         ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.OriginSpec"),
+						},
+					},
+				},
+				Required: []string{"spec"},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.OriginSpec"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_OriginSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"elasticsearch": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Elasticsearch Spec",
+							Ref:         ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.ElasticsearchSpec"),
+						},
+					},
+					"postgres": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Postgres Spec",
+							Ref:         ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.PostgresSpec"),
+						},
+					},
+					"mysql": {
+						SchemaProps: spec.SchemaProps{
+							Description: "MySQL Spec",
+							Ref:         ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MySQLSpec"),
+						},
+					},
+					"percona": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Percona Spec",
+							Ref:         ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.PerconaSpec"),
+						},
+					},
+					"mariadb": {
+						SchemaProps: spec.SchemaProps{
+							Description: "MariaDB Spec",
+							Ref:         ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MariaDBSpec"),
+						},
+					},
+					"mongodb": {
+						SchemaProps: spec.SchemaProps{
+							Description: "MongoDB Spec",
+							Ref:         ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MongoDBSpec"),
+						},
+					},
+					"redis": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Redis Spec",
+							Ref:         ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.RedisSpec"),
+						},
+					},
+					"memcached": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Memcached Spec",
+							Ref:         ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MemcachedSpec"),
+						},
+					},
+					"etcd": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Etcd Spec",
+							Ref:         ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.EtcdSpec"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.ElasticsearchSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.EtcdSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MariaDBSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MemcachedSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MongoDBSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MySQLSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.PerconaSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.PostgresSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.RedisSpec"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_Percona(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+						},
+					},
+					"spec": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.PerconaSpec"),
+						},
+					},
+					"status": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.PerconaStatus"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.PerconaSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.PerconaStatus"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_PerconaList(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"),
+						},
+					},
+					"items": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Items is a list of Percona TPR objects",
+							Type:        []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Percona"),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Percona"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_PerconaSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"version": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Version of Percona to be deployed.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"replicas": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Number of instances to deploy for Percona",
+							Type:        []string{"integer"},
+							Format:      "int32",
+						},
+					},
+					"storageType": {
+						SchemaProps: spec.SchemaProps{
+							Description: "StorageType can be durable (default) or ephemeral",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"storage": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Storage spec to specify how storage shall be used.",
+							Ref:         ref("k8s.io/api/core/v1.PersistentVolumeClaimSpec"),
+						},
+					},
+					"databaseSecret": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Database authentication secret",
+							Ref:         ref("k8s.io/api/core/v1.SecretVolumeSource"),
+						},
+					},
+					"init": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Init is used to initialize database",
+							Ref:         ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.InitSpec"),
+						},
+					},
+					"monitor": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Monitor is used monitor database instance",
+							Ref:         ref("kmodules.xyz/monitoring-agent-api/api/v1.AgentSpec"),
+						},
+					},
+					"configSource": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ConfigSource is an optional field to provide custom configuration file for database (i.e custom-mysql.cnf). If specified, this file will be used as configuration file otherwise default configuration file will be used.",
+							Ref:         ref("k8s.io/api/core/v1.VolumeSource"),
+						},
+					},
+					"podTemplate": {
+						SchemaProps: spec.SchemaProps{
+							Description: "PodTemplate is an optional configuration for pods used to expose database",
+							Ref:         ref("kmodules.xyz/offshoot-api/api/v1.PodTemplateSpec"),
+						},
+					},
+					"serviceTemplate": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ServiceTemplate is an optional configuration for service used to expose database",
+							Ref:         ref("kmodules.xyz/offshoot-api/api/v1.ServiceTemplateSpec"),
+						},
+					},
+					"updateStrategy": {
+						SchemaProps: spec.SchemaProps{
+							Description: "updateStrategy indicates the StatefulSetUpdateStrategy that will be employed to update Pods in the StatefulSet when a revision is made to Template.",
+							Ref:         ref("k8s.io/api/apps/v1.StatefulSetUpdateStrategy"),
+						},
+					},
+					"terminationPolicy": {
+						SchemaProps: spec.SchemaProps{
+							Description: "TerminationPolicy controls the delete operation for database",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+				},
+				Required: []string{"version"},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/api/apps/v1.StatefulSetUpdateStrategy", "k8s.io/api/core/v1.PersistentVolumeClaimSpec", "k8s.io/api/core/v1.SecretVolumeSource", "k8s.io/api/core/v1.VolumeSource", "kmodules.xyz/monitoring-agent-api/api/v1.AgentSpec", "kmodules.xyz/offshoot-api/api/v1.PodTemplateSpec", "kmodules.xyz/offshoot-api/api/v1.ServiceTemplateSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.InitSpec"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_PerconaStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"phase": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"reason": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"observedGeneration": {
+						SchemaProps: spec.SchemaProps{
+							Description: "observedGeneration is the most recent generation observed for this resource. It corresponds to the resource's generation, which is updated on mutation by the API Server.",
+							Ref:         ref("github.com/appscode/go/encoding/json/types.IntHash"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"github.com/appscode/go/encoding/json/types.IntHash"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_Postgres(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+						},
+					},
+					"spec": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.PostgresSpec"),
+						},
+					},
+					"status": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.PostgresStatus"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.PostgresSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.PostgresStatus"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_PostgresArchiverSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"storage": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kmodules.xyz/objectstore-api/api/v1.Backend"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"kmodules.xyz/objectstore-api/api/v1.Backend"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_PostgresList(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"),
+						},
+					},
+					"items": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Items is a list of Postgres CRD objects",
+							Type:        []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Postgres"),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Postgres"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_PostgresSchemaInfo(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"table": {
+						SchemaProps: spec.SchemaProps{
+							Type: []string{"object"},
 							AdditionalProperties: &spec.SchemaOrBool{
 								Allows: true,
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.PostgresTableInfo"),
+									},
+								},
+							},
+						},
+					},
+				},
+				Required: []string{"table"},
+			},
+		},
+		Dependencies: []string{
+			"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.PostgresTableInfo"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_PostgresSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"version": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Version of Postgres to be deployed.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"replicas": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Number of instances to deploy for a Postgres database.",
+							Type:        []string{"integer"},
+							Format:      "int32",
+						},
+					},
+					"standbyMode": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Standby mode",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"streamingMode": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Streaming mode",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"archiver": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Archive for wal files",
+							Ref:         ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.PostgresArchiverSpec"),
+						},
+					},
+					"leaderElection": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Leader election configuration",
+							Ref:         ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.LeaderElectionConfig"),
+						},
+					},
+					"databaseSecret": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Database authentication secret",
+							Ref:         ref("k8s.io/api/core/v1.SecretVolumeSource"),
+						},
+					},
+					"storageType": {
+						SchemaProps: spec.SchemaProps{
+							Description: "StorageType can be durable (default) or ephemeral",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"storage": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Storage to specify how storage shall be used.",
+							Ref:         ref("k8s.io/api/core/v1.PersistentVolumeClaimSpec"),
+						},
+					},
+					"init": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Init is used to initialize database",
+							Ref:         ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.InitSpec"),
+						},
+					},
+					"backupSchedule": {
+						SchemaProps: spec.SchemaProps{
+							Description: "BackupSchedule spec to specify how database backup will be taken",
+							Ref:         ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.BackupScheduleSpec"),
+						},
+					},
+					"monitor": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Monitor is used monitor database instance",
+							Ref:         ref("kmodules.xyz/monitoring-agent-api/api/v1.AgentSpec"),
+						},
+					},
+					"configSource": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ConfigSource is an optional field to provide custom configuration file for database (i.e postgresql.conf). If specified, this file will be used as configuration file otherwise default configuration file will be used.",
+							Ref:         ref("k8s.io/api/core/v1.VolumeSource"),
+						},
+					},
+					"podTemplate": {
+						SchemaProps: spec.SchemaProps{
+							Description: "PodTemplate is an optional configuration for pods used to expose database",
+							Ref:         ref("kmodules.xyz/offshoot-api/api/v1.PodTemplateSpec"),
+						},
+					},
+					"serviceTemplate": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ServiceTemplate is an optional configuration for service used to expose database",
+							Ref:         ref("kmodules.xyz/offshoot-api/api/v1.ServiceTemplateSpec"),
+						},
+					},
+					"replicaServiceTemplate": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ReplicaServiceTemplate is an optional configuration for service used to expose postgres replicas",
+							Ref:         ref("kmodules.xyz/offshoot-api/api/v1.ServiceTemplateSpec"),
+						},
+					},
+					"updateStrategy": {
+						SchemaProps: spec.SchemaProps{
+							Description: "updateStrategy indicates the StatefulSetUpdateStrategy that will be employed to update Pods in the StatefulSet when a revision is made to Template.",
+							Ref:         ref("k8s.io/api/apps/v1.StatefulSetUpdateStrategy"),
+						},
+					},
+					"terminationPolicy": {
+						SchemaProps: spec.SchemaProps{
+							Description: "TerminationPolicy controls the delete operation for database",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+				},
+				Required: []string{"version"},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/api/apps/v1.StatefulSetUpdateStrategy", "k8s.io/api/core/v1.PersistentVolumeClaimSpec", "k8s.io/api/core/v1.SecretVolumeSource", "k8s.io/api/core/v1.VolumeSource", "kmodules.xyz/monitoring-agent-api/api/v1.AgentSpec", "kmodules.xyz/offshoot-api/api/v1.PodTemplateSpec", "kmodules.xyz/offshoot-api/api/v1.ServiceTemplateSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.BackupScheduleSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.InitSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.LeaderElectionConfig", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.PostgresArchiverSpec"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_PostgresStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"phase": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"reason": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"observedGeneration": {
+						SchemaProps: spec.SchemaProps{
+							Description: "observedGeneration is the most recent generation observed for this resource. It corresponds to the resource's generation, which is updated on mutation by the API Server.",
+							Ref:         ref("github.com/appscode/go/encoding/json/types.IntHash"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"github.com/appscode/go/encoding/json/types.IntHash"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_PostgresSummary(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"schema": {
+						SchemaProps: spec.SchemaProps{
+							Type: []string{"object"},
+							AdditionalProperties: &spec.SchemaOrBool{
+								Allows: true,
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.PostgresSchemaInfo"),
+									},
+								},
+							},
+						},
+					},
+				},
+				Required: []string{"schema"},
+			},
+		},
+		Dependencies: []string{
+			"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.PostgresSchemaInfo"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_PostgresTableInfo(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "Following structures are used for audit summary report",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"totalRow": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"integer"},
+							Format: "int64",
+						},
+					},
+					"maxId": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"integer"},
+							Format: "int64",
+						},
+					},
+					"nextId": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"integer"},
+							Format: "int64",
+						},
+					},
+				},
+				Required: []string{"totalRow", "maxId", "nextId"},
+			},
+		},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_PostgresWALSourceSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"backupName": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"pitr": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.RecoveryTarget"),
+						},
+					},
+					"storageSecretName": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"local": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kmodules.xyz/objectstore-api/api/v1.LocalSpec"),
+						},
+					},
+					"s3": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kmodules.xyz/objectstore-api/api/v1.S3Spec"),
+						},
+					},
+					"gcs": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kmodules.xyz/objectstore-api/api/v1.GCSSpec"),
+						},
+					},
+					"azure": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kmodules.xyz/objectstore-api/api/v1.AzureSpec"),
+						},
+					},
+					"swift": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kmodules.xyz/objectstore-api/api/v1.SwiftSpec"),
+						},
+					},
+					"b2": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kmodules.xyz/objectstore-api/api/v1.B2Spec"),
+						},
+					},
+					"rest": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kmodules.xyz/objectstore-api/api/v1.RestServerSpec"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"kmodules.xyz/objectstore-api/api/v1.AzureSpec", "kmodules.xyz/objectstore-api/api/v1.B2Spec", "kmodules.xyz/objectstore-api/api/v1.GCSSpec", "kmodules.xyz/objectstore-api/api/v1.LocalSpec", "kmodules.xyz/objectstore-api/api/v1.RestServerSpec", "kmodules.xyz/objectstore-api/api/v1.S3Spec", "kmodules.xyz/objectstore-api/api/v1.SwiftSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.RecoveryTarget"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_RecoveryTarget(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"targetTime": {
+						SchemaProps: spec.SchemaProps{
+							Description: "TargetTime specifies the time stamp up to which recovery will proceed.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"targetTimeline": {
+						SchemaProps: spec.SchemaProps{
+							Description: "TargetTimeline specifies recovering into a particular timeline. The default is to recover along the same timeline that was current when the base backup was taken.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"targetXID": {
+						SchemaProps: spec.SchemaProps{
+							Description: "TargetXID specifies the transaction ID up to which recovery will proceed.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"targetInclusive": {
+						SchemaProps: spec.SchemaProps{
+							Description: "TargetInclusive specifies whether to include ongoing transaction in given target point.",
+							Type:        []string{"boolean"},
+							Format:      "",
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_Redis(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+						},
+					},
+					"spec": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.RedisSpec"),
+						},
+					},
+					"status": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.RedisStatus"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.RedisSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.RedisStatus"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_RedisClusterSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"master": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Number of master nodes. It must be >= 3. If not specified, defaults to 3.",
+							Type:        []string{"integer"},
+							Format:      "int32",
+						},
+					},
+					"replicas": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Number of replica(s) per master node. If not specified, defaults to 1.",
+							Type:        []string{"integer"},
+							Format:      "int32",
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_RedisList(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"),
+						},
+					},
+					"items": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Items is a list of Redis TPR objects",
+							Type:        []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Redis"),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Redis"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_RedisSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"version": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Version of Redis to be deployed.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"replicas": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Number of instances to deploy for a MySQL database.",
+							Type:        []string{"integer"},
+							Format:      "int32",
+						},
+					},
+					"mode": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Default is \"Standalone\". If set to \"Cluster\", ClusterSpec is required and redis servers will start in cluster mode",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"cluster": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Redis cluster configuration for running redis servers in cluster mode. Required if Mode is set to \"Cluster\"",
+							Ref:         ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.RedisClusterSpec"),
+						},
+					},
+					"storageType": {
+						SchemaProps: spec.SchemaProps{
+							Description: "StorageType can be durable (default) or ephemeral",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"storage": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Storage spec to specify how storage shall be used.",
+							Ref:         ref("k8s.io/api/core/v1.PersistentVolumeClaimSpec"),
+						},
+					},
+					"monitor": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Monitor is used monitor database instance",
+							Ref:         ref("kmodules.xyz/monitoring-agent-api/api/v1.AgentSpec"),
+						},
+					},
+					"configSource": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ConfigSource is an optional field to provide custom configuration file for database (i.e redis.conf). If specified, this file will be used as configuration file otherwise default configuration file will be used.",
+							Ref:         ref("k8s.io/api/core/v1.VolumeSource"),
+						},
+					},
+					"podTemplate": {
+						SchemaProps: spec.SchemaProps{
+							Description: "PodTemplate is an optional configuration for pods used to expose database",
+							Ref:         ref("kmodules.xyz/offshoot-api/api/v1.PodTemplateSpec"),
+						},
+					},
+					"serviceTemplate": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ServiceTemplate is an optional configuration for service used to expose database",
+							Ref:         ref("kmodules.xyz/offshoot-api/api/v1.ServiceTemplateSpec"),
+						},
+					},
+					"updateStrategy": {
+						SchemaProps: spec.SchemaProps{
+							Description: "updateStrategy indicates the StatefulSetUpdateStrategy that will be employed to update Pods in the StatefulSet when a revision is made to Template.",
+							Ref:         ref("k8s.io/api/apps/v1.StatefulSetUpdateStrategy"),
+						},
+					},
+					"terminationPolicy": {
+						SchemaProps: spec.SchemaProps{
+							Description: "TerminationPolicy controls the delete operation for database",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+				},
+				Required: []string{"version"},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/api/apps/v1.StatefulSetUpdateStrategy", "k8s.io/api/core/v1.PersistentVolumeClaimSpec", "k8s.io/api/core/v1.VolumeSource", "kmodules.xyz/monitoring-agent-api/api/v1.AgentSpec", "kmodules.xyz/offshoot-api/api/v1.PodTemplateSpec", "kmodules.xyz/offshoot-api/api/v1.ServiceTemplateSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.RedisClusterSpec"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_RedisStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"phase": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"reason": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"observedGeneration": {
+						SchemaProps: spec.SchemaProps{
+							Description: "observedGeneration is the most recent generation observed for this resource. It corresponds to the resource's generation, which is updated on mutation by the API Server.",
+							Ref:         ref("github.com/appscode/go/encoding/json/types.IntHash"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"github.com/appscode/go/encoding/json/types.IntHash"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_ScriptSourceSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"scriptPath": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"hostPath": {
+						SchemaProps: spec.SchemaProps{
+							Description: "HostPath represents a pre-existing file or directory on the host machine that is directly exposed to the container. This is generally used for system agents or other privileged things that are allowed to see the host machine. Most containers will NOT need this. More info: https://kubernetes.io/docs/concepts/storage/volumes#hostpath",
+							Ref:         ref("k8s.io/api/core/v1.HostPathVolumeSource"),
+						},
+					},
+					"emptyDir": {
+						SchemaProps: spec.SchemaProps{
+							Description: "EmptyDir represents a temporary directory that shares a pod's lifetime. More info: https://kubernetes.io/docs/concepts/storage/volumes#emptydir",
+							Ref:         ref("k8s.io/api/core/v1.EmptyDirVolumeSource"),
+						},
+					},
+					"gcePersistentDisk": {
+						SchemaProps: spec.SchemaProps{
+							Description: "GCEPersistentDisk represents a GCE Disk resource that is attached to a kubelet's host machine and then exposed to the pod. More info: https://kubernetes.io/docs/concepts/storage/volumes#gcepersistentdisk",
+							Ref:         ref("k8s.io/api/core/v1.GCEPersistentDiskVolumeSource"),
+						},
+					},
+					"awsElasticBlockStore": {
+						SchemaProps: spec.SchemaProps{
+							Description: "AWSElasticBlockStore represents an AWS Disk resource that is attached to a kubelet's host machine and then exposed to the pod. More info: https://kubernetes.io/docs/concepts/storage/volumes#awselasticblockstore",
+							Ref:         ref("k8s.io/api/core/v1.AWSElasticBlockStoreVolumeSource"),
+						},
+					},
+					"gitRepo": {
+						SchemaProps: spec.SchemaProps{
+							Description: "GitRepo represents a git repository at a particular revision. DEPRECATED: GitRepo is deprecated. To provision a container with a git repo, mount an EmptyDir into an InitContainer that clones the repo using git, then mount the EmptyDir into the Pod's container.",
+							Ref:         ref("k8s.io/api/core/v1.GitRepoVolumeSource"),
+						},
+					},
+					"secret": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Secret represents a secret that should populate this volume. More info: https://kubernetes.io/docs/concepts/storage/volumes#secret",
+							Ref:         ref("k8s.io/api/core/v1.SecretVolumeSource"),
+						},
+					},
+					"nfs": {
+						SchemaProps: spec.SchemaProps{
+							Description: "NFS represents an NFS mount on the host that shares a pod's lifetime More info: https://kubernetes.io/docs/concepts/storage/volumes#nfs",
+							Ref:         ref("k8s.io/api/core/v1.NFSVolumeSource"),
+						},
+					},
+					"iscsi": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ISCSI represents an ISCSI Disk resource that is attached to a kubelet's host machine and then exposed to the pod. More info: https://releases.k8s.io/HEAD/examples/volumes/iscsi/README.md",
+							Ref:         ref("k8s.io/api/core/v1.ISCSIVolumeSource"),
+						},
+					},
+					"glusterfs": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Glusterfs represents a Glusterfs mount on the host that shares a pod's lifetime. More info: https://releases.k8s.io/HEAD/examples/volumes/glusterfs/README.md",
+							Ref:         ref("k8s.io/api/core/v1.GlusterfsVolumeSource"),
+						},
+					},
+					"persistentVolumeClaim": {
+						SchemaProps: spec.SchemaProps{
+							Description: "PersistentVolumeClaimVolumeSource represents a reference to a PersistentVolumeClaim in the same namespace. More info: https://kubernetes.io/docs/concepts/storage/persistent-volumes#persistentvolumeclaims",
+							Ref:         ref("k8s.io/api/core/v1.PersistentVolumeClaimVolumeSource"),
+						},
+					},
+					"rbd": {
+						SchemaProps: spec.SchemaProps{
+							Description: "RBD represents a Rados Block Device mount on the host that shares a pod's lifetime. More info: https://releases.k8s.io/HEAD/examples/volumes/rbd/README.md",
+							Ref:         ref("k8s.io/api/core/v1.RBDVolumeSource"),
+						},
+					},
+					"flexVolume": {
+						SchemaProps: spec.SchemaProps{
+							Description: "FlexVolume represents a generic volume resource that is provisioned/attached using an exec based plugin.",
+							Ref:         ref("k8s.io/api/core/v1.FlexVolumeSource"),
+						},
+					},
+					"cinder": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Cinder represents a cinder volume attached and mounted on kubelets host machine More info: https://releases.k8s.io/HEAD/examples/mysql-cinder-pd/README.md",
+							Ref:         ref("k8s.io/api/core/v1.CinderVolumeSource"),
+						},
+					},
+					"cephfs": {
+						SchemaProps: spec.SchemaProps{
+							Description: "CephFS represents a Ceph FS mount on the host that shares a pod's lifetime",
+							Ref:         ref("k8s.io/api/core/v1.CephFSVolumeSource"),
+						},
+					},
+					"flocker": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Flocker represents a Flocker volume attached to a kubelet's host machine. This depends on the Flocker control service being running",
+							Ref:         ref("k8s.io/api/core/v1.FlockerVolumeSource"),
+						},
+					},
+					"downwardAPI": {
+						SchemaProps: spec.SchemaProps{
+							Description: "DownwardAPI represents downward API about the pod that should populate this volume",
+							Ref:         ref("k8s.io/api/core/v1.DownwardAPIVolumeSource"),
+						},
+					},
+					"fc": {
+						SchemaProps: spec.SchemaProps{
+							Description: "FC represents a Fibre Channel resource that is attached to a kubelet's host machine and then exposed to the pod.",
+							Ref:         ref("k8s.io/api/core/v1.FCVolumeSource"),
+						},
+					},
+					"azureFile": {
+						SchemaProps: spec.SchemaProps{
+							Description: "AzureFile represents an Azure File Service mount on the host and bind mount to the pod.",
+							Ref:         ref("k8s.io/api/core/v1.AzureFileVolumeSource"),
+						},
+					},
+					"configMap": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ConfigMap represents a configMap that should populate this volume",
+							Ref:         ref("k8s.io/api/core/v1.ConfigMapVolumeSource"),
+						},
+					},
+					"vsphereVolume": {
+						SchemaProps: spec.SchemaProps{
+							Description: "VsphereVolume represents a vSphere volume attached and mounted on kubelets host machine",
+							Ref:         ref("k8s.io/api/core/v1.VsphereVirtualDiskVolumeSource"),
+						},
+					},
+					"quobyte": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Quobyte represents a Quobyte mount on the host that shares a pod's lifetime",
+							Ref:         ref("k8s.io/api/core/v1.QuobyteVolumeSource"),
+						},
+					},
+					"azureDisk": {
+						SchemaProps: spec.SchemaProps{
+							Description: "AzureDisk represents an Azure Data Disk mount on the host and bind mount to the pod.",
+							Ref:         ref("k8s.io/api/core/v1.AzureDiskVolumeSource"),
+						},
+					},
+					"photonPersistentDisk": {
+						SchemaProps: spec.SchemaProps{
+							Description: "PhotonPersistentDisk represents a PhotonController persistent disk attached and mounted on kubelets host machine",
+							Ref:         ref("k8s.io/api/core/v1.PhotonPersistentDiskVolumeSource"),
+						},
+					},
+					"projected": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Items for all in one resources secrets, configmaps, and downward API",
+							Ref:         ref("k8s.io/api/core/v1.ProjectedVolumeSource"),
+						},
+					},
+					"portworxVolume": {
+						SchemaProps: spec.SchemaProps{
+							Description: "PortworxVolume represents a portworx volume attached and mounted on kubelets host machine",
+							Ref:         ref("k8s.io/api/core/v1.PortworxVolumeSource"),
+						},
+					},
+					"scaleIO": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ScaleIO represents a ScaleIO persistent volume attached and mounted on Kubernetes nodes.",
+							Ref:         ref("k8s.io/api/core/v1.ScaleIOVolumeSource"),
+						},
+					},
+					"storageos": {
+						SchemaProps: spec.SchemaProps{
+							Description: "StorageOS represents a StorageOS volume attached and mounted on Kubernetes nodes.",
+							Ref:         ref("k8s.io/api/core/v1.StorageOSVolumeSource"),
+						},
+					},
+					"csi": {
+						SchemaProps: spec.SchemaProps{
+							Description: "CSI (Container Storage Interface) represents storage that is handled by an external CSI driver (Alpha feature).",
+							Ref:         ref("k8s.io/api/core/v1.CSIVolumeSource"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/api/core/v1.AWSElasticBlockStoreVolumeSource", "k8s.io/api/core/v1.AzureDiskVolumeSource", "k8s.io/api/core/v1.AzureFileVolumeSource", "k8s.io/api/core/v1.CSIVolumeSource", "k8s.io/api/core/v1.CephFSVolumeSource", "k8s.io/api/core/v1.CinderVolumeSource", "k8s.io/api/core/v1.ConfigMapVolumeSource", "k8s.io/api/core/v1.DownwardAPIVolumeSource", "k8s.io/api/core/v1.EmptyDirVolumeSource", "k8s.io/api/core/v1.FCVolumeSource", "k8s.io/api/core/v1.FlexVolumeSource", "k8s.io/api/core/v1.FlockerVolumeSource", "k8s.io/api/core/v1.GCEPersistentDiskVolumeSource", "k8s.io/api/core/v1.GitRepoVolumeSource", "k8s.io/api/core/v1.GlusterfsVolumeSource", "k8s.io/api/core/v1.HostPathVolumeSource", "k8s.io/api/core/v1.ISCSIVolumeSource", "k8s.io/api/core/v1.NFSVolumeSource", "k8s.io/api/core/v1.PersistentVolumeClaimVolumeSource", "k8s.io/api/core/v1.PhotonPersistentDiskVolumeSource", "k8s.io/api/core/v1.PortworxVolumeSource", "k8s.io/api/core/v1.ProjectedVolumeSource", "k8s.io/api/core/v1.QuobyteVolumeSource", "k8s.io/api/core/v1.RBDVolumeSource", "k8s.io/api/core/v1.ScaleIOVolumeSource", "k8s.io/api/core/v1.SecretVolumeSource", "k8s.io/api/core/v1.StorageOSVolumeSource", "k8s.io/api/core/v1.VsphereVirtualDiskVolumeSource"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_Snapshot(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+						},
+					},
+					"spec": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.SnapshotSpec"),
+						},
+					},
+					"status": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.SnapshotStatus"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.SnapshotSpec", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.SnapshotStatus"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_SnapshotList(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"),
+						},
+					},
+					"items": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Items is a list of Snapshot CRD objects",
+							Type:        []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Snapshot"),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta", "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Snapshot"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_SnapshotSourceSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"namespace": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"name": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"args": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Arguments to the restore job",
+							Type:        []string{"array"},
+							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
 									SchemaProps: spec.SchemaProps{
 										Type:   []string{"string"},
@@ -15690,131 +19132,517 @@ func schema_apimachinery_apis_config_v1alpha1_MongoDBConfiguration(ref common.Re
 						},
 					},
 				},
+				Required: []string{"namespace", "name"},
 			},
 		},
 	}
 }
 
-func schema_apimachinery_apis_config_v1alpha1_MySQLConfiguration(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_apimachinery_apis_kubedb_v1alpha1_SnapshotSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "MySQLConfiguration defines a MySQL app configuration. https://www.vaultproject.io/api/secret/databases/index.html https://www.vaultproject.io/api/secret/databases/mysql-maria.html#configure-connection",
-				Type:        []string{"object"},
+				Type: []string{"object"},
 				Properties: map[string]spec.Schema{
-					"kind": {
+					"databaseName": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+							Description: "Database name",
 							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
-					"apiVersion": {
+					"storageSecretName": {
 						SchemaProps: spec.SchemaProps{
-							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"local": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kmodules.xyz/objectstore-api/api/v1.LocalSpec"),
+						},
+					},
+					"s3": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kmodules.xyz/objectstore-api/api/v1.S3Spec"),
+						},
+					},
+					"gcs": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kmodules.xyz/objectstore-api/api/v1.GCSSpec"),
+						},
+					},
+					"azure": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kmodules.xyz/objectstore-api/api/v1.AzureSpec"),
+						},
+					},
+					"swift": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kmodules.xyz/objectstore-api/api/v1.SwiftSpec"),
+						},
+					},
+					"b2": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kmodules.xyz/objectstore-api/api/v1.B2Spec"),
+						},
+					},
+					"rest": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kmodules.xyz/objectstore-api/api/v1.RestServerSpec"),
+						},
+					},
+					"storageType": {
+						SchemaProps: spec.SchemaProps{
+							Description: "StorageType can be durable or ephemeral. If not given, database storage type will be used.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
-					"pluginName": {
+					"podTemplate": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Specifies the name of the plugin to use for this connection. Default plugin:\n - for mysql: mysql-database-plugin",
-							Type:        []string{"string"},
-							Format:      "",
+							Description: "PodTemplate is an optional configuration for pods used to take database snapshots",
+							Ref:         ref("kmodules.xyz/offshoot-api/api/v1.PodTemplateSpec"),
 						},
 					},
-					"allowedRoles": {
+					"podVolumeClaimSpec": {
 						SchemaProps: spec.SchemaProps{
-							Description: "List of the roles allowed to use this connection. Defaults to empty (no roles), if contains a \"*\" any role can use this connection.",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
-					"maxOpenConnections": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Specifies the maximum number of open connections to the database.",
-							Type:        []string{"integer"},
-							Format:      "int32",
-						},
-					},
-					"maxIdleConnections": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Specifies the maximum number of idle connections to the database. A zero uses the value of max_open_connections and a negative value disables idle connections. If larger than max_open_connections it will be reduced to be equal.",
-							Type:        []string{"integer"},
-							Format:      "int32",
-						},
-					},
-					"maxConnectionLifetime": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Specifies the maximum amount of time a connection may be reused. If <= 0s connections are reused forever.",
-							Type:        []string{"string"},
-							Format:      "",
+							Description: "PodVolumeClaimSpec is used to specify temporary storage for backup/restore Job. If not given, database's PvcSpec will be used. If storageType is durable, then a PVC will be created using this PVCSpec. If storageType is ephemeral, then an empty directory will be created of size PvcSpec.Resources.Requests[core.ResourceStorage].",
+							Ref:         ref("k8s.io/api/core/v1.PersistentVolumeClaimSpec"),
 						},
 					},
 				},
+				Required: []string{"databaseName"},
 			},
 		},
+		Dependencies: []string{
+			"k8s.io/api/core/v1.PersistentVolumeClaimSpec", "kmodules.xyz/objectstore-api/api/v1.AzureSpec", "kmodules.xyz/objectstore-api/api/v1.B2Spec", "kmodules.xyz/objectstore-api/api/v1.GCSSpec", "kmodules.xyz/objectstore-api/api/v1.LocalSpec", "kmodules.xyz/objectstore-api/api/v1.RestServerSpec", "kmodules.xyz/objectstore-api/api/v1.S3Spec", "kmodules.xyz/objectstore-api/api/v1.SwiftSpec", "kmodules.xyz/offshoot-api/api/v1.PodTemplateSpec"},
 	}
 }
 
-func schema_apimachinery_apis_config_v1alpha1_PostgresConfiguration(ref common.ReferenceCallback) common.OpenAPIDefinition {
+func schema_apimachinery_apis_kubedb_v1alpha1_SnapshotStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "PostgresConfiguration defines a PostgreSQL app configuration. https://www.vaultproject.io/api/secret/databases/index.html https://www.vaultproject.io/api/secret/databases/postgresql.html#configure-connection",
-				Type:        []string{"object"},
+				Type: []string{"object"},
 				Properties: map[string]spec.Schema{
-					"kind": {
+					"startTime": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
-							Type:        []string{"string"},
-							Format:      "",
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.Time"),
 						},
 					},
-					"apiVersion": {
+					"completionTime": {
 						SchemaProps: spec.SchemaProps{
-							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
-							Type:        []string{"string"},
-							Format:      "",
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.Time"),
 						},
 					},
-					"pluginName": {
+					"phase": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Specifies the name of the plugin to use for this connection. Default plugin:\n\t- for postgres: postgresql-database-plugin",
-							Type:        []string{"string"},
-							Format:      "",
+							Type:   []string{"string"},
+							Format: "",
 						},
 					},
-					"allowedRoles": {
+					"reason": {
 						SchemaProps: spec.SchemaProps{
-							Description: "List of the roles allowed to use this connection. Defaults to empty (no roles), if contains a \"*\" any role can use this connection.",
-							Type:        []string{"string"},
-							Format:      "",
+							Type:   []string{"string"},
+							Format: "",
 						},
 					},
-					"maxOpenConnections": {
+					"observedGeneration": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Specifies the maximum number of open connections to the database.",
-							Type:        []string{"integer"},
-							Format:      "int32",
-						},
-					},
-					"maxIdleConnections": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Specifies the maximum number of idle connections to the database. A zero uses the value of max_open_connections and a negative value disables idle connections. If larger than max_open_connections it will be reduced to be equal.",
-							Type:        []string{"integer"},
-							Format:      "int32",
-						},
-					},
-					"maxConnectionLifetime": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Specifies the maximum amount of time a connection may be reused. If <= 0s connections are reused forever.",
-							Type:        []string{"string"},
-							Format:      "",
+							Description: "observedGeneration is the most recent generation observed for this resource. It corresponds to the resource's generation, which is updated on mutation by the API Server.",
+							Ref:         ref("github.com/appscode/go/encoding/json/types.IntHash"),
 						},
 					},
 				},
 			},
 		},
+		Dependencies: []string{
+			"github.com/appscode/go/encoding/json/types.IntHash", "k8s.io/apimachinery/pkg/apis/meta/v1.Time"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_TLSPolicy(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"member": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MemberSecret"),
+						},
+					},
+					"operatorSecret": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MemberSecret"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_elasticsearchApp(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"Elasticsearch": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Elasticsearch"),
+						},
+					},
+				},
+				Required: []string{"Elasticsearch"},
+			},
+		},
+		Dependencies: []string{
+			"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Elasticsearch"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_elasticsearchStatsService(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"Elasticsearch": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Elasticsearch"),
+						},
+					},
+				},
+				Required: []string{"Elasticsearch"},
+			},
+		},
+		Dependencies: []string{
+			"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Elasticsearch"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_etcdApp(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"Etcd": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Etcd"),
+						},
+					},
+				},
+				Required: []string{"Etcd"},
+			},
+		},
+		Dependencies: []string{
+			"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Etcd"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_etcdStatsService(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"Etcd": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Etcd"),
+						},
+					},
+				},
+				Required: []string{"Etcd"},
+			},
+		},
+		Dependencies: []string{
+			"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Etcd"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_mariadbApp(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"MariaDB": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MariaDB"),
+						},
+					},
+				},
+				Required: []string{"MariaDB"},
+			},
+		},
+		Dependencies: []string{
+			"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MariaDB"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_mariadbStatsService(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"MariaDB": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MariaDB"),
+						},
+					},
+				},
+				Required: []string{"MariaDB"},
+			},
+		},
+		Dependencies: []string{
+			"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MariaDB"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_memcachedApp(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"Memcached": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Memcached"),
+						},
+					},
+				},
+				Required: []string{"Memcached"},
+			},
+		},
+		Dependencies: []string{
+			"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Memcached"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_memcachedStatsService(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"Memcached": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Memcached"),
+						},
+					},
+				},
+				Required: []string{"Memcached"},
+			},
+		},
+		Dependencies: []string{
+			"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Memcached"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_mongoDBApp(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"MongoDB": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MongoDB"),
+						},
+					},
+				},
+				Required: []string{"MongoDB"},
+			},
+		},
+		Dependencies: []string{
+			"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MongoDB"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_mongoDBStatsService(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"MongoDB": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MongoDB"),
+						},
+					},
+				},
+				Required: []string{"MongoDB"},
+			},
+		},
+		Dependencies: []string{
+			"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MongoDB"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_mysqlApp(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"MySQL": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MySQL"),
+						},
+					},
+				},
+				Required: []string{"MySQL"},
+			},
+		},
+		Dependencies: []string{
+			"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MySQL"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_mysqlStatsService(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"MySQL": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MySQL"),
+						},
+					},
+				},
+				Required: []string{"MySQL"},
+			},
+		},
+		Dependencies: []string{
+			"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MySQL"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_perconaApp(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"Percona": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Percona"),
+						},
+					},
+				},
+				Required: []string{"Percona"},
+			},
+		},
+		Dependencies: []string{
+			"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Percona"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_perconaStatsService(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"Percona": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Percona"),
+						},
+					},
+				},
+				Required: []string{"Percona"},
+			},
+		},
+		Dependencies: []string{
+			"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Percona"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_postgresApp(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"Postgres": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Postgres"),
+						},
+					},
+				},
+				Required: []string{"Postgres"},
+			},
+		},
+		Dependencies: []string{
+			"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Postgres"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_postgresStatsService(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"Postgres": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Postgres"),
+						},
+					},
+				},
+				Required: []string{"Postgres"},
+			},
+		},
+		Dependencies: []string{
+			"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Postgres"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_redisApp(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"Redis": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Redis"),
+						},
+					},
+				},
+				Required: []string{"Redis"},
+			},
+		},
+		Dependencies: []string{
+			"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Redis"},
+	}
+}
+
+func schema_apimachinery_apis_kubedb_v1alpha1_redisStatsService(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"Redis": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Redis"),
+						},
+					},
+				},
+				Required: []string{"Redis"},
+			},
+		},
+		Dependencies: []string{
+			"kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Redis"},
 	}
 }

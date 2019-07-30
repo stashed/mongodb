@@ -3,20 +3,20 @@ package pkg
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"os"
-	"path/filepath"
-
 	"github.com/appscode/go/flags"
 	"github.com/appscode/go/log"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"io/ioutil"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	appcatalog_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 	"kubedb.dev/apimachinery/apis/config/v1alpha1"
+	dbApis "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	"os"
+	"path/filepath"
 	"stash.appscode.dev/stash/pkg/restic"
 	"stash.appscode.dev/stash/pkg/util"
 )
@@ -47,7 +47,7 @@ func NewCmdRestore() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:               "restore-mongo",
-		Short:             "Restores Mongo DB Backup",
+		Short:             "Restores MongoDB Backup",
 		DisableAutoGenTag: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			flags.EnsureRequiredFlags(cmd, "app-binding", "provider", "secret-dir")
@@ -87,8 +87,6 @@ func NewCmdRestore() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			MongoDBRootUser = string(appBindingSecret.Data[MongoUserKey])
-			MongoDBRootPassword = string(appBindingSecret.Data[MongoPasswordKey])
 
 			// unmarshal parameter is the field has value
 			parameters := v1alpha1.MongoDBConfiguration{}
@@ -99,21 +97,38 @@ func NewCmdRestore() *cobra.Command {
 			}
 
 			if appBinding.Spec.ClientConfig.CABundle != nil {
-				if err := ioutil.WriteFile(filepath.Join(setupOpt.ScratchDir, MongoCACertFile), appBinding.Spec.ClientConfig.CABundle, os.ModePerm); err != nil {
+				if err := ioutil.WriteFile(filepath.Join(setupOpt.ScratchDir, dbApis.MongoTLSCertFileName), appBinding.Spec.ClientConfig.CABundle, os.ModePerm); err != nil {
 					return errors.Wrap(err, "failed to write key for CA certificate")
 				}
-				tlsArgs = append(tlsArgs, []string{"--ssl", "--sslCAFile", filepath.Join(setupOpt.ScratchDir, MongoCACertFile)}...)
+				adminCreds = []string{
+					"--ssl",
+					"--sslCAFile=" + filepath.Join(setupOpt.ScratchDir, dbApis.MongoTLSCertFileName),
+				}
 
-				if parameters.CertificateSecret != "" {
-					// get certificate secret to get client certificate
-					certificateSecret, err := kubeClient.CoreV1().Secrets(namespace).Get(parameters.CertificateSecret, metav1.GetOptions{})
-					if err != nil {
-						return err
-					}
-					if err := ioutil.WriteFile(filepath.Join(setupOpt.ScratchDir, MongoClientCertFile), certificateSecret.Data[parameters.ClientCertKey], os.ModePerm); err != nil {
-						return errors.Wrap(err, "failed to write client certificate")
-					}
-					tlsArgs = append(tlsArgs, []string{"--sslPEMKeyFile", filepath.Join(setupOpt.ScratchDir, MongoClientCertFile)}...)
+				// get certificate secret to get client certificate
+				data, ok := appBindingSecret.Data[dbApis.MongoClientPemFileName]
+				if !ok {
+					return errors.Wrap(err, "unable to get client certificate from secret.")
+				}
+				if err := ioutil.WriteFile(filepath.Join(setupOpt.ScratchDir, dbApis.MongoClientPemFileName), data, os.ModePerm); err != nil {
+					return errors.Wrap(err, "failed to write client certificate")
+				}
+				user, err := getSSLUser(filepath.Join(setupOpt.ScratchDir, dbApis.MongoClientPemFileName))
+				if err != nil {
+					return errors.Wrap(err, "unable to get user from ssl.")
+				}
+				adminCreds = append(adminCreds, []string{
+					"--sslPEMKeyFile=" + filepath.Join(setupOpt.ScratchDir, dbApis.MongoClientPemFileName),
+					"--username=" + user,
+					"--authenticationMechanism=MONGODB-X509",
+					"--authenticationDatabase='$external'",
+				}...)
+
+			} else {
+				adminCreds = []string{
+					"--username=" + string(appBindingSecret.Data[MongoUserKey]),
+					"--password=" + string(appBindingSecret.Data[MongoPasswordKey]),
+					"--authenticationDatabase=admin",
 				}
 			}
 
@@ -130,14 +145,12 @@ func NewCmdRestore() *cobra.Command {
 					Name: MongoRestoreCMD,
 					Args: []interface{}{
 						"--host=" + mongoDSN,
-						"--username=" + string(appBindingSecret.Data[MongoUserKey]),
-						"--password=" + string(appBindingSecret.Data[MongoPasswordKey]),
 						"--archive",
 					},
 				}
-				if tlsArgs != nil {
-					s := make([]interface{}, len(tlsArgs))
-					for i, v := range tlsArgs {
+				if adminCreds != nil {
+					s := make([]interface{}, len(adminCreds))
+					for i, v := range adminCreds {
 						s[i] = v
 					}
 

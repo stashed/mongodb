@@ -246,6 +246,8 @@ github.com/hashicorp/go-version v0.0.0-20171129150820-4fe82ae3040f/go.mod h1:flt
 github.com/hashicorp/golang-lru v0.5.0/go.mod h1:/m3WP610KZHVQ1SGc6re/UDhFvYD7pJ4Ao+sR/qLZy8=
 github.com/hashicorp/golang-lru v0.5.1 h1:0hERBMJE1eitiLkihrMvRVBYAkpHzc/J3QdDN+dAcgU=
 github.com/hashicorp/golang-lru v0.5.1/go.mod h1:/m3WP610KZHVQ1SGc6re/UDhFvYD7pJ4Ao+sR/qLZy8=
+github.com/hashicorp/golang-lru v0.5.3 h1:YPkqC67at8FYaadspW/6uE0COsBxS2656RLEr8Bppgk=
+github.com/hashicorp/golang-lru v0.5.3/go.mod h1:iADmTwqILo4mZ8BN3D2Q6+9jd8WM5uGBxy+E8yxSoD4=
 github.com/hashicorp/hcl v1.0.0/go.mod h1:E5yfLk+7swimpb2L/Alb/PJmXilQ/rhwaUYs4T20WEQ=
 github.com/howeyc/gopass v0.0.0-20170109162249-bf9dde6d0d2c/go.mod h1:lADxMC39cJJqL93Duh1xhAs4I2Zs8mKS89XWXFGp9cs=
 github.com/hpcloud/tail v1.0.0 h1:nfCOvKYfkgYP8hkirhJocXT2+zOD8yUNjXaWfTlyFKI=
@@ -599,6 +601,8 @@ google.golang.org/grpc v1.19.1/go.mod h1:mqu4LbDTu4XGKhr4mRzUsmM4RtVoemTSY81AxZi
 google.golang.org/grpc v1.20.1/go.mod h1:10oTOabMzJvdu6/UiuZezV6QK5dSlG84ov/aaiqXj38=
 google.golang.org/grpc v1.21.1 h1:j6XxA85m/6txkUCHvzlV5f+HBNl/1r5cZ2A/3IEFOO8=
 google.golang.org/grpc v1.21.1/go.mod h1:oYelfM1adQP15Ek0mdvEgi9Df8B9CZIaU1084ijfRaM=
+google.golang.org/grpc v1.21.2 h1:bR0WzEHNs9Yaf9Ui25u/e4DrsP8YWeom1X0h/UxGXGk=
+google.golang.org/grpc v1.21.2/go.mod h1:oYelfM1adQP15Ek0mdvEgi9Df8B9CZIaU1084ijfRaM=
 gopkg.in/alecthomas/kingpin.v2 v2.2.6/go.mod h1:FMv+mEhP44yOT+4EoQTLFTRgOQ1FBLkstjWtayDeSgw=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/check.v1 v1.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
@@ -672,8 +676,8 @@ kmodules.xyz/openshift v0.0.0-20190508141315-99ec9fc946bf h1:UyVK/KyL2O7XNV+1c7Z
 kmodules.xyz/openshift v0.0.0-20190508141315-99ec9fc946bf/go.mod h1:5l0No0OizfJ55sjDDpi0TgtGYWgmhy+F+i4+6DN61Ak=
 kmodules.xyz/webhook-runtime v0.0.0-20190715115250-a84fbf77dd30 h1:laqTozueJ7IDWmKuS2ARiRbjbGt2U/tzd9opPFrhidU=
 kmodules.xyz/webhook-runtime v0.0.0-20190715115250-a84fbf77dd30/go.mod h1:sojwlxXyjyHoF0arpK238DnHsecWij9VpWf50HtyBzE=
-kubedb.dev/apimachinery v0.0.0-20190723061430-2f3c46e6b8aa h1:v4EoPhH1MLcZFYgu0wxyNsMb1qf4Mow3s1ruur+7Eeo=
-kubedb.dev/apimachinery v0.0.0-20190723061430-2f3c46e6b8aa/go.mod h1:PaUCqKJTTeaq2X2SINnhcewUhk8PouE5x8QypLZJQ2Q=
+kubedb.dev/apimachinery v0.0.0-20190729130452-770aafaa0afc h1:5iyg4H8ze+OQcN7lxF8V8HIe9VnHO6iKi/GmlY09rpg=
+kubedb.dev/apimachinery v0.0.0-20190729130452-770aafaa0afc/go.mod h1:PaUCqKJTTeaq2X2SINnhcewUhk8PouE5x8QypLZJQ2Q=
 pack.ag/amqp v0.8.0/go.mod h1:4/cbmt4EJXSKlG6LCfWHoqmN0uFdy5i/+YFz+fTfhV4=
 pack.ag/amqp v0.11.0/go.mod h1:4/cbmt4EJXSKlG6LCfWHoqmN0uFdy5i/+YFz+fTfhV4=
 rsc.io/binaryregexp v0.2.0/go.mod h1:qTv7/COck+e2FymRvadv62gMdZztPaShugOCi3I+8D8=
