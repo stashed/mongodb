@@ -3,11 +3,14 @@ package pkg
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+
 	"github.com/appscode/go/flags"
 	"github.com/appscode/go/log"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"io/ioutil"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/client-go/kubernetes"
@@ -15,8 +18,6 @@ import (
 	appcatalog_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 	"kubedb.dev/apimachinery/apis/config/v1alpha1"
 	dbApis "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"os"
-	"path/filepath"
 	"stash.appscode.dev/stash/pkg/restic"
 	"stash.appscode.dev/stash/pkg/util"
 )
@@ -100,9 +101,9 @@ func NewCmdRestore() *cobra.Command {
 				if err := ioutil.WriteFile(filepath.Join(setupOpt.ScratchDir, dbApis.MongoTLSCertFileName), appBinding.Spec.ClientConfig.CABundle, os.ModePerm); err != nil {
 					return errors.Wrap(err, "failed to write key for CA certificate")
 				}
-				adminCreds = []string{
+				adminCreds = []interface{}{
 					"--ssl",
-					"--sslCAFile=" + filepath.Join(setupOpt.ScratchDir, dbApis.MongoTLSCertFileName),
+					"--sslCAFile", filepath.Join(setupOpt.ScratchDir, dbApis.MongoTLSCertFileName),
 				}
 
 				// get certificate secret to get client certificate
@@ -117,18 +118,18 @@ func NewCmdRestore() *cobra.Command {
 				if err != nil {
 					return errors.Wrap(err, "unable to get user from ssl.")
 				}
-				adminCreds = append(adminCreds, []string{
-					"--sslPEMKeyFile=" + filepath.Join(setupOpt.ScratchDir, dbApis.MongoClientPemFileName),
-					"--username=" + user,
-					"--authenticationMechanism=MONGODB-X509",
-					"--authenticationDatabase='$external'",
+				adminCreds = append(adminCreds, []interface{}{
+					"--sslPEMKeyFile", filepath.Join(setupOpt.ScratchDir, dbApis.MongoClientPemFileName),
+					"-u", user,
+					"--authenticationMechanism", "MONGODB-X509",
+					"--authenticationDatabase", "$external",
 				}...)
 
 			} else {
-				adminCreds = []string{
-					"--username=" + string(appBindingSecret.Data[MongoUserKey]),
-					"--password=" + string(appBindingSecret.Data[MongoPasswordKey]),
-					"--authenticationDatabase=admin",
+				adminCreds = []interface{}{
+					"--username", string(appBindingSecret.Data[MongoUserKey]),
+					"--password", string(appBindingSecret.Data[MongoPasswordKey]),
+					"--authenticationDatabase", "admin",
 				}
 			}
 
@@ -143,19 +144,12 @@ func NewCmdRestore() *cobra.Command {
 				// setup pipe command
 				dumpOpt.StdoutPipeCommand = restic.Command{
 					Name: MongoRestoreCMD,
-					Args: []interface{}{
-						"--host=" + mongoDSN,
+					Args: append([]interface{}{
+						"--host", mongoDSN,
 						"--archive",
-					},
+					}, adminCreds...),
 				}
-				if adminCreds != nil {
-					s := make([]interface{}, len(adminCreds))
-					for i, v := range adminCreds {
-						s[i] = v
-					}
 
-					dumpOpt.StdoutPipeCommand.Args = append(dumpOpt.StdoutPipeCommand.Args, s...)
-				}
 				if isStandalone {
 					dumpOpt.StdoutPipeCommand.Args = append(dumpOpt.StdoutPipeCommand.Args, "--port="+fmt.Sprint(appBinding.Spec.ClientConfig.Service.Port))
 				} else {
@@ -197,30 +191,38 @@ func NewCmdRestore() *cobra.Command {
 
 			log.Infoln("processing restore.")
 
+			fmt.Println("---------------------- 0")
 			// init restic wrapper
 			resticWrapper, err := restic.NewResticWrapper(setupOpt)
 			if err != nil {
 				return err
 			}
 			// hide password, don't print cmd
-			resticWrapper.HideCMD()
+			//resticWrapper.HideCMD() // TODO: uncomment
 
+			fmt.Println("---------------------- 1")
 			// Run dump
 			dumpOutput, backupErr := resticWrapper.ParallelDump(dumpOpts, maxConcurrency)
+			fmt.Println("---------------------- 2")
 			// If metrics are enabled then generate metrics
 			if metrics.Enabled {
+				fmt.Println("---------------------- 3")
 				err := dumpOutput.HandleMetrics(&metrics, backupErr)
+				fmt.Println("---------------------- 4")
 				if err != nil {
 					return kerrors.NewAggregate([]error{backupErr, err})
 				}
 			}
+			fmt.Println("---------------------- 5")
 			// If output directory specified, then write the output in "output.json" file in the specified directory
 			if backupErr == nil && outputDir != "" {
+				fmt.Println("---------------------- 6")
 				err := dumpOutput.WriteOutput(filepath.Join(outputDir, restic.DefaultOutputFileName))
 				if err != nil {
 					return err
 				}
 			}
+			fmt.Println("---------------------- 7")
 			return backupErr
 		},
 	}
