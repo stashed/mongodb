@@ -1,7 +1,7 @@
 apiVersion: kubedb.com/v1alpha1
 kind: MongoDB
 metadata:
-  name: sample-mgo-sh
+  name: sample-mgo-sh-ssl
   namespace: demo
 spec:
   version: 3.6-v4
@@ -26,3 +26,5 @@ spec:
             storage: 1Gi
         storageClassName: standard
   terminationPolicy: WipeOut
+  clusterAuthMode: x509
+  sslMode: requireSSL

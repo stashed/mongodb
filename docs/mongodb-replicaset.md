@@ -92,7 +92,7 @@ mg-restore-4.1  10s
 
 Now, Stash is ready to backup MongoDB clusters.
 
-## Backup MongoDB ReplicaSet
+## Backup MongoDB ReplicaSet using Stash
 
 This section will demonstrate how to backup MongoDB ReplicaSet cluster. We are going to use [KubeDB](https://kubedb.com) to deploy a sample database. You can deploy your MongoDB cluster using any method you want. We are using `KubeDB` because it automates some tasks that you have to do manually otherwise.
 
@@ -217,6 +217,86 @@ Stash uses the `AppBinding` crd to connect with the target database. It requires
 - `spec.clientConfig.service.name` specifies the name of the service that connects to the database.
 - `spec.secret` specifies the name of the secret that holds necessary credentials to access the database.
 - `spec.parameters.replicaSets` contains the dsn of replicaset. The DSNs are in key-value pair. If there is only one replicaset (replicaset can be multiple, because of sharding), then ReplicaSets field contains only one key-value pair where the key is host-0 and the value is dsn of that replicaset.
+
+### AppBinding for SSL
+
+If `SSLMode` of the MongoDB server is either of `requireSSL` or `preferSSL`, you can provide ssl connection informatin through AppBinding Spces.
+
+User need to provide the following fields in case of SSL is enabled,
+
+- `spec.clientConfig.caBundle` specifies the CA certificate that is used in [`--sslCAFile`](https://docs.mongodb.com/manual/reference/program/mongod/index.html#cmdoption-mongod-sslcafile) flag of `mongod`.
+- `spec.secret` specifies the name of the secret that holds `client.pem` file. Follow the [mongodb official doc](https://docs.mongodb.com/manual/tutorial/configure-x509-client-authentication/) to learn how to create `client.pem` and add the subject of `client.pem` as user (with appropriate roles) to mongodb server.
+
+**KubeDB does these automatically**. It has added the subject of `client.pem` in the mongodb server with `root` role. See the [KubeDB concept] to learn about the ssl options in mongodb in details. So, user can just use the appbinding that is created by KubeDB without doing any hurdle!
+
+So, in KubeDB, the following `CRD` deployes a mongodb replicaset where ssl is enabled (`requireSSL` sslmode),
+
+```yaml
+apiVersion: kubedb.com/v1alpha1
+kind: MongoDB
+metadata:
+  name: sample-mgo-rs
+  namespace: demo
+spec:
+  version: "3.6-v4"
+  replicas: 3
+  replicaSet:
+    name: rs0
+  storage:
+    storageClassName: "standard"
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  terminationPolicy: WipeOut
+  clusterAuthMode: x509
+  sslMode: requireSSL
+```
+
+After the deploy is done, kubedb will create a appbinding that will look like:
+
+```yaml
+apiVersion: appcatalog.appscode.com/v1alpha1
+kind: AppBinding
+metadata:
+  creationTimestamp: "2019-07-19T12:19:39Z"
+  generation: 1
+  labels:
+    app.kubernetes.io/component: database
+    app.kubernetes.io/instance: sample-mgo-rs
+    app.kubernetes.io/managed-by: kubedb.com
+    app.kubernetes.io/name: mongodb
+    app.kubernetes.io/version: 3.6-v4
+    kubedb.com/kind: MongoDB
+    kubedb.com/name: sample-mgo-rs
+  name: sample-mgo-rs
+  namespace: demo
+  ownerReferences:
+    - apiVersion: kubedb.com/v1alpha1
+      blockOwnerDeletion: false
+      kind: MongoDB
+      name: sample-mgo-rs
+      uid: 42dd1639-aa1f-11e9-acf7-42010a8000dc
+  resourceVersion: "1137355"
+  selfLink: /apis/appcatalog.appscode.com/v1alpha1/namespaces/demo/appbindings/sample-mgo-rs
+  uid: 7af03255-aa1f-11e9-acf7-42010a8000dc
+spec:
+  clientConfig:
+    caBundle: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUM0RENDQWNpZ0F3SUJBZ0lCQURBTkJna3Foa2lHOXcwQkFRc0ZBREFoTVJJd0VBWURWUVFLRXdsTGRXSmwKWkdJNlEwRXhDekFKQmdOVkJBTVRBa05CTUI0WERURTVNRGd3TVRFd01Ua3lPVm9YRFRJNU1EY3lPVEV3TVRreQpPVm93SVRFU01CQUdBMVVFQ2hNSlMzVmlaV1JpT2tOQk1Rc3dDUVlEVlFRREV3SkRRVENDQVNJd0RRWUpLb1pJCmh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTTQvWXpwbGhNTWlkUmREZEM0ejcvOXdkNWpZaitKeVl3d0EKQTJncktvYkxkQlB1YTNWNFB2TjJOOHNCaXArOUZycFFPVXkzOFpBdmZ4a1V1YkZOUVNoS3JkNnlGbWZRQjBhbApHOHB3dkcwblJoWEdWTHI3REVaaysrSjhZQWZwbzBlOHR6K29zZDVRMkpjN3JiRlFVbVFDYzJzc0ZXcGJSdy93CjFmeWhlaldTSjVnUnBYUG96ZHhxRkloTm9sbVgrQiswWVdrVHJ0QmJlcUZibnhkTm9oVmJDYzJtaHZOdnNoMHUKdWIvY1h1anhQR3ljNzZLYTEyZVhUS3FWTm9Jczg1TkdEbzlaSXBWZUhkRG1ld1ZQZVROcFlxWE9zMTRSOTNHWgozb0FoWW5JbG5veGFrOXEreE1Td01Vd0hwL0JyL0dRSkdGRlEyVDdSWWNMUS9HclYrdGtDQXdFQUFhTWpNQ0V3CkRnWURWUjBQQVFIL0JBUURBZ0trTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3RFFZSktvWklodmNOQVFFTEJRQUQKZ2dFQkFLMXphNHQ5NjZBejYwZmJyQWh2bW5ZTXlPNUIvVWxaT01RcGhqRWRMOVBHekpSMG1uY1FOeWNoTFNqQwpkeDFaRG1iME9iSzh3WUgrbisyaW9DWTdiRFZBSjZTaHU3SkhBeDl4NGRkOG1HR0pCN1NUMGlxL3RJbGJmK2J0ClBNUnBEYmJ5YUZTVnpacXJvdTFJNkZycUwvQXVhTThzTUg5KzYzOW5zVS9XQWtIZWVVN0hhOWdpZXNwR0QrdGoKcUowOHBXcDB5Wndaa1plK3RyVUR6QmI1Um9VaWlMTGkxZXlKN0oyZmtvNk1OcXY1UkF2R2g2Y1ROcEtCbUdKQgpvaTUvSTgyQ1ovaGVYSXdpUkFrZ2NEbXpVRW1kaEk2OUZCMlQxVTNNVGNaaWtaSnRUdW13SXpFbWFZK3NySVdtCkZCdU1MMmdCRUhibEt3NFBjdmY3dWcvOGlHRT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+    service:
+      name: sample-mgo-rs
+      port: 27017
+      scheme: mongodb
+  parameters:
+    replicaSets:
+      host-0: rs0/sample-mgo-rs-0.sample-mgo-rs-gvr.demo.svc,sample-mgo-rs-1.sample-mgo-rs-gvr.demo.svc,sample-mgo-rs-2.sample-mgo-rs-gvr.demo.svc
+  secret:
+    name: mongo-sh-rs-cert
+  type: kubedb.com/mongodb
+```
+
+Here, `mongo-sh-rs-cert` contains few required certificates, and one of them is `client.pem` which is required to backup/restore ssl enabled mongodb server using mongodb-stash.
 
 **Creating AppBinding Manually:**
 
