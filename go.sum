@@ -75,6 +75,8 @@ github.com/beevik/ntp v0.2.0/go.mod h1:hIHWr+l3+/clUnF44zdK+CWW7fO8dR5cIylAQ76NR
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v1.0.0 h1:HWo1m869IqiPhD389kmkxeTalrjNbbJTC8LXupb+sl0=
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=
+github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
+github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=
 github.com/blang/semver v3.5.1+incompatible/go.mod h1:kRBLl5iJ+tD4TcOOxsy/0fnwebNt5EWlYSAyrTnjyyk=
 github.com/brancz/gojsontoyaml v0.0.0-20190425155809-e8bd32d46b3d/go.mod h1:IyUJYN1gvWjtLF5ZuygmxbnsAyP3aJS6cHzIuZY50B0=
 github.com/campoy/embedmd v1.0.0/go.mod h1:oxyr9RCiSXg0M3VJ3ks0UGfp98BpSSGr0kpiX3MzVl8=
@@ -676,8 +678,8 @@ kmodules.xyz/openshift v0.0.0-20190508141315-99ec9fc946bf h1:UyVK/KyL2O7XNV+1c7Z
 kmodules.xyz/openshift v0.0.0-20190508141315-99ec9fc946bf/go.mod h1:5l0No0OizfJ55sjDDpi0TgtGYWgmhy+F+i4+6DN61Ak=
 kmodules.xyz/webhook-runtime v0.0.0-20190715115250-a84fbf77dd30 h1:laqTozueJ7IDWmKuS2ARiRbjbGt2U/tzd9opPFrhidU=
 kmodules.xyz/webhook-runtime v0.0.0-20190715115250-a84fbf77dd30/go.mod h1:sojwlxXyjyHoF0arpK238DnHsecWij9VpWf50HtyBzE=
-kubedb.dev/apimachinery v0.0.0-20190729130452-770aafaa0afc h1:5iyg4H8ze+OQcN7lxF8V8HIe9VnHO6iKi/GmlY09rpg=
-kubedb.dev/apimachinery v0.0.0-20190729130452-770aafaa0afc/go.mod h1:PaUCqKJTTeaq2X2SINnhcewUhk8PouE5x8QypLZJQ2Q=
+kubedb.dev/apimachinery v0.0.0-20190801035355-3d87b7c0b5e8 h1:Pt80H+e9qpDA2Qp3hpca1Pf4K2JwqknnIIon5l287Mk=
+kubedb.dev/apimachinery v0.0.0-20190801035355-3d87b7c0b5e8/go.mod h1:PaUCqKJTTeaq2X2SINnhcewUhk8PouE5x8QypLZJQ2Q=
 pack.ag/amqp v0.8.0/go.mod h1:4/cbmt4EJXSKlG6LCfWHoqmN0uFdy5i/+YFz+fTfhV4=
 pack.ag/amqp v0.11.0/go.mod h1:4/cbmt4EJXSKlG6LCfWHoqmN0uFdy5i/+YFz+fTfhV4=
 rsc.io/binaryregexp v0.2.0/go.mod h1:qTv7/COck+e2FymRvadv62gMdZztPaShugOCi3I+8D8=

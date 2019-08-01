@@ -23,7 +23,6 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	appcatalog_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 	"kubedb.dev/apimachinery/apis/config/v1alpha1"
-	dbApis "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	"stash.appscode.dev/stash/pkg/restic"
 	"stash.appscode.dev/stash/pkg/util"
 )
@@ -36,6 +35,9 @@ const (
 	MongoDumpCMD          = "mongodump"
 	MongoRestoreCMD       = "mongorestore"
 	MongoConfigSVRHostKey = "confighost"
+
+	MongoTLSCertFileName   = "ca.cert"
+	MongoClientPemFileName = "client.pem"
 )
 
 var (
@@ -86,10 +88,7 @@ func NewCmdBackup() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			defer cleanup()
 
-			fmt.Println("------------ 1")
-
 			flags.EnsureRequiredFlags(cmd, "app-binding", "provider", "secret-dir")
-			fmt.Println("------------ ", 2)
 
 			// catch sigkill signals and gracefully terminate so that cleanup functions are executed.
 			sigChan := make(chan os.Signal)
@@ -97,12 +96,9 @@ func NewCmdBackup() *cobra.Command {
 			go func() {
 				rcvSig := <-sigChan
 				cleanup()
-				fmt.Println("------------ ", 4)
 				log.Errorf("Received signal: %s, exiting\n", rcvSig)
 				os.Exit(1)
 			}()
-
-			fmt.Println("------------ ", 3)
 
 			// apply nice, ionice settings from env
 			var err error
@@ -110,7 +106,6 @@ func NewCmdBackup() *cobra.Command {
 			if err != nil {
 				return util.HandleResticError(outputDir, restic.DefaultOutputFileName, err)
 			}
-			fmt.Println("------------ ", 5)
 			setupOpt.IONice, err = util.IONiceSettingsFromEnv()
 			if err != nil {
 				return util.HandleResticError(outputDir, restic.DefaultOutputFileName, err)
@@ -129,7 +124,6 @@ func NewCmdBackup() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			fmt.Println("------------ ", 6)
 
 			// get app binding
 			appBinding, err := appCatalogClient.AppcatalogV1alpha1().AppBindings(namespace).Get(appBindingName, metav1.GetOptions{})
@@ -141,7 +135,6 @@ func NewCmdBackup() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			fmt.Println("------------ ", 7)
 
 			// unmarshal parameter is the field has value
 			parameters := v1alpha1.MongoDBConfiguration{}
@@ -152,49 +145,40 @@ func NewCmdBackup() *cobra.Command {
 			}
 
 			if appBinding.Spec.ClientConfig.CABundle != nil {
-				fmt.Println("------------ ", 8)
-				if err := ioutil.WriteFile(filepath.Join(setupOpt.ScratchDir, dbApis.MongoTLSCertFileName), appBinding.Spec.ClientConfig.CABundle, os.ModePerm); err != nil {
+				if err := ioutil.WriteFile(filepath.Join(setupOpt.ScratchDir, MongoTLSCertFileName), appBinding.Spec.ClientConfig.CABundle, os.ModePerm); err != nil {
 					return errors.Wrap(err, "failed to write key for CA certificate")
 				}
 				adminCreds = []interface{}{
 					"--ssl",
-					"--sslCAFile", filepath.Join(setupOpt.ScratchDir, dbApis.MongoTLSCertFileName),
+					"--sslCAFile", filepath.Join(setupOpt.ScratchDir, MongoTLSCertFileName),
 				}
-				fmt.Println("------------ ", 9)
 
 				// get certificate secret to get client certificate
-				data, ok := appBindingSecret.Data[dbApis.MongoClientPemFileName]
+				data, ok := appBindingSecret.Data[MongoClientPemFileName]
 				if !ok {
-					fmt.Println("------------ ", 10000000000)
 					return errors.Wrap(err, "unable to get client certificate from secret.")
 				}
-				fmt.Println("------------ ", 10)
-				if err := ioutil.WriteFile(filepath.Join(setupOpt.ScratchDir, dbApis.MongoClientPemFileName), data, os.ModePerm); err != nil {
+				if err := ioutil.WriteFile(filepath.Join(setupOpt.ScratchDir, MongoClientPemFileName), data, os.ModePerm); err != nil {
 					return errors.Wrap(err, "failed to write client certificate")
 				}
-				fmt.Println("------------ ", 11)
-				user, err := getSSLUser(filepath.Join(setupOpt.ScratchDir, dbApis.MongoClientPemFileName))
-				fmt.Println(">>>>>>>>>>>....users2=>", user) // todo: delete
+				user, err := getSSLUser(filepath.Join(setupOpt.ScratchDir, MongoClientPemFileName))
 				if err != nil {
 					return errors.Wrap(err, "unable to get user from ssl.")
 				}
-				fmt.Println("------------ ", 12)
 				adminCreds = append(adminCreds, []interface{}{
-					"--sslPEMKeyFile", filepath.Join(setupOpt.ScratchDir, dbApis.MongoClientPemFileName),
+					"--sslPEMKeyFile", filepath.Join(setupOpt.ScratchDir, MongoClientPemFileName),
 					"-u", user,
 					"--authenticationMechanism", "MONGODB-X509",
 					"--authenticationDatabase", "$external",
 				}...)
 
 			} else {
-				fmt.Println("------------ ", 13)
 				adminCreds = []interface{}{
 					"--username", string(appBindingSecret.Data[MongoUserKey]),
 					"--password", string(appBindingSecret.Data[MongoPasswordKey]),
 					"--authenticationDatabase", "admin",
 				}
 			}
-			fmt.Println("------------ 2", 14)
 
 			getBackupOpt := func(mongoDSN, hostKey string, isStandalone bool) restic.BackupOptions {
 				log.Infoln("processing backupOptions for ", mongoDSN)
@@ -213,15 +197,6 @@ func NewCmdBackup() *cobra.Command {
 						"--archive",
 					}, adminCreds...),
 				}
-				//if adminCreds != nil {
-				//	s := make([]interface{}, len(adminCreds))
-				//	for i, v := range adminCreds {
-				//		s[i] = v
-				//	}
-				//
-				//	// strings.join won't work. every argument needs to be in seperate index. //TODO: find out reason!
-				//	backupOpt.StdinPipeCommand.Args = append(backupOpt.StdinPipeCommand.Args, s...)
-				//}
 				if isStandalone {
 					backupOpt.StdinPipeCommand.Args = append(backupOpt.StdinPipeCommand.Args, "--port="+fmt.Sprint(appBinding.Spec.ClientConfig.Service.Port))
 				} else {
@@ -297,8 +272,6 @@ func NewCmdBackup() *cobra.Command {
 					return err
 				}
 
-				fmt.Println("----------------------- pr sd:", primary, secondary)
-
 				// backupHost is secondary if any secondary component exists.
 				// otherwise primary component will be used to take backup.
 				backupHost := primary
@@ -322,7 +295,6 @@ func NewCmdBackup() *cobra.Command {
 			// if parameters.ReplicaSets is nil, then the mongodb database doesn't have replicasets or sharded replicasets.
 			// In this case, perform normal backup with clientconfig.Service.Name mongo dsn
 			if parameters.ReplicaSets == nil {
-				fmt.Println("------------ ", 15)
 				backupOpts = append(backupOpts, getBackupOpt(appBinding.Spec.ClientConfig.Service.Name, restic.DefaultHost, true))
 			}
 
@@ -333,7 +305,7 @@ func NewCmdBackup() *cobra.Command {
 				return err
 			}
 			// hide password, don't print cmd
-			//resticWrapper.HideCMD() //todo: uncomment
+			resticWrapper.HideCMD()
 
 			// Run backup
 			backupOutput, backupErr := resticWrapper.RunParallelBackup(backupOpts, maxConcurrency)
@@ -410,7 +382,6 @@ func getSSLUser(path string) (string, error) {
 		return "", err
 	}
 
-	fmt.Println(">>>>>>>>>>>....", string(data)) // todo: delete
 	user := strings.TrimPrefix(string(data), "subject=")
 	return strings.TrimSpace(user), nil
 }
@@ -419,15 +390,13 @@ func getPrimaryNSecondaryMember(mongoDSN string) (primary, secondary string, err
 	log.Infoln("finding primary and secondary instances of", mongoDSN)
 	v := make(map[string]interface{})
 
-	////stop balancer
-	//args := append([]interface{}{"config", "--host", mongoDSN, "--quiet", "--eval", "JSON.stringify(rs.isMaster())",}, adminCreds...)
-	//if err := sh.Command(MongoCMD, args).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); // even --quiet doesn't skip replicaset PrimaryConnection log. so take tha last line. issue tracker: https://jira.mongodb.org/browse/SERVER-27159
-	//	err != nil {
-	//	return "", "", err
-	//}
-
 	//stop balancer
-	args := append([]interface{}{"config", "--host", mongoDSN, "--quiet", "--eval", "JSON.stringify(rs.isMaster())"}, adminCreds...)
+	args := append([]interface{}{
+		"config",
+		"--host", mongoDSN,
+		"--quiet",
+		"--eval", "JSON.stringify(rs.isMaster())",
+	}, adminCreds...)
 	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); // even --quiet doesn't skip replicaset PrimaryConnection log. so take tha last line. issue tracker: https://jira.mongodb.org/browse/SERVER-27159
 		err != nil {
 		return "", "", err
@@ -463,7 +432,12 @@ func disabelBalancer(mongosHost string) error {
 	log.Infoln("Disabling balancer of ", mongosHost)
 	v := make(map[string]interface{})
 
-	args := append([]interface{}{"config", "--host", mongosHost, "--quiet", "--eval", "JSON.stringify(sh.stopBalancer())"}, adminCreds...)
+	args := append([]interface{}{
+		"config",
+		"--host", mongosHost,
+		"--quiet",
+		"--eval", "JSON.stringify(sh.stopBalancer())",
+	}, adminCreds...)
 	// disable balancer
 	if err := sh.Command(MongoCMD, args...).UnmarshalJSON(&v); err != nil {
 		return err
@@ -474,7 +448,12 @@ func disabelBalancer(mongosHost string) error {
 	}
 
 	// wait for balancer to stop
-	args = append([]interface{}{"config", "--host", mongosHost, "--quiet", "--eval", "while(sh.isBalancerRunning()){ print('waiting for balancer to stop...'); sleep(1000);}"}, adminCreds...)
+	args = append([]interface{}{
+		"config",
+		"--host", mongosHost,
+		"--quiet",
+		"--eval", "while(sh.isBalancerRunning()){ print('waiting for balancer to stop...'); sleep(1000);}",
+	}, adminCreds...)
 	if err := sh.Command(MongoCMD, args...).Run(); err != nil {
 		return err
 	}
@@ -486,11 +465,14 @@ func enableBalancer(mongosHost string) error {
 	log.Infoln("Enabling balancer of ", mongosHost)
 	v := make(map[string]interface{})
 
-	// enable balancer // todo: --quite
-	args := append([]interface{}{"config", "--host", mongosHost, "--eval", "JSON.stringify(sh.setBalancerState(true))"}, adminCreds...)
-	cmd := sh.Command(MongoCMD, args...)
-	cmd.ShowCMD = true //todo: delete
-	if err := cmd.UnmarshalJSON(&v); err != nil {
+	// enable balancer
+	args := append([]interface{}{
+		"config",
+		"--host", mongosHost,
+		"--quiet",
+		"--eval", "JSON.stringify(sh.setBalancerState(true))",
+	}, adminCreds...)
+	if err := sh.Command(MongoCMD, args...).UnmarshalJSON(&v); err != nil {
 		return err
 	}
 
@@ -507,11 +489,15 @@ func lockConfigServer(configSVRDSN, secondaryHost string) error {
 		log.Warningln("locking configserver is skipped. secondary host is empty")
 		return nil
 	}
-
 	v := make(map[string]interface{})
 
 	// findAndModify BackupControlDocument. skip single quote inside single quote: https://stackoverflow.com/a/28786747/4628962
-	args := append([]interface{}{"config", "--host", configSVRDSN, "--quiet", "--eval", "db.BackupControl.findAndModify({query: { _id: 'BackupControlDocument' }, update: { $inc: { counter : 1 } }, new: true, upsert: true, writeConcern: { w: 'majority', wtimeout: 15000 }});"}, adminCreds...)
+	args := append([]interface{}{
+		"config",
+		"--host", configSVRDSN,
+		"--quiet",
+		"--eval", "db.BackupControl.findAndModify({query: { _id: 'BackupControlDocument' }, update: { $inc: { counter : 1 } }, new: true, upsert: true, writeConcern: { w: 'majority', wtimeout: 15000 }});",
+	}, adminCreds...)
 	if err := sh.Command(MongoCMD, args...).Command("tail", "-1").UnmarshalJSON(&v); err != nil {
 		return err
 	}
@@ -526,7 +512,12 @@ func lockConfigServer(configSVRDSN, secondaryHost string) error {
 	for timer < 60 && (int(val2) == 0 || int(val) != int(val2)) {
 		timer++
 		// find backupDocument from secondary configServer
-		args = append([]interface{}{"config", "--host", secondaryHost, "--quiet", "--eval", "rs.slaveOk(); db.BackupControl.find({ '_id' : 'BackupControlDocument' }).readConcern('majority');"}, adminCreds...)
+		args = append([]interface{}{
+			"config",
+			"--host", secondaryHost,
+			"--quiet",
+			"--eval", "rs.slaveOk(); db.BackupControl.find({ '_id' : 'BackupControlDocument' }).readConcern('majority');",
+		}, adminCreds...)
 		if err := sh.Command(MongoCMD, args...).UnmarshalJSON(&v); err != nil {
 			return err
 		}
@@ -558,7 +549,12 @@ func lockSecondaryMember(mongohost string) error {
 	v := make(map[string]interface{})
 
 	// lock file
-	args := append([]interface{}{"config", "--host", mongohost, "--quiet", "--eval", "JSON.stringify(db.fsyncLock())"}, adminCreds...)
+	args := append([]interface{}{
+		"config",
+		"--host", mongohost,
+		"--quiet",
+		"--eval", "JSON.stringify(db.fsyncLock())",
+	}, adminCreds...)
 	if err := sh.Command(MongoCMD, args...).UnmarshalJSON(&v); err != nil {
 		return err
 	}
@@ -579,7 +575,12 @@ func unlockSecondaryMember(mongohost string) error {
 	v := make(map[string]interface{})
 
 	// unlock file
-	args := append([]interface{}{"config", "--host", mongohost, "--quiet", "--eval", "JSON.stringify(db.fsyncUnlock())"}, adminCreds...)
+	args := append([]interface{}{
+		"config",
+		"--host", mongohost,
+		"--quiet",
+		"--eval", "JSON.stringify(db.fsyncUnlock())",
+	}, adminCreds...)
 	if err := sh.Command(MongoCMD, args...).UnmarshalJSON(&v); err != nil {
 		return err
 	}

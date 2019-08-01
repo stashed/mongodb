@@ -17,7 +17,6 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	appcatalog_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 	"kubedb.dev/apimachinery/apis/config/v1alpha1"
-	dbApis "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	"stash.appscode.dev/stash/pkg/restic"
 	"stash.appscode.dev/stash/pkg/util"
 )
@@ -98,28 +97,28 @@ func NewCmdRestore() *cobra.Command {
 			}
 
 			if appBinding.Spec.ClientConfig.CABundle != nil {
-				if err := ioutil.WriteFile(filepath.Join(setupOpt.ScratchDir, dbApis.MongoTLSCertFileName), appBinding.Spec.ClientConfig.CABundle, os.ModePerm); err != nil {
+				if err := ioutil.WriteFile(filepath.Join(setupOpt.ScratchDir, MongoTLSCertFileName), appBinding.Spec.ClientConfig.CABundle, os.ModePerm); err != nil {
 					return errors.Wrap(err, "failed to write key for CA certificate")
 				}
 				adminCreds = []interface{}{
 					"--ssl",
-					"--sslCAFile", filepath.Join(setupOpt.ScratchDir, dbApis.MongoTLSCertFileName),
+					"--sslCAFile", filepath.Join(setupOpt.ScratchDir, MongoTLSCertFileName),
 				}
 
 				// get certificate secret to get client certificate
-				data, ok := appBindingSecret.Data[dbApis.MongoClientPemFileName]
+				data, ok := appBindingSecret.Data[MongoClientPemFileName]
 				if !ok {
 					return errors.Wrap(err, "unable to get client certificate from secret.")
 				}
-				if err := ioutil.WriteFile(filepath.Join(setupOpt.ScratchDir, dbApis.MongoClientPemFileName), data, os.ModePerm); err != nil {
+				if err := ioutil.WriteFile(filepath.Join(setupOpt.ScratchDir, MongoClientPemFileName), data, os.ModePerm); err != nil {
 					return errors.Wrap(err, "failed to write client certificate")
 				}
-				user, err := getSSLUser(filepath.Join(setupOpt.ScratchDir, dbApis.MongoClientPemFileName))
+				user, err := getSSLUser(filepath.Join(setupOpt.ScratchDir, MongoClientPemFileName))
 				if err != nil {
 					return errors.Wrap(err, "unable to get user from ssl.")
 				}
 				adminCreds = append(adminCreds, []interface{}{
-					"--sslPEMKeyFile", filepath.Join(setupOpt.ScratchDir, dbApis.MongoClientPemFileName),
+					"--sslPEMKeyFile", filepath.Join(setupOpt.ScratchDir, MongoClientPemFileName),
 					"-u", user,
 					"--authenticationMechanism", "MONGODB-X509",
 					"--authenticationDatabase", "$external",
@@ -191,38 +190,30 @@ func NewCmdRestore() *cobra.Command {
 
 			log.Infoln("processing restore.")
 
-			fmt.Println("---------------------- 0")
 			// init restic wrapper
 			resticWrapper, err := restic.NewResticWrapper(setupOpt)
 			if err != nil {
 				return err
 			}
 			// hide password, don't print cmd
-			//resticWrapper.HideCMD() // TODO: uncomment
+			resticWrapper.HideCMD()
 
-			fmt.Println("---------------------- 1")
 			// Run dump
 			dumpOutput, backupErr := resticWrapper.ParallelDump(dumpOpts, maxConcurrency)
-			fmt.Println("---------------------- 2")
 			// If metrics are enabled then generate metrics
 			if metrics.Enabled {
-				fmt.Println("---------------------- 3")
 				err := dumpOutput.HandleMetrics(&metrics, backupErr)
-				fmt.Println("---------------------- 4")
 				if err != nil {
 					return kerrors.NewAggregate([]error{backupErr, err})
 				}
 			}
-			fmt.Println("---------------------- 5")
 			// If output directory specified, then write the output in "output.json" file in the specified directory
 			if backupErr == nil && outputDir != "" {
-				fmt.Println("---------------------- 6")
 				err := dumpOutput.WriteOutput(filepath.Join(outputDir, restic.DefaultOutputFileName))
 				if err != nil {
 					return err
 				}
 			}
-			fmt.Println("---------------------- 7")
 			return backupErr
 		},
 	}
