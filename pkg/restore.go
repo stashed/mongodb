@@ -190,6 +190,9 @@ func NewCmdRestore() *cobra.Command {
 
 			log.Infoln("processing restore.")
 
+			// wait for DB ready
+			waitForDBReady(appBinding.Spec.ClientConfig.Service.Name, appBinding.Spec.ClientConfig.Service.Port)
+
 			// init restic wrapper
 			resticWrapper, err := restic.NewResticWrapper(setupOpt)
 			if err != nil {

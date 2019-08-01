@@ -136,6 +136,9 @@ func NewCmdBackup() *cobra.Command {
 				return err
 			}
 
+			// wait for DB ready
+			waitForDBReady(appBinding.Spec.ClientConfig.Service.Name, appBinding.Spec.ClientConfig.Service.Port)
+
 			// unmarshal parameter is the field has value
 			parameters := v1alpha1.MongoDBConfiguration{}
 			if appBinding.Spec.Parameters != nil {
@@ -397,8 +400,8 @@ func getPrimaryNSecondaryMember(mongoDSN string) (primary, secondary string, err
 		"--quiet",
 		"--eval", "JSON.stringify(rs.isMaster())",
 	}, adminCreds...)
-	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); // even --quiet doesn't skip replicaset PrimaryConnection log. so take tha last line. issue tracker: https://jira.mongodb.org/browse/SERVER-27159
-		err != nil {
+	// even --quiet doesn't skip replicaset PrimaryConnection log. so take tha last line. issue tracker: https://jira.mongodb.org/browse/SERVER-27159
+	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
 		return "", "", err
 	}
 
