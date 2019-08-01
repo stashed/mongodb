@@ -16,7 +16,7 @@ spec:
   - --path=${REPOSITORY_PREFIX:=}
   - --secret-dir=/etc/repository/secret
   - --scratch-dir=/tmp
-  - --enable-cache=${ENABLE_CACHE:=true}
+  - --enable-cache=false
   - --max-connections=${MAX_CONNECTIONS:=0} # 0 indicates use default connection limit
   - --hostname=${HOSTNAME:=}
   - --mongo-args=${mgArgs:={{ .Values.restore.mgArgs }}} # optional arguments pass to mgdump command
