@@ -189,7 +189,7 @@ func NewCmdBackup() *cobra.Command {
 					Host:            hostKey,
 					StdinFileName:   MongoDumpFile,
 					RetentionPolicy: defaultBackupOpt.RetentionPolicy,
-					BackupDirs:      defaultBackupOpt.BackupDirs,
+					BackupPaths:     defaultBackupOpt.BackupPaths,
 				}
 
 				// setup pipe command
