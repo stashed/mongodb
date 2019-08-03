@@ -296,7 +296,7 @@ spec:
   type: kubedb.com/mongodb
 ```
 
-Here, `mongo-sh-rs-cert` contains few required certificates, and one of them is `client.pem` which is required to backup/restore ssl enabled mongodb server using mongodb-stash.
+Here, `mongo-sh-rs-cert` contains few required certificates, and one of them is `client.pem` which is required to backup/restore ssl enabled mongodb server using stash-mongodb.
 
 **Creating AppBinding Manually:**
 
