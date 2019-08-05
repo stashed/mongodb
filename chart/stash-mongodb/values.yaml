@@ -8,7 +8,7 @@ docker:
   image: stash-mongodb
   tag: 3.6
 
-# optional argument to send mongoump or mongorestore command
+# optional argument to send mongodump or mongorestore command
 backup:
   mgArgs: ""
 restore:
