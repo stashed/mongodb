@@ -1,4 +1,4 @@
-# Stash-mongodb
+# stash-mongodb
 
 [stash-mongodb](https://github.com/stashed/stash-mongodb) - MongoDB database backup/restore plugin for [Stash by AppsCode](https://appscode.com/products/stash/).
 
@@ -54,13 +54,13 @@ The command removes all the Kubernetes components associated with the chart and 
 
 The following table lists the configurable parameters of the `stash-mongodb` chart and their default values.
 
-|     Parameter     |                                                           Description                                                            |     Default     |
+| Parameter         | Description                                                                                                                      |     Default     |
 | ----------------- | -------------------------------------------------------------------------------------------------------------------------------- | --------------- |
 | `docker.registry` | Docker registry used to pull respective images                                                                                   | `stashed`       |
 | `docker.image`    | Docker image used to backup/restore PosegreSQL database                                                                          | `stash-mongodb` |
 | `docker.tag`      | Tag of the image that is used to backup/restore PostgreSQL database. This is usually same as the database version it can backup. | `3.6`           |
-| `backup.mgArgs`   | Optional arguments to pass to `mongodump` command  while bakcup                                                                  |                 |
-| `restore.mgArgs`  | Optional arguments to pass to `mongorestore` command while restore                                                               |                 |
+| `backup.mgArgs`   | Optional arguments to pass to `mongodump` command during bakcup process                                                          |                 |
+| `restore.mgArgs`  | Optional arguments to pass to `mongorestore` command during restore process                                                      |                 |
 | `metrics.enabled` | Specifies whether to send Prometheus metrics                                                                                     | `true`          |
 | `metrics.labels`  | Optional comma separated labels to add to the Prometheus metrics                                                                 |                 |
 
