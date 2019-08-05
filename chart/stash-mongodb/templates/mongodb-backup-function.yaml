@@ -1,7 +1,7 @@
 apiVersion: stash.appscode.com/v1beta1
 kind: Function
 metadata:
-  name: mg-backup-{{- .Chart.Version }}
+  name: mongodb-backup-{{- .Chart.Version }}
   labels:
     {{- include "stash-mongodb.labels" . | nindent 4 }}
 spec:

@@ -22,7 +22,7 @@ Stash 0.9.0+ supports taking [backup](https://docs.mongodb.com/manual/tutorial/b
 
 - Install Stash in your cluster following the steps [here](https://appscode.com/products/stash/0.8.3/setup/install/).
 
-- Install [KubeDB](https://kubedb.com) in your cluster following the steps [here](https://kubedb.com/docs/0.12.0/setup/install/).
+- Install [KubeDB](https://kubedb.com) in your cluster following the steps [here](https://kubedb.com/docs/0.12.0/setup/install/). This step is optional. You can deploy your database using any method you want. We are using KubeDB because it automates some tasks that you have to do manually otherwise.
 
 - If you are not familiar with how Stash backup and restore databases, please check the following guide:
   - [How Stash backup and restore databases](https://appscode.com/products/stash/0.8.3/guides/databases/overview/).
@@ -46,55 +46,88 @@ namespace/demo created
 
 ## Install MongoDB Catalog for Stash
 
-At first, we have to install MongoDB plugin (`mongodb-catalog`) for Stash. This plugin creates necessary `Function` and `Task` definition which is used by Stash to backup or restore a MongoDB database. We are going to use [Helm](https://helm.sh/) to install `mongodb-catalog` chart.
+Stash uses a `Function-Task` model to backup databases. We have to install MongoDB catalogs (`stash-mongodb`) for Stash. This catalog creates necessary `Function` and `Task` definitions to backup/restore MongoDB databases.
 
-If you have already installed `stash-catalog` which contains necessary `Function` and `Task` definition to backup or restore all the databases supported by Stash, you can skip installing `mongodb-catalog`.
+You can install the catalog either as a helm chart or you can create only the YAMLs of the respective resources.
 
-Let's install `mongodb-catalog` chart,
+<ul class="nav nav-tabs" id="installerTab" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link" id="helm-tab" data-toggle="tab" href="#helm" role="tab" aria-controls="helm" aria-selected="false">Helm</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link active" id="script-tab" data-toggle="tab" href="#script" role="tab" aria-controls="script" aria-selected="true">Script</a>
+  </li>
+</ul>
+<div class="tab-content" id="installerTabContent">
+ <!-- ------------ Helm Tab Begins----------- -->
+  <div class="tab-pane fade" id="helm" role="tabpanel" aria-labelledby="helm-tab">
+
+### Install as chart release
+
+Run the following script to install `stash-mongodb` catalog as a Helm chart.
 
 ```console
-helm repo add appscode https://charts.appscode.com/stable/
-helm repo update
-helm install appscode/mongodb-catalog --name mongodb-catalog
+curl -fsSL https://github.com/stashed/catalog/raw/master/deploy/chart.sh | bash -s -- --catalog=stash-mongodb
 ```
 
-Once installed, this will create `mg-backup-*` and `mg-recovery-*` Functions for all supported MongoDB versions. Verify that the Functions has been created successfully by,
+</div>
+<!-- ------------ Helm Tab Ends----------- -->
+
+<!-- ------------ Script Tab Begins----------- -->
+<div class="tab-pane fade show active" id="script" role="tabpanel" aria-labelledby="script-tab">
+
+### Install only YAMLs
+
+Run the following script to install `stash-mongodb` catalog as Kubernetes YAMLs.
+
+```console
+curl -fsSL https://github.com/stashed/catalog/raw/master/deploy/script.sh | bash -s -- --catalog=stash-mongodb
+```
+
+</div>
+<!-- ------------ Script Tab Ends----------- -->
+</div>
+
+Once installed, this will create `mongodb-backup-*` and `mongodb-restore-*` Functions for all supported MongoDB versions. To verify, run the following command:
 
 ```console
 $ kubectl get functions.stash.appscode.com
-NAME             AGE
-mg-backup-3.4    6s
-mg-backup-3.6   6s
-mg-backup-4.0   6s
-mg-backup-4.1   6s
-mg-restore-3.4   6s
-mg-restore-3.6  6s
-mg-restore-4.0  6s
-mg-restore-4.1  6s
-update-status    6d19h
+NAME                    AGE
+mongodb-backup-4.1      20s
+mongodb-backup-4.0      20s
+mongodb-backup-3.6      19s
+mongodb-backup-3.4      20s
+mongodb-restore-4.1     20s
+mongodb-restore-4.0     20s
+mongodb-restore-3.6     19s
+mongodb-restore-3.4     20s
+pvc-backup              7h6m
+pvc-restore             7h6m
+update-status           7h6m
 ```
 
-This will also create `mg-backup-*` and `mg-restore-*` Tasks for all supported MongoDB versions. Verify that they have been created successfully by,
+Also, verify that the necessary `Task` have been created.
 
 ```console
 $ kubectl get tasks.stash.appscode.com
-NAME             AGE
-NAME             AGE
-mg-backup-3.4    10s
-mg-backup-3.6   10s
-mg-backup-4.0   10s
-mg-backup-4.1   10s
-mg-restore-3.4   10s
-mg-restore-3.6  10s
-mg-restore-4.0  10s
-mg-restore-4.1  10s
+NAME                    AGE
+mongodb-backup-4.1      2m7s
+mongodb-backup-4.0      2m7s
+mongodb-backup-3.6      2m6s
+mongodb-backup-3.4      2m7s
+mongodb-restore-4.1     2m7s
+mongodb-restore-4.0     2m7s
+mongodb-restore-3.6     2m6s
+mongodb-restore-3.4     2m7s
+pvc-backup              7h7m
+pvc-restore             7h7m
 ```
 
-Now, Stash is ready to backup MongoDB clusters.
+Now, Stash is ready to backup MongoDB database.
 
 ## Backup Sharded MongoDB Cluster
 
-This section will demonstrate how to backup MongoDB cluster. We are going to use [KubeDB](https://kubedb.com) to deploy a sample database. You can deploy your MongoDB cluster using any method you want. We are using `KubeDB` because it automates some tasks that you have to do manually otherwise.
+This section will demonstrate how to backup MongoDB cluster. We are going to use [KubeDB](https://kubedb.com) to deploy a sample database. Then, we are going to backup this database into a GCS bucket. Finally, we are going to restore the backed up data into another MongoDB cluster.
 
 ### Deploy Sample MongoDB Sharding
 
@@ -235,6 +268,7 @@ Stash uses the `AppBinding` crd to connect with the target database. It requires
 - `spec.secret` specifies the name of the secret that holds necessary credentials to access the database.
 - `spec.parameters.configServer` specifies the dsn of config server of mongodb sharding. The dsn includes the port no too.
 - `spec.parameters.replicaSets` contains the dsn of each replicaset of sharding. The DSNs are in key-value pair, where the keys are host-0, host-1 etc, and the values are DSN of each replicaset. If there is no sharding but only one replicaset, then ReplicaSets field contains only one key-value pair where the key is host-0 and the value is dsn of that replicaset.
+- `spec.type` specifies the types of the app that this AppBinding is pointing to. KubeDB generated AppBinding follows the following format: `<app group>/<app resource type>`.
 
 ### AppBinding for SSL
 
@@ -245,7 +279,7 @@ User need to provide the following fields in case of SSL is enabled,
 - `spec.clientConfig.caBundle` specifies the CA certificate that is used in [`--sslCAFile`](https://docs.mongodb.com/manual/reference/program/mongod/index.html#cmdoption-mongod-sslcafile) flag of `mongod`.
 - `spec.secret` specifies the name of the secret that holds `client.pem` file. Follow the [mongodb official doc](https://docs.mongodb.com/manual/tutorial/configure-x509-client-authentication/) to learn how to create `client.pem` and add the subject of `client.pem` as user (with appropriate roles) to mongodb server.
 
-**KubeDB does these automatically**. It has added the subject of `client.pem` in the mongodb server with `root` role. See the [KubeDB concept] to learn about the ssl options in mongodb in details. So, user can just use the appbinding that is created by KubeDB without doing any hurdle!
+**KubeDB does these automatically**. It has added the subject of `client.pem` in the mongodb server with `root` role. So, user can just use the appbinding that is created by KubeDB without doing any hurdle! See the [MongoDB with TLS/SSL (Transport Encryption)](https://github.com/kubedb/docs/blob/master/docs/guides/mongodb/tls-ssl-encryption/tls-ssl-encryption.md) guide to learn about the ssl options in mongodb in details.
 
 So, in KubeDB, the following `CRD` deployes a mongodb replicaset where ssl is enabled (`requireSSL` sslmode),
 
@@ -523,11 +557,32 @@ Now, if we navigate to the GCS bucket, we are going to see backed up data has be
 
 ## Restore MongoDB Sharding
 
-We are going to restore the database from the backup we have taken in the previous section. We are going to deploy a new sharded database and initialize it from the backup.
+In this section, we are going to restore the database from the backup we have taken in the previous section. We are going to deploy a new sharded database and initialize it from the backup.
+
+**Stop Taking Backup of the Old Database:**
+
+At first, let's stop taking any further backup of the old database so that no backup is taken during restore process. We are going to pause the `BackupConfiguration` crd that we had created to backup the `sample-mgo-sh` database. Then, Stash will stop taking any further backup for this database.
+
+Let's pause the `sample-mgo-sh-backup` BackupConfiguration,
+
+```console
+$ kubectl patch backupconfiguration -n demo sample-mgo-sh-backup --type="merge" --patch='{"spec": {"paused": true}}'
+backupconfiguration.stash.appscode.com/sample-mgo-sh-backup patched
+```
+
+Now, wait for a moment. Stash will pause the BackupConfiguration. Verify that the BackupConfiguration  has been paused,
+
+```console
+$ kubectl get backupconfiguration -n demo sample-mgo-sh-backup
+NAME                  TASK                      SCHEDULE      PAUSED   AGE
+sample-mgo-sh-backup  mongodb-backup-3.6        */5 * * * *   true     26m
+```
+
+Notice the `PAUSED` column. Value `true` for this field means that the BackupConfiguration has been paused.
 
 **Deploy Restored Database:**
 
-Now, we have to deploy the restored database similarly as we have deployed the original `sample-psotgres` database. However, this time there will be the following differences:
+Now, we have to deploy the restored database similarly as we have deployed the original `sample-mgo-sh` database. However, this time there will be the following differences:
 
 - We have to use the same secret that was used in the original database. We are going to specify it using `spec.databaseSecret` field.
 - We have to specify `spec.init` section to tell KubeDB that we are going to use Stash to initialize this database from backup. KubeDB will keep the database phase to `Initializing` until Stash finishes its initialization.
@@ -929,8 +984,42 @@ kubectl delete repository -n demo gcs-repo-sharding gcs-repo-custom
 
 ```
 
-To uninstall `mongodb-catalog` chart, run the following command,
+To cleanup the MongoDB catalogs that we had created earlier, run the following:
+
+<ul class="nav nav-tabs" id="uninstallerTab" role="tablist">
+  <li class="nav-item">
+    <a class="nav-link" id="helm-uninstaller-tab" data-toggle="tab" href="#helm-uninstaller" role="tab" aria-controls="helm-uninstaller" aria-selected="false">Helm</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link active" id="script-uninstaller-tab" data-toggle="tab" href="#script-uninstaller" role="tab" aria-controls="script-uninstaller" aria-selected="true">Script</a>
+  </li>
+</ul>
+<div class="tab-content" id="uninstallerTabContent">
+ <!-- ------------ Helm Tab Begins----------- -->
+  <div class="tab-pane fade" id="helm-uninstaller" role="tabpanel" aria-labelledby="helm-uninstaller-tab">
+
+### Uninstall  `stash-mongdb-*` charts
+
+Run the following script to uninstall `stash-mongodb` catalogs that was installed as a Helm chart.
 
 ```console
-helm delete mongodb-catalog
+curl -fsSL https://github.com/stashed/catalog/raw/master/deploy/chart.sh | bash -s -- --uninstall --catalog=stash-mongodb
 ```
+
+</div>
+<!-- ------------ Helm Tab Ends----------- -->
+
+<!-- ------------ Script Tab Begins----------- -->
+<div class="tab-pane fade show active" id="script-uninstaller" role="tabpanel" aria-labelledby="script-uninstaller-tab">
+
+### Uninstall `stash-mongodb` catalog YAMLs
+
+Run the following script to uninstall `stash-mongodb` catalog that was installed as Kubernetes YAMLs.
+
+```console
+curl -fsSL https://github.com/stashed/catalog/raw/master/deploy/script.sh | bash -s -- --uninstall --catalog=stash-mongodb
+```
+
+</div>
+<!-- ------------ Script Tab Ends----------- -->
+</div>

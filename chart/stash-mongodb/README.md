@@ -1,4 +1,4 @@
-# MongoDB-stash
+# Stash-mongodb
 
 [stash-mongodb](https://github.com/stashed/stash-mongodb) - MongoDB database backup/restore plugin for [Stash by AppsCode](https://appscode.com/products/stash/).
 
@@ -52,30 +52,28 @@ The command removes all the Kubernetes components associated with the chart and 
 
 ## Configuration
 
-The following table lists the configurable parameters of the `postgre-stash` chart and their default values.
+The following table lists the configurable parameters of the `stash-mongodb` chart and their default values.
 
-|        Parameter         |                                                           Description                                                            |     Default      |
-| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
-| `global.registry`        | Docker registry used to pull respective images                                                                                   | `appscode`       |
-| `global.image`           | Docker image used to backup/restore PosegreSQL database                                                                          | `stash-mongodb` |
-| `global.tag`             | Tag of the image that is used to backup/restore MongoDB database. This is usually same as the database version it can backup. | `3.6`           |
-| `global.backup.mgArgs`   | Optional arguments to pass to `mgdump` command  while bakcup                                                                     |                  |
-| `global.restore.mgArgs`  | Optional arguments to pass to `psql` command while restore                                                                       |                  |
-| `global.metrics.enabled` | Specifies whether to send Prometheus metrics                                                                                     | `true`           |
-| `global.metrics.labels`  | Optional comma separated labels to add to the Prometheus metrics                                                                 |                  |
-
-> We have declared all the configurable parameters as global parameter so that the parent chart can overwrite them.
+|     Parameter     |                                                           Description                                                            |     Default     |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------- | --------------- |
+| `docker.registry` | Docker registry used to pull respective images                                                                                   | `stashed`       |
+| `docker.image`    | Docker image used to backup/restore PosegreSQL database                                                                          | `stash-mongodb` |
+| `docker.tag`      | Tag of the image that is used to backup/restore PostgreSQL database. This is usually same as the database version it can backup. | `3.6`           |
+| `backup.mgArgs`   | Optional arguments to pass to `mongodump` command  while bakcup                                                                  |                 |
+| `restore.mgArgs`  | Optional arguments to pass to `mongorestore` command while restore                                                               |                 |
+| `metrics.enabled` | Specifies whether to send Prometheus metrics                                                                                     | `true`          |
+| `metrics.labels`  | Optional comma separated labels to add to the Prometheus metrics                                                                 |                 |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 
 For example:
 
 ```console
-helm install --name stash-mongodb-3.6 --set global.metrics.enabled=false appscode/stash-mongodb
+helm install --name stash-mongodb-3.6 --set metrics.enabled=false appscode/stash-mongodb
 ```
 
-**Tips:** Use escape character (`\`) while providing multiple comma-separated labels for `global.metrics.labels`.
+**Tips:** Use escape character (`\`) while providing multiple comma-separated labels for `metrics.labels`.
 
 ```console
- helm install chart/stash-mongodb --set global.metrics.labels="k1=v1\,k2=v2"
+ helm install chart/stash-mongodb --set metrics.labels="k1=v1\,k2=v2"
 ```

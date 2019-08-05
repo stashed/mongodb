@@ -136,6 +136,7 @@ func NewCmdRestore() *cobra.Command {
 				log.Infoln("processing backupOptions for ", mongoDSN)
 				dumpOpt := restic.DumpOptions{
 					Host:     hostKey,
+					SourceHost: hostKey,
 					FileName: defaultDumpOpt.FileName,
 					Snapshot: defaultDumpOpt.Snapshot,
 				}
@@ -240,6 +241,7 @@ func NewCmdRestore() *cobra.Command {
 	cmd.Flags().IntVar(&setupOpt.MaxConnections, "max-connections", setupOpt.MaxConnections, "Specify maximum concurrent connections for GCS, Azure and B2 backend")
 
 	cmd.Flags().StringVar(&defaultDumpOpt.Host, "hostname", defaultDumpOpt.Host, "Name of the host machine")
+	cmd.Flags().StringVar(&defaultDumpOpt.SourceHost, "source-hostname", defaultDumpOpt.SourceHost, "Name of the host whose data will be restored")
 	cmd.Flags().StringVar(&defaultDumpOpt.Snapshot, "snapshot", defaultDumpOpt.Snapshot, "Snapshot to dump")
 
 	cmd.Flags().StringVar(&outputDir, "output-dir", outputDir, "Directory where output.json file will be written (keep empty if you don't need to write output in file)")

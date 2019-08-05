@@ -1,7 +1,7 @@
 apiVersion: stash.appscode.com/v1beta1
 kind: Function
 metadata:
-  name: mg-restore-{{- .Chart.Version }}
+  name: mongodb-restore-{{- .Chart.Version }}
   labels:
     {{- include "stash-mongodb.labels" . | nindent 4 }}
 spec:
@@ -19,6 +19,7 @@ spec:
   - --enable-cache=false
   - --max-connections=${MAX_CONNECTIONS:=0} # 0 indicates use default connection limit
   - --hostname=${HOSTNAME:=}
+  - --source-hostname=${SOURCE_HOSTNAME:=}
   - --mongo-args=${mgArgs:={{ .Values.restore.mgArgs }}} # optional arguments pass to mgdump command
   - --max-concurrency=${MAX_CONCURRENCY:={{ .Values.maxConcurrency}}}
   # target information
