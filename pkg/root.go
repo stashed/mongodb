@@ -16,7 +16,7 @@ import (
 
 func NewRootCmd() *cobra.Command {
 	var rootCmd = &cobra.Command{
-		Use:               "mongodb-stash",
+		Use:               "stash-mongodb",
 		Short:             `MongoDB backup & restore plugin for Stash by AppsCode`,
 		Long:              `MongoDB backup & restore plugin for Stash by AppsCode. For more information, visit here: https://appscode.com/products/stash`,
 		DisableAutoGenTag: true,

@@ -54,7 +54,7 @@ https://github.com/hashicorp/go-getter#url-format
 
 url examples:
   sigs.k8s.io/kustomize//examples/multibases?ref=v1.0.6
-  github.com/Liujingfang1/mongodb
+  github.com/Liujingfang1/mysql
   github.com/Liujingfang1/kustomize//examples/helloWorld?ref=repoUrl2
 `
 

@@ -108,7 +108,7 @@ type VolumeSource struct {
 	// +optional
 	FlexVolume *FlexVolumeSource `json:"flexVolume,omitempty" protobuf:"bytes,12,opt,name=flexVolume"`
 	// Cinder represents a cinder volume attached and mounted on kubelets host machine
-	// More info: https://releases.k8s.io/HEAD/examples/mongodb-cinder-pd/README.md
+	// More info: https://releases.k8s.io/HEAD/examples/mysql-cinder-pd/README.md
 	// +optional
 	Cinder *CinderVolumeSource `json:"cinder,omitempty" protobuf:"bytes,13,opt,name=cinder"`
 	// CephFS represents a Ceph FS mount on the host that shares a pod's lifetime
@@ -208,7 +208,7 @@ type PersistentVolumeSource struct {
 	// +optional
 	ISCSI *ISCSIPersistentVolumeSource `json:"iscsi,omitempty" protobuf:"bytes,7,opt,name=iscsi"`
 	// Cinder represents a cinder volume attached and mounted on kubelets host machine
-	// More info: https://releases.k8s.io/HEAD/examples/mongodb-cinder-pd/README.md
+	// More info: https://releases.k8s.io/HEAD/examples/mysql-cinder-pd/README.md
 	// +optional
 	Cinder *CinderPersistentVolumeSource `json:"cinder,omitempty" protobuf:"bytes,8,opt,name=cinder"`
 	// CephFS represents a Ceph FS mount on the host that shares a pod's lifetime
@@ -757,17 +757,17 @@ type RBDPersistentVolumeSource struct {
 // Cinder volumes support ownership management and SELinux relabeling.
 type CinderVolumeSource struct {
 	// volume id used to identify the volume in cinder
-	// More info: https://releases.k8s.io/HEAD/examples/mongodb-cinder-pd/README.md
+	// More info: https://releases.k8s.io/HEAD/examples/mysql-cinder-pd/README.md
 	VolumeID string `json:"volumeID" protobuf:"bytes,1,opt,name=volumeID"`
 	// Filesystem type to mount.
 	// Must be a filesystem type supported by the host operating system.
 	// Examples: "ext4", "xfs", "ntfs". Implicitly inferred to be "ext4" if unspecified.
-	// More info: https://releases.k8s.io/HEAD/examples/mongodb-cinder-pd/README.md
+	// More info: https://releases.k8s.io/HEAD/examples/mysql-cinder-pd/README.md
 	// +optional
 	FSType string `json:"fsType,omitempty" protobuf:"bytes,2,opt,name=fsType"`
 	// Optional: Defaults to false (read/write). ReadOnly here will force
 	// the ReadOnly setting in VolumeMounts.
-	// More info: https://releases.k8s.io/HEAD/examples/mongodb-cinder-pd/README.md
+	// More info: https://releases.k8s.io/HEAD/examples/mysql-cinder-pd/README.md
 	// +optional
 	ReadOnly bool `json:"readOnly,omitempty" protobuf:"varint,3,opt,name=readOnly"`
 	// Optional: points to a secret object containing parameters used to connect
@@ -782,17 +782,17 @@ type CinderVolumeSource struct {
 // Cinder volumes support ownership management and SELinux relabeling.
 type CinderPersistentVolumeSource struct {
 	// volume id used to identify the volume in cinder
-	// More info: https://releases.k8s.io/HEAD/examples/mongodb-cinder-pd/README.md
+	// More info: https://releases.k8s.io/HEAD/examples/mysql-cinder-pd/README.md
 	VolumeID string `json:"volumeID" protobuf:"bytes,1,opt,name=volumeID"`
 	// Filesystem type to mount.
 	// Must be a filesystem type supported by the host operating system.
 	// Examples: "ext4", "xfs", "ntfs". Implicitly inferred to be "ext4" if unspecified.
-	// More info: https://releases.k8s.io/HEAD/examples/mongodb-cinder-pd/README.md
+	// More info: https://releases.k8s.io/HEAD/examples/mysql-cinder-pd/README.md
 	// +optional
 	FSType string `json:"fsType,omitempty" protobuf:"bytes,2,opt,name=fsType"`
 	// Optional: Defaults to false (read/write). ReadOnly here will force
 	// the ReadOnly setting in VolumeMounts.
-	// More info: https://releases.k8s.io/HEAD/examples/mongodb-cinder-pd/README.md
+	// More info: https://releases.k8s.io/HEAD/examples/mysql-cinder-pd/README.md
 	// +optional
 	ReadOnly bool `json:"readOnly,omitempty" protobuf:"varint,3,opt,name=readOnly"`
 	// Optional: points to a secret object containing parameters used to connect
@@ -3653,7 +3653,7 @@ type ServicePort struct {
 // +genclient:skipVerbs=deleteCollection
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// Service is a named abstraction of software service (for example, mongodb) consisting of local port
+// Service is a named abstraction of software service (for example, mysql) consisting of local port
 // (for example 3306) that the proxy listens on, and the selector that determines which pods
 // will answer requests sent through the proxy.
 type Service struct {
