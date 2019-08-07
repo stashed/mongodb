@@ -135,10 +135,10 @@ func NewCmdRestore() *cobra.Command {
 			getDumpOpts := func(mongoDSN, hostKey string, isStandalone bool) restic.DumpOptions {
 				log.Infoln("processing backupOptions for ", mongoDSN)
 				dumpOpt := restic.DumpOptions{
-					Host:     hostKey,
+					Host:       hostKey,
 					SourceHost: hostKey,
-					FileName: defaultDumpOpt.FileName,
-					Snapshot: defaultDumpOpt.Snapshot,
+					FileName:   defaultDumpOpt.FileName,
+					Snapshot:   defaultDumpOpt.Snapshot,
 				}
 
 				// setup pipe command
