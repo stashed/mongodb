@@ -14,10 +14,5 @@ backup:
 restore:
   mgArgs: ""
 
-# default values for prometheus metrics
-metrics:
-  enabled: true
-  labels: []
-
 # Maximum concurrency to perform backup or restore tasks
 maxConcurrency: 3

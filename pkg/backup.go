@@ -18,26 +18,13 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	kerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	appcatalog_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 	"kubedb.dev/apimachinery/apis/config/v1alpha1"
+	api_v1beta1 "stash.appscode.dev/stash/apis/stash/v1beta1"
 	"stash.appscode.dev/stash/pkg/restic"
 	"stash.appscode.dev/stash/pkg/util"
-)
-
-const (
-	JobMongoBackup        = "stash-mongo-backup"
-	MongoUserKey          = "username"
-	MongoPasswordKey      = "password"
-	MongoDumpFile         = "dump"
-	MongoDumpCMD          = "mongodump"
-	MongoRestoreCMD       = "mongorestore"
-	MongoConfigSVRHostKey = "confighost"
-
-	MongoTLSCertFileName   = "ca.cert"
-	MongoClientPemFileName = "client.pem"
 )
 
 var (
@@ -61,23 +48,15 @@ func NewCmdBackup() *cobra.Command {
 	var (
 		masterURL      string
 		kubeconfigPath string
-		namespace      string
-		appBindingName string
-		mongoArgs      string
-		outputDir      string
-		maxConcurrency int
-
-		backupOpts []restic.BackupOptions
-		setupOpt   = restic.SetupOptions{
-			ScratchDir:  restic.DefaultScratchDir,
-			EnableCache: false,
-		}
-		defaultBackupOpt = restic.BackupOptions{
-			Host:          restic.DefaultHost,
-			StdinFileName: MongoDumpFile,
-		}
-		metrics = restic.MetricsOptions{
-			JobName: JobMongoBackup,
+		opt            = mongoOptions{
+			setupOptions: restic.SetupOptions{
+				ScratchDir:  restic.DefaultScratchDir,
+				EnableCache: false,
+			},
+			defaultBackupOptions: restic.BackupOptions{
+				Host:          restic.DefaultHost,
+				StdinFileName: MongoDumpFile,
+			},
 		}
 	)
 
@@ -88,7 +67,7 @@ func NewCmdBackup() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			defer cleanup()
 
-			flags.EnsureRequiredFlags(cmd, "app-binding", "provider", "secret-dir")
+			flags.EnsureRequiredFlags(cmd, "appbinding", "provider", "secret-dir")
 
 			// catch sigkill signals and gracefully terminate so that cleanup functions are executed.
 			sigChan := make(chan os.Signal)
@@ -100,274 +79,275 @@ func NewCmdBackup() *cobra.Command {
 				os.Exit(1)
 			}()
 
-			// apply nice, ionice settings from env
-			var err error
-			setupOpt.Nice, err = util.NiceSettingsFromEnv()
-			if err != nil {
-				return util.HandleResticError(outputDir, restic.DefaultOutputFileName, err)
-			}
-			setupOpt.IONice, err = util.IONiceSettingsFromEnv()
-			if err != nil {
-				return util.HandleResticError(outputDir, restic.DefaultOutputFileName, err)
-			}
-
 			// prepare client
 			config, err := clientcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)
 			if err != nil {
 				return err
 			}
-			kubeClient, err := kubernetes.NewForConfig(config)
+			opt.kubeClient, err = kubernetes.NewForConfig(config)
 			if err != nil {
 				return err
 			}
-			appCatalogClient, err := appcatalog_cs.NewForConfig(config)
-			if err != nil {
-				return err
-			}
-
-			// get app binding
-			appBinding, err := appCatalogClient.AppcatalogV1alpha1().AppBindings(namespace).Get(appBindingName, metav1.GetOptions{})
-			if err != nil {
-				return err
-			}
-			// get secret
-			appBindingSecret, err := kubeClient.CoreV1().Secrets(namespace).Get(appBinding.Spec.Secret.Name, metav1.GetOptions{})
+			opt.catalogClient, err = appcatalog_cs.NewForConfig(config)
 			if err != nil {
 				return err
 			}
 
-			// wait for DB ready
-			waitForDBReady(appBinding.Spec.ClientConfig.Service.Name, appBinding.Spec.ClientConfig.Service.Port)
-
-			// unmarshal parameter is the field has value
-			parameters := v1alpha1.MongoDBConfiguration{}
-			if appBinding.Spec.Parameters != nil {
-				if err = json.Unmarshal(appBinding.Spec.Parameters.Raw, &parameters); err != nil {
-					log.Errorf("unable to unmarshal appBinding.Spec.Parameters.Raw. Reason: %v", err)
-				}
-			}
-
-			if appBinding.Spec.ClientConfig.CABundle != nil {
-				if err := ioutil.WriteFile(filepath.Join(setupOpt.ScratchDir, MongoTLSCertFileName), appBinding.Spec.ClientConfig.CABundle, os.ModePerm); err != nil {
-					return errors.Wrap(err, "failed to write key for CA certificate")
-				}
-				adminCreds = []interface{}{
-					"--ssl",
-					"--sslCAFile", filepath.Join(setupOpt.ScratchDir, MongoTLSCertFileName),
-				}
-
-				// get certificate secret to get client certificate
-				data, ok := appBindingSecret.Data[MongoClientPemFileName]
-				if !ok {
-					return errors.Wrap(err, "unable to get client certificate from secret.")
-				}
-				if err := ioutil.WriteFile(filepath.Join(setupOpt.ScratchDir, MongoClientPemFileName), data, os.ModePerm); err != nil {
-					return errors.Wrap(err, "failed to write client certificate")
-				}
-				user, err := getSSLUser(filepath.Join(setupOpt.ScratchDir, MongoClientPemFileName))
-				if err != nil {
-					return errors.Wrap(err, "unable to get user from ssl.")
-				}
-				adminCreds = append(adminCreds, []interface{}{
-					"--sslPEMKeyFile", filepath.Join(setupOpt.ScratchDir, MongoClientPemFileName),
-					"-u", user,
-					"--authenticationMechanism", "MONGODB-X509",
-					"--authenticationDatabase", "$external",
-				}...)
-
-			} else {
-				adminCreds = []interface{}{
-					"--username", string(appBindingSecret.Data[MongoUserKey]),
-					"--password", string(appBindingSecret.Data[MongoPasswordKey]),
-					"--authenticationDatabase", "admin",
-				}
-			}
-
-			getBackupOpt := func(mongoDSN, hostKey string, isStandalone bool) restic.BackupOptions {
-				log.Infoln("processing backupOptions for ", mongoDSN)
-				backupOpt := restic.BackupOptions{
-					Host:            hostKey,
-					StdinFileName:   MongoDumpFile,
-					RetentionPolicy: defaultBackupOpt.RetentionPolicy,
-					BackupPaths:     defaultBackupOpt.BackupPaths,
-				}
-
-				// setup pipe command
-				backupOpt.StdinPipeCommand = restic.Command{
-					Name: MongoDumpCMD,
-					Args: append([]interface{}{
-						"--host", mongoDSN,
-						"--archive",
-					}, adminCreds...),
-				}
-				if isStandalone {
-					backupOpt.StdinPipeCommand.Args = append(backupOpt.StdinPipeCommand.Args, "--port="+fmt.Sprint(appBinding.Spec.ClientConfig.Service.Port))
-				} else {
-					// - port is already added in mongoDSN with replicasetName/host:port format.
-					// - oplog is enabled automatically for replicasets.
-					backupOpt.StdinPipeCommand.Args = append(backupOpt.StdinPipeCommand.Args, "--oplog")
-				}
-				if mongoArgs != "" {
-					backupOpt.StdinPipeCommand.Args = append(backupOpt.StdinPipeCommand.Args, mongoArgs)
-				}
-				return backupOpt
-			}
-
-			// set maxConcurrency
-			if len(parameters.ReplicaSets) <= 1 {
-				maxConcurrency = 1
-			}
-
-			// If parameters.ReplicaSets is not empty, then replicaset hosts are given in key:value pair,
-			// where, keys are host-0,host-1 etc and values are the replicaset dsn of one replicaset component
-			//
-			// Procedure of taking backup
-			// - Disable the balancer from mongos
-			// - Lock the secondary component of configserver and replicasets
-			// - take backup using dsn and host01, host02 etc (from keys)
-			// - Unlock the secondary component for both successful or unsuccessful backup.
-			// - enable balancer for both successful or unsuccessful backup
-			//
-			// ref: https://docs.mongodb.com/manual/tutorial/backup-sharded-cluster-with-database-dumps/
-
-			if parameters.ConfigServer != "" {
-				// sharded cluster. so disable the balancer first. then perform the 'usual' tasks.
-
-				primary, secondary, err := getPrimaryNSecondaryMember(parameters.ConfigServer)
-				if err != nil {
-					return err
-				}
-
-				// connect to mongos to disable/enable balancer
-				err = disabelBalancer(appBinding.Spec.ClientConfig.Service.Name)
-				cleanupFuncs = append(cleanupFuncs, func() error {
-					// even if error occurs, try to enable the balancer on exiting the program.
-					return enableBalancer(appBinding.Spec.ClientConfig.Service.Name)
-				})
-				if err != nil {
-					return err
-				}
-
-				// backupHost is secondary if any secondary component exists.
-				// otherwise primary component will be used to take backup.
-				backupHost := primary
-				if secondary != "" {
-					backupHost = secondary
-				}
-
-				err = lockConfigServer(parameters.ConfigServer, secondary)
-				cleanupFuncs = append(cleanupFuncs, func() error {
-					// even if error occurs, try to unlock the server
-					return unlockSecondaryMember(secondary)
-				})
-				if err != nil {
-					return err
-				}
-
-				backupOpts = append(backupOpts, getBackupOpt(backupHost, MongoConfigSVRHostKey, false))
-			}
-
-			for key, host := range parameters.ReplicaSets {
-				// do the task
-				primary, secondary, err := getPrimaryNSecondaryMember(host)
-				if err != nil {
-					log.Errorf("error while getting primary and secondary member of %v. error: %v", host, err)
-					return err
-				}
-
-				// backupHost is secondary if any secondary component exists.
-				// otherwise primary component will be used to take backup.
-				backupHost := primary
-				if secondary != "" {
-					backupHost = secondary
-				}
-
-				err = lockSecondaryMember(secondary)
-				cleanupFuncs = append(cleanupFuncs, func() error {
-					// even if error occurs, try to unlock the server
-					return unlockSecondaryMember(secondary)
-				})
-				if err != nil {
-					log.Errorf("error while locking secondary member %v. error: %v", host, err)
-					return err
-				}
-
-				backupOpts = append(backupOpts, getBackupOpt(backupHost, key, false))
-			}
-
-			// if parameters.ReplicaSets is nil, then the mongodb database doesn't have replicasets or sharded replicasets.
-			// In this case, perform normal backup with clientconfig.Service.Name mongo dsn
-			if parameters.ReplicaSets == nil {
-				backupOpts = append(backupOpts, getBackupOpt(appBinding.Spec.ClientConfig.Service.Name, restic.DefaultHost, true))
-			}
-
-			log.Infoln("processing backup.")
-
-			resticWrapper, err := restic.NewResticWrapper(setupOpt)
+			var backupOutput *restic.BackupOutput
+			backupOutput, err = opt.backupMonogDB()
 			if err != nil {
-				return err
-			}
-			// hide password, don't print cmd
-			resticWrapper.HideCMD()
-
-			// Run backup
-			backupOutput, backupErr := resticWrapper.RunParallelBackup(backupOpts, maxConcurrency)
-			// If metrics are enabled then generate metrics
-			if metrics.Enabled {
-				err := backupOutput.HandleMetrics(&metrics, backupErr)
-				if err != nil {
-					return kerrors.NewAggregate([]error{backupErr, err})
+				backupOutput = &restic.BackupOutput{
+					HostBackupStats: []api_v1beta1.HostBackupStats{
+						{
+							Hostname: opt.defaultBackupOptions.Host,
+							Phase:    api_v1beta1.HostBackupFailed,
+							Error:    err.Error(),
+						},
+					},
 				}
 			}
 			// If output directory specified, then write the output in "output.json" file in the specified directory
-			if backupErr == nil && outputDir != "" {
-				err := backupOutput.WriteOutput(filepath.Join(outputDir, restic.DefaultOutputFileName))
-				if err != nil {
-					return err
-				}
+			if opt.outputDir != "" {
+				return backupOutput.WriteOutput(filepath.Join(opt.outputDir, restic.DefaultOutputFileName))
 			}
-			return backupErr
+
+			return nil
 		},
 	}
 
-	cmd.Flags().StringVar(&mongoArgs, "mongo-args", mongoArgs, "Additional arguments")
+	cmd.Flags().StringVar(&opt.mongoArgs, "mongo-args", opt.mongoArgs, "Additional arguments")
 
 	cmd.Flags().StringVar(&masterURL, "master", masterURL, "The address of the Kubernetes API server (overrides any value in kubeconfig)")
 	cmd.Flags().StringVar(&kubeconfigPath, "kubeconfig", kubeconfigPath, "Path to kubeconfig file with authorization information (the master location is set by the master flag).")
-	cmd.Flags().StringVar(&namespace, "namespace", "default", "Namespace of Backup/Restore Session")
-	cmd.Flags().StringVar(&appBindingName, "app-binding", appBindingName, "Name of the app binding")
-	cmd.Flags().IntVar(&maxConcurrency, "max-concurrency", 3, "maximum concurrent backup process to run to take backup from each replicasets")
+	cmd.Flags().StringVar(&opt.namespace, "namespace", "default", "Namespace of Backup/Restore Session")
+	cmd.Flags().StringVar(&opt.appBindingName, "appbinding", opt.appBindingName, "Name of the app binding")
+	cmd.Flags().IntVar(&opt.maxConcurrency, "max-concurrency", 3, "maximum concurrent backup process to run to take backup from each replicasets")
 
-	cmd.Flags().StringVar(&setupOpt.Provider, "provider", setupOpt.Provider, "Backend provider (i.e. gcs, s3, azure etc)")
-	cmd.Flags().StringVar(&setupOpt.Bucket, "bucket", setupOpt.Bucket, "Name of the cloud bucket/container (keep empty for local backend)")
-	cmd.Flags().StringVar(&setupOpt.Endpoint, "endpoint", setupOpt.Endpoint, "Endpoint for s3/s3 compatible backend")
-	cmd.Flags().StringVar(&setupOpt.URL, "rest-server-url", setupOpt.URL, "URL for rest backend")
-	cmd.Flags().StringVar(&setupOpt.Path, "path", setupOpt.Path, "Directory inside the bucket where backup will be stored")
-	cmd.Flags().StringVar(&setupOpt.SecretDir, "secret-dir", setupOpt.SecretDir, "Directory where storage secret has been mounted")
-	cmd.Flags().StringVar(&setupOpt.ScratchDir, "scratch-dir", setupOpt.ScratchDir, "Temporary directory")
-	cmd.Flags().BoolVar(&setupOpt.EnableCache, "enable-cache", setupOpt.EnableCache, "Specify whether to enable caching for restic")
-	cmd.Flags().IntVar(&setupOpt.MaxConnections, "max-connections", setupOpt.MaxConnections, "Specify maximum concurrent connections for GCS, Azure and B2 backend")
+	cmd.Flags().StringVar(&opt.setupOptions.Provider, "provider", opt.setupOptions.Provider, "Backend provider (i.e. gcs, s3, azure etc)")
+	cmd.Flags().StringVar(&opt.setupOptions.Bucket, "bucket", opt.setupOptions.Bucket, "Name of the cloud bucket/container (keep empty for local backend)")
+	cmd.Flags().StringVar(&opt.setupOptions.Endpoint, "endpoint", opt.setupOptions.Endpoint, "Endpoint for s3/s3 compatible backend or REST server URL")
+	cmd.Flags().StringVar(&opt.setupOptions.Path, "path", opt.setupOptions.Path, "Directory inside the bucket where backup will be stored")
+	cmd.Flags().StringVar(&opt.setupOptions.SecretDir, "secret-dir", opt.setupOptions.SecretDir, "Directory where storage secret has been mounted")
+	cmd.Flags().StringVar(&opt.setupOptions.ScratchDir, "scratch-dir", opt.setupOptions.ScratchDir, "Temporary directory")
+	cmd.Flags().BoolVar(&opt.setupOptions.EnableCache, "enable-cache", opt.setupOptions.EnableCache, "Specify whether to enable caching for restic")
+	cmd.Flags().IntVar(&opt.setupOptions.MaxConnections, "max-connections", opt.setupOptions.MaxConnections, "Specify maximum concurrent connections for GCS, Azure and B2 backend")
 
-	cmd.Flags().StringVar(&defaultBackupOpt.Host, "hostname", defaultBackupOpt.Host, "Name of the host machine")
+	cmd.Flags().StringVar(&opt.defaultBackupOptions.Host, "hostname", opt.defaultBackupOptions.Host, "Name of the host machine")
 
-	cmd.Flags().IntVar(&defaultBackupOpt.RetentionPolicy.KeepLast, "retention-keep-last", defaultBackupOpt.RetentionPolicy.KeepLast, "Specify value for retention strategy")
-	cmd.Flags().IntVar(&defaultBackupOpt.RetentionPolicy.KeepHourly, "retention-keep-hourly", defaultBackupOpt.RetentionPolicy.KeepHourly, "Specify value for retention strategy")
-	cmd.Flags().IntVar(&defaultBackupOpt.RetentionPolicy.KeepDaily, "retention-keep-daily", defaultBackupOpt.RetentionPolicy.KeepDaily, "Specify value for retention strategy")
-	cmd.Flags().IntVar(&defaultBackupOpt.RetentionPolicy.KeepWeekly, "retention-keep-weekly", defaultBackupOpt.RetentionPolicy.KeepWeekly, "Specify value for retention strategy")
-	cmd.Flags().IntVar(&defaultBackupOpt.RetentionPolicy.KeepMonthly, "retention-keep-monthly", defaultBackupOpt.RetentionPolicy.KeepMonthly, "Specify value for retention strategy")
-	cmd.Flags().IntVar(&defaultBackupOpt.RetentionPolicy.KeepYearly, "retention-keep-yearly", defaultBackupOpt.RetentionPolicy.KeepYearly, "Specify value for retention strategy")
-	cmd.Flags().StringSliceVar(&defaultBackupOpt.RetentionPolicy.KeepTags, "retention-keep-tags", defaultBackupOpt.RetentionPolicy.KeepTags, "Specify value for retention strategy")
-	cmd.Flags().BoolVar(&defaultBackupOpt.RetentionPolicy.Prune, "retention-prune", defaultBackupOpt.RetentionPolicy.Prune, "Specify whether to prune old snapshot data")
-	cmd.Flags().BoolVar(&defaultBackupOpt.RetentionPolicy.DryRun, "retention-dry-run", defaultBackupOpt.RetentionPolicy.DryRun, "Specify whether to test retention policy without deleting actual data")
+	cmd.Flags().IntVar(&opt.defaultBackupOptions.RetentionPolicy.KeepLast, "retention-keep-last", opt.defaultBackupOptions.RetentionPolicy.KeepLast, "Specify value for retention strategy")
+	cmd.Flags().IntVar(&opt.defaultBackupOptions.RetentionPolicy.KeepHourly, "retention-keep-hourly", opt.defaultBackupOptions.RetentionPolicy.KeepHourly, "Specify value for retention strategy")
+	cmd.Flags().IntVar(&opt.defaultBackupOptions.RetentionPolicy.KeepDaily, "retention-keep-daily", opt.defaultBackupOptions.RetentionPolicy.KeepDaily, "Specify value for retention strategy")
+	cmd.Flags().IntVar(&opt.defaultBackupOptions.RetentionPolicy.KeepWeekly, "retention-keep-weekly", opt.defaultBackupOptions.RetentionPolicy.KeepWeekly, "Specify value for retention strategy")
+	cmd.Flags().IntVar(&opt.defaultBackupOptions.RetentionPolicy.KeepMonthly, "retention-keep-monthly", opt.defaultBackupOptions.RetentionPolicy.KeepMonthly, "Specify value for retention strategy")
+	cmd.Flags().IntVar(&opt.defaultBackupOptions.RetentionPolicy.KeepYearly, "retention-keep-yearly", opt.defaultBackupOptions.RetentionPolicy.KeepYearly, "Specify value for retention strategy")
+	cmd.Flags().StringSliceVar(&opt.defaultBackupOptions.RetentionPolicy.KeepTags, "retention-keep-tags", opt.defaultBackupOptions.RetentionPolicy.KeepTags, "Specify value for retention strategy")
+	cmd.Flags().BoolVar(&opt.defaultBackupOptions.RetentionPolicy.Prune, "retention-prune", opt.defaultBackupOptions.RetentionPolicy.Prune, "Specify whether to prune old snapshot data")
+	cmd.Flags().BoolVar(&opt.defaultBackupOptions.RetentionPolicy.DryRun, "retention-dry-run", opt.defaultBackupOptions.RetentionPolicy.DryRun, "Specify whether to test retention policy without deleting actual data")
 
-	cmd.Flags().StringVar(&outputDir, "output-dir", outputDir, "Directory where output.json file will be written (keep empty if you don't need to write output in file)")
-
-	cmd.Flags().BoolVar(&metrics.Enabled, "metrics-enabled", metrics.Enabled, "Specify whether to export Prometheus metrics")
-	cmd.Flags().StringVar(&metrics.PushgatewayURL, "metrics-pushgateway-url", metrics.PushgatewayURL, "Pushgateway URL where the metrics will be pushed")
-	cmd.Flags().StringVar(&metrics.MetricFileDir, "metrics-dir", metrics.MetricFileDir, "Directory where to write metric.prom file (keep empty if you don't want to write metric in a text file)")
-	cmd.Flags().StringSliceVar(&metrics.Labels, "metrics-labels", metrics.Labels, "Labels to apply in exported metrics")
+	cmd.Flags().StringVar(&opt.outputDir, "output-dir", opt.outputDir, "Directory where output.json file will be written (keep empty if you don't need to write output in file)")
 
 	return cmd
+}
+
+func (opt *mongoOptions) backupMonogDB() (*restic.BackupOutput, error) {
+	// apply nice, ionice settings from env
+	var err error
+	opt.setupOptions.Nice, err = util.NiceSettingsFromEnv()
+	if err != nil {
+		return nil, err
+	}
+	opt.setupOptions.IONice, err = util.IONiceSettingsFromEnv()
+	if err != nil {
+		return nil, err
+	}
+
+	// get app binding
+	appBinding, err := opt.catalogClient.AppcatalogV1alpha1().AppBindings(opt.namespace).Get(opt.appBindingName, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+	// get secret
+	appBindingSecret, err := opt.kubeClient.CoreV1().Secrets(opt.namespace).Get(appBinding.Spec.Secret.Name, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	// wait for DB ready
+	waitForDBReady(appBinding.Spec.ClientConfig.Service.Name, appBinding.Spec.ClientConfig.Service.Port)
+
+	// unmarshal parameter is the field has value
+	parameters := v1alpha1.MongoDBConfiguration{}
+	if appBinding.Spec.Parameters != nil {
+		if err = json.Unmarshal(appBinding.Spec.Parameters.Raw, &parameters); err != nil {
+			log.Errorf("unable to unmarshal appBinding.Spec.Parameters.Raw. Reason: %v", err)
+		}
+	}
+
+	if appBinding.Spec.ClientConfig.CABundle != nil {
+		if err := ioutil.WriteFile(filepath.Join(opt.setupOptions.ScratchDir, MongoTLSCertFileName), appBinding.Spec.ClientConfig.CABundle, os.ModePerm); err != nil {
+			return nil, err
+		}
+		adminCreds = []interface{}{
+			"--ssl",
+			"--sslCAFile", filepath.Join(opt.setupOptions.ScratchDir, MongoTLSCertFileName),
+		}
+
+		// get certificate secret to get client certificate
+		data, ok := appBindingSecret.Data[MongoClientPemFileName]
+		if !ok {
+			return nil, errors.Wrap(err, "unable to get client certificate from secret.")
+		}
+		if err := ioutil.WriteFile(filepath.Join(opt.setupOptions.ScratchDir, MongoClientPemFileName), data, os.ModePerm); err != nil {
+			return nil, errors.Wrap(err, "failed to write client certificate")
+		}
+		user, err := getSSLUser(filepath.Join(opt.setupOptions.ScratchDir, MongoClientPemFileName))
+		if err != nil {
+			return nil, errors.Wrap(err, "unable to get user from ssl.")
+		}
+		adminCreds = append(adminCreds, []interface{}{
+			"--sslPEMKeyFile", filepath.Join(opt.setupOptions.ScratchDir, MongoClientPemFileName),
+			"-u", user,
+			"--authenticationMechanism", "MONGODB-X509",
+			"--authenticationDatabase", "$external",
+		}...)
+
+	} else {
+		adminCreds = []interface{}{
+			"--username", string(appBindingSecret.Data[MongoUserKey]),
+			"--password", string(appBindingSecret.Data[MongoPasswordKey]),
+			"--authenticationDatabase", "admin",
+		}
+	}
+
+	getBackupOpt := func(mongoDSN, hostKey string, isStandalone bool) restic.BackupOptions {
+		log.Infoln("processing backupOptions for ", mongoDSN)
+		backupOpt := restic.BackupOptions{
+			Host:            hostKey,
+			StdinFileName:   MongoDumpFile,
+			RetentionPolicy: opt.defaultBackupOptions.RetentionPolicy,
+			BackupPaths:     opt.defaultBackupOptions.BackupPaths,
+		}
+
+		// setup pipe command
+		backupOpt.StdinPipeCommand = restic.Command{
+			Name: MongoDumpCMD,
+			Args: append([]interface{}{
+				"--host", mongoDSN,
+				"--archive",
+			}, adminCreds...),
+		}
+		if isStandalone {
+			backupOpt.StdinPipeCommand.Args = append(backupOpt.StdinPipeCommand.Args, "--port="+fmt.Sprint(appBinding.Spec.ClientConfig.Service.Port))
+		} else {
+			// - port is already added in mongoDSN with replicasetName/host:port format.
+			// - oplog is enabled automatically for replicasets.
+			backupOpt.StdinPipeCommand.Args = append(backupOpt.StdinPipeCommand.Args, "--oplog")
+		}
+		if opt.mongoArgs != "" {
+			backupOpt.StdinPipeCommand.Args = append(backupOpt.StdinPipeCommand.Args, opt.mongoArgs)
+		}
+		return backupOpt
+	}
+
+	// set opt.maxConcurrency
+	if len(parameters.ReplicaSets) <= 1 {
+		opt.maxConcurrency = 1
+	}
+
+	// If parameters.ReplicaSets is not empty, then replicaset hosts are given in key:value pair,
+	// where, keys are host-0,host-1 etc and values are the replicaset dsn of one replicaset component
+	//
+	// Procedure of taking backup
+	// - Disable the balancer from mongos
+	// - Lock the secondary component of configserver and replicasets
+	// - take backup using dsn and host01, host02 etc (from keys)
+	// - Unlock the secondary component for both successful or unsuccessful backup.
+	// - enable balancer for both successful or unsuccessful backup
+	//
+	// ref: https://docs.mongodb.com/manual/tutorial/backup-sharded-cluster-with-database-dumps/
+
+	if parameters.ConfigServer != "" {
+		// sharded cluster. so disable the balancer first. then perform the 'usual' tasks.
+
+		primary, secondary, err := getPrimaryNSecondaryMember(parameters.ConfigServer)
+		if err != nil {
+			return nil, err
+		}
+
+		// connect to mongos to disable/enable balancer
+		err = disabelBalancer(appBinding.Spec.ClientConfig.Service.Name)
+		cleanupFuncs = append(cleanupFuncs, func() error {
+			// even if error occurs, try to enable the balancer on exiting the program.
+			return enableBalancer(appBinding.Spec.ClientConfig.Service.Name)
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		// backupHost is secondary if any secondary component exists.
+		// otherwise primary component will be used to take backup.
+		backupHost := primary
+		if secondary != "" {
+			backupHost = secondary
+		}
+
+		err = lockConfigServer(parameters.ConfigServer, secondary)
+		cleanupFuncs = append(cleanupFuncs, func() error {
+			// even if error occurs, try to unlock the server
+			return unlockSecondaryMember(secondary)
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		opt.backupOptions = append(opt.backupOptions, getBackupOpt(backupHost, MongoConfigSVRHostKey, false))
+	}
+
+	for key, host := range parameters.ReplicaSets {
+		// do the task
+		primary, secondary, err := getPrimaryNSecondaryMember(host)
+		if err != nil {
+			log.Errorf("error while getting primary and secondary member of %v. error: %v", host, err)
+			return nil, err
+		}
+
+		// backupHost is secondary if any secondary component exists.
+		// otherwise primary component will be used to take backup.
+		backupHost := primary
+		if secondary != "" {
+			backupHost = secondary
+		}
+
+		err = lockSecondaryMember(secondary)
+		cleanupFuncs = append(cleanupFuncs, func() error {
+			// even if error occurs, try to unlock the server
+			return unlockSecondaryMember(secondary)
+		})
+		if err != nil {
+			log.Errorf("error while locking secondary member %v. error: %v", host, err)
+			return nil, err
+		}
+
+		opt.backupOptions = append(opt.backupOptions, getBackupOpt(backupHost, key, false))
+	}
+
+	// if parameters.ReplicaSets is nil, then the mongodb database doesn't have replicasets or sharded replicasets.
+	// In this case, perform normal backup with clientconfig.Service.Name mongo dsn
+	if parameters.ReplicaSets == nil {
+		opt.backupOptions = append(opt.backupOptions, getBackupOpt(appBinding.Spec.ClientConfig.Service.Name, restic.DefaultHost, true))
+	}
+
+	log.Infoln("processing backup.")
+
+	resticWrapper, err := restic.NewResticWrapper(opt.setupOptions)
+	if err != nil {
+		return nil, err
+	}
+	// hide password, don't print cmd
+	resticWrapper.HideCMD()
+
+	// Run backup
+	return resticWrapper.RunParallelBackup(opt.backupOptions, opt.maxConcurrency)
 }
 
 // cleanup usually unlocks the locked servers
