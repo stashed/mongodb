@@ -1,15 +1,15 @@
 ---
-title: Backup MongoDB ReplicaSet Cluster | Stash
-description: Backup MongoDB ReplicaSet Cluster using Stash
+title: Backup & Restore MongoDB ReplicaSet Cluster | Stash
+description: Backup and restore MongoDB ReplicaSet cluster using Stash
 menu:
-  product_stash_0.8.3:
-    identifier: replicaset-mongodb
-    name: MongoDB
-    parent: database
-    weight: 30
+  product_stash_{{ .version }}:
+    identifier: mongodb-replicaset-{{ .subproject_version }}
+    name: MongoDB ReplicaSet Cluster
+    parent: stash-mongodb-guides-{{ .subproject_version }}
+    weight: 20
 product_name: stash
-menu_name: product_stash_0.8.3
-section_menu_id: guides
+menu_name: product_stash_{{ .version }}
+section_menu_id: stash-addons
 ---
 
 # Backup and Restore MongoDB ReplicaSet Clusters using Stash
@@ -19,21 +19,18 @@ Stash supports taking [backup and restores MongoDB ReplicaSet clusters in "idiom
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using Minikube.
-
-- Install Stash in your cluster following the steps [here](https://appscode.com/products/stash/0.8.3/setup/install/).
-
-- Install [KubeDB](https://kubedb.com) in your cluster following the steps [here](https://kubedb.com/docs/0.12.0/setup/install/). This step is optional. You can deploy your database using any method you want. We are using KubeDB because it automates some tasks that you have to do manually otherwise.
-
-- If you are not familiar with how Stash backup and restore databases, please check the following guide:
-  - [How Stash backup and restore databases](https://appscode.com/products/stash/0.8.3/guides/databases/overview/).
+- Install Stash in your cluster following the steps [here](/docs/setup/install.md).
+- Install MongoDB addon for Stash following the steps [here](/docs/addons/mongodb/setup/install.md)
+- Install [KubeDB](https://kubedb.com) in your cluster following the steps [here](https://kubedb.com/docs/setup/install/). This step is optional. You can deploy your database using any method you want. We are using KubeDB because KubeDB simplifies many of the difficult or tedious management tasks of running a production grade databases on private and public clouds.
+- If you are not familiar with how Stash backup and restore MongoDB databases, please check the following guide [here](/docs/addons/mongodb/overview.md).
 
 You have to be familiar with following custom resources:
 
-- [AppBinding](https://appscode.com/products/stash/0.8.3/concepts/crds/appbinding/)
-- [Function](https://appscode.com/products/stash/0.8.3/concepts/crds/function/)
-- [Task](https://appscode.com/products/stash/0.8.3/concepts/crds/task/)
-- [BackupConfiguration](https://appscode.com/products/stash/0.8.3/concepts/crds/backupconfiguration/)
-- [RestoreSession](https://appscode.com/products/stash/0.8.3/concepts/crds/restoresession/)
+- [AppBinding](/docs/concepts/crds/appbinding.md)
+- [Function](/docs/concepts/crds/function.md)
+- [Task](/docs/concepts/crds/task.md)
+- [BackupConfiguration](/docs/concepts/crds/backupconfiguration.md)
+- [RestoreSession](/docs/concepts/crds/restoresession.md)
 
 To keep things isolated, we are going to use a separate namespace called `demo` throughout this tutorial. Create `demo` namespace if you haven't created yet.
 
@@ -42,88 +39,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> Note: YAML files used in this tutorial are stored [here](https://github.com/stashed/mongodb/tree/master/docs/examples).
-
-## Install MongoDB Catalog for Stash
-
-Stash uses a `Function-Task` model to backup databases. We have to install MongoDB catalogs (`stash-mongodb`) for Stash. This catalog creates necessary `Function` and `Task` definitions to backup/restore MongoDB databases.
-
-You can install the catalog either as a helm chart or you can create only the YAMLs of the respective resources.
-
-<ul class="nav nav-tabs" id="installerTab" role="tablist">
-  <li class="nav-item">
-    <a class="nav-link" id="helm-tab" data-toggle="tab" href="#helm" role="tab" aria-controls="helm" aria-selected="false">Helm</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link active" id="script-tab" data-toggle="tab" href="#script" role="tab" aria-controls="script" aria-selected="true">Script</a>
-  </li>
-</ul>
-<div class="tab-content" id="installerTabContent">
- <!-- ------------ Helm Tab Begins----------- -->
-  <div class="tab-pane fade" id="helm" role="tabpanel" aria-labelledby="helm-tab">
-
-### Install as chart release
-
-Run the following script to install `stash-mongodb` catalog as a Helm chart.
-
-```console
-curl -fsSL https://github.com/stashed/catalog/raw/master/deploy/chart.sh | bash -s -- --catalog=stash-mongodb
-```
-
-</div>
-<!-- ------------ Helm Tab Ends----------- -->
-
-<!-- ------------ Script Tab Begins----------- -->
-<div class="tab-pane fade show active" id="script" role="tabpanel" aria-labelledby="script-tab">
-
-### Install only YAMLs
-
-Run the following script to install `stash-mongodb` catalog as Kubernetes YAMLs.
-
-```console
-curl -fsSL https://github.com/stashed/catalog/raw/master/deploy/script.sh | bash -s -- --catalog=stash-mongodb
-```
-
-</div>
-<!-- ------------ Script Tab Ends----------- -->
-</div>
-
-Once installed, this will create `mongodb-backup-*` and `mongodb-restore-*` Functions for all supported MongoDB versions. To verify, run the following command:
-
-```console
-$ kubectl get functions.stash.appscode.com
-NAME                    AGE
-mongodb-backup-4.1      20s
-mongodb-backup-4.0      20s
-mongodb-backup-3.6      19s
-mongodb-backup-3.4      20s
-mongodb-restore-4.1     20s
-mongodb-restore-4.0     20s
-mongodb-restore-3.6     19s
-mongodb-restore-3.4     20s
-pvc-backup              7h6m
-pvc-restore             7h6m
-update-status           7h6m
-```
-
-Also, verify that the necessary `Task` have been created.
-
-```console
-$ kubectl get tasks.stash.appscode.com
-NAME                    AGE
-mongodb-backup-4.1      2m7s
-mongodb-backup-4.0      2m7s
-mongodb-backup-3.6      2m6s
-mongodb-backup-3.4      2m7s
-mongodb-restore-4.1     2m7s
-mongodb-restore-4.0     2m7s
-mongodb-restore-3.6     2m6s
-mongodb-restore-3.4     2m7s
-pvc-backup              7h7m
-pvc-restore             7h7m
-```
-
-Now, Stash is ready to backup MongoDB database.
+> Note: YAML files used in this tutorial are stored [here](https://github.com/stashed/mongodb/tree/{{< param "info.subproject_version" >}}/docs/examples).
 
 ## Backup MongoDB ReplicaSet using Stash
 
@@ -160,7 +76,7 @@ spec:
 Create the above `MongoDB` crd,
 
 ```console
-$ kubectl apply -f ./docs/examples/backup/replicaset/mongodb-replicaset.yaml
+$ kubectl apply -f https://github.com/stashed/mongodb/raw/{{< param "info.subproject_version" >}}/docs/examples/backup/replicaset/mongodb-replicaset.yaml
 mongodb.kubedb.com/sample-mgo-rs created
 ```
 
@@ -188,7 +104,7 @@ sample-mgo-rs       ClusterIP   10.107.13.16   <none>        27017/TCP   2m14s
 sample-mgo-rs-gvr   ClusterIP   None           <none>        27017/TCP   2m14s
 ```
 
-KubeDB creates an [AppBinding](https://appscode.com/products/stash/0.8.3/concepts/crds/appbinding/) crd that holds the necessary information to connect with the database.
+KubeDB creates an [AppBinding](/docs/concepts/crds/appbinding.md) crd that holds the necessary information to connect with the database.
 
 **Verify AppBinding:**
 
@@ -254,7 +170,7 @@ Stash uses the `AppBinding` crd to connect with the target database. It requires
 
 ### AppBinding for SSL
 
-If `SSLMode` of the MongoDB server is either of `requireSSL` or `preferSSL`, you can provide ssl connection informatin through AppBinding Spces.
+If `SSLMode` of the MongoDB server is either of `requireSSL` or `preferSSL`, you can provide ssl connection information through AppBinding Specs.
 
 User need to provide the following fields in case of SSL is enabled,
 
@@ -263,7 +179,7 @@ User need to provide the following fields in case of SSL is enabled,
 
 **KubeDB does these automatically**. It has added the subject of `client.pem` in the mongodb server with `root` role. So, user can just use the appbinding that is created by KubeDB without doing any hurdle! See the [MongoDB with TLS/SSL (Transport Encryption)](https://github.com/kubedb/docs/blob/master/docs/guides/mongodb/tls-ssl-encryption/tls-ssl-encryption.md) guide to learn about the ssl options in mongodb in details.
 
-So, in KubeDB, the following `CRD` deployes a mongodb replicaset where ssl is enabled (`requireSSL` sslmode),
+So, in KubeDB, the following `CRD` deploys a mongodb replicaset where ssl is enabled (`requireSSL` sslmode),
 
 ```yaml
 apiVersion: kubedb.com/v1alpha1
@@ -400,7 +316,7 @@ Now, we are ready to backup this sample database.
 
 ### Prepare Backend
 
-We are going to store our backed up data into a GCS bucket. At first, we need to create a secret with GCS credentials then we need to create a `Repository` crd. If you want to use a different backend, please read the respective backend configuration doc from [here](https://appscode.com/products/stash/0.8.3/guides/backends/overview/).
+We are going to store our backed up data into a GCS bucket. At first, we need to create a secret with GCS credentials then we need to create a `Repository` crd. If you want to use a different backend, please read the respective backend configuration doc from [here](/docs/guides/latest/backends/overview.md).
 
 **Create Storage Secret:**
 
@@ -438,7 +354,7 @@ spec:
 Let's create the `Repository` we have shown above,
 
 ```console
-$ kubectl apply -f ./docs/examples/backup/replicaset/repository-replicaset.yaml
+$ kubectl apply -f https://github.com/stashed/mongodb/raw/{{< param "info.subproject_version" >}}/docs/examples/backup/replicaset/repository-replicaset.yaml
 repository.stash.appscode.com/gcs-repo-replicaset created
 ```
 
@@ -483,7 +399,7 @@ Here,
 Let's create the `BackupConfiguration` crd we have shown above,
 
 ```console
-$ kubectl apply -f ./docs/examples/backup/replicaset/backupconfiguration-replicaset.yaml
+$ kubectl apply -f https://github.com/stashed/mongodb/raw/{{< param "info.subproject_version" >}}/docs/examples/backup/replicaset/backupconfiguration-replicaset.yaml
 backupconfiguration.stash.appscode.com/sample-mgo-rs-backup created
 ```
 
@@ -501,7 +417,7 @@ sample-mgo-rs-backup   */5 * * * *   False     0        <none>          62s
 
 **Wait for BackupSession:**
 
-The `sample-mgo-rs-backup` CronJob will trigger a backup on each schedule by creating a `BackpSession` crd.
+The `sample-mgo-rs-backup` CronJob will trigger a backup on each schedule by creating a `BackupSession` crd.
 
 Wait for the next schedule. Run the following command to watch `BackupSession` crd,
 
@@ -595,7 +511,7 @@ Here,
 Let's create the above database,
 
 ```console
-$ kubectl apply -f ./docs/examples/restore/replicaset/restored-mongodb-replicaset.yaml
+$ kubectl apply -f https://github.com/stashed/mongodb/raw/{{< param "info.subproject_version" >}}/docs/examples/restore/replicaset/restored-mongodb-replicaset.yaml
 mongodb.kubedb.com/restored-mgo-rs created
 ```
 
@@ -655,12 +571,12 @@ Here,
 - `spec.target.ref` refers to the AppBinding crd for the `restored-mgo-rs` database.
 - `spec.rules` specifies that we are restoring from the latest backup snapshot of the database.
 
-> **Warning:** Label `kubedb.com/kind: MongoDB` is mandatory if you are uisng KubeDB to deploy the database. Otherwise, the database will be stuck in `Initializing` state.
+> **Warning:** Label `kubedb.com/kind: MongoDB` is mandatory if you are using KubeDB to deploy the database. Otherwise, the database will be stuck in `Initializing` state.
 
 Let's create the `RestoreSession` crd we have shown above,
 
 ```console
-$ kubectl apply -f ./docs/examples/restore/replicaset/restoresession-replicaset.yaml
+$ kubectl apply -f https://github.com/stashed/mongodb/raw/{{< param "info.subproject_version" >}}/docs/examples/restore/replicaset/restoresession-replicaset.yaml
 restoresession.stash.appscode.com/sample-mgo-rs-restore created
 ```
 
@@ -797,7 +713,7 @@ spec:
 ```
 
 ```console
-$ kubectl create -f ./docs/examples/backup/replicaset/standalone-backup.yaml
+$ kubectl create -f https://github.com/stashed/mongodb/raw/{{< param "info.subproject_version" >}}/docs/examples/backup/replicaset/standalone-backup.yaml
 appbinding.appcatalog.appscode.com/sample-mgo-rs-custom created
 repository.stash.appscode.com/gcs-repo-custom created
 backupconfiguration.stash.appscode.com/sample-mgo-rs-backup2 created
@@ -868,14 +784,14 @@ spec:
 ```
 
 ```console
-$ kubectl create -f ./docs/examples/restore/replicaset/restored-standalone.yaml
+$ kubectl create -f https://github.com/stashed/mongodb/raw/{{< param "info.subproject_version" >}}/docs/examples/restore/replicaset/restored-standalone.yaml
 mongodb.kubedb.com/restored-mongodb created
 
 $ kubectl get mg -n demo restored-mongodb
 NAME               VERSION   STATUS         AGE
 restored-mongodb   3.6-v4    Initializing   56s
 
-$ kubectl create -f ./docs/examples/restore/replicaset/restoresession-standalone.yaml
+$ kubectl create -f https://github.com/stashed/mongodb/raw/{{< param "info.subproject_version" >}}/docs/examples/restore/replicaset/restoresession-standalone.yaml
 restoresession.stash.appscode.com/sample-mongodb-restore created
 
 $ kubectl get mg -n demo restored-mongodb
@@ -938,43 +854,3 @@ kubectl delete backupconfiguration -n demo sample-mgo-rs-backup sample-mgo-rs-ba
 kubectl delete mg -n demo restored-mgo-rs restored-mgo-rs restored-mongodb
 kubectl delete repository -n demo gcs-repo-replicaset gcs-repo-custom
 ```
-
-To cleanup the MongoDB catalogs that we had created earlier, run the following:
-
-<ul class="nav nav-tabs" id="uninstallerTab" role="tablist">
-  <li class="nav-item">
-    <a class="nav-link" id="helm-uninstaller-tab" data-toggle="tab" href="#helm-uninstaller" role="tab" aria-controls="helm-uninstaller" aria-selected="false">Helm</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link active" id="script-uninstaller-tab" data-toggle="tab" href="#script-uninstaller" role="tab" aria-controls="script-uninstaller" aria-selected="true">Script</a>
-  </li>
-</ul>
-<div class="tab-content" id="uninstallerTabContent">
- <!-- ------------ Helm Tab Begins----------- -->
-  <div class="tab-pane fade" id="helm-uninstaller" role="tabpanel" aria-labelledby="helm-uninstaller-tab">
-
-### Uninstall  `stash-mongdb-*` charts
-
-Run the following script to uninstall `stash-mongodb` catalogs that was installed as a Helm chart.
-
-```console
-curl -fsSL https://github.com/stashed/catalog/raw/master/deploy/chart.sh | bash -s -- --uninstall --catalog=stash-mongodb
-```
-
-</div>
-<!-- ------------ Helm Tab Ends----------- -->
-
-<!-- ------------ Script Tab Begins----------- -->
-<div class="tab-pane fade show active" id="script-uninstaller" role="tabpanel" aria-labelledby="script-uninstaller-tab">
-
-### Uninstall `stash-mongodb` catalog YAMLs
-
-Run the following script to uninstall `stash-mongodb` catalog that was installed as Kubernetes YAMLs.
-
-```console
-curl -fsSL https://github.com/stashed/catalog/raw/master/deploy/script.sh | bash -s -- --uninstall --catalog=stash-mongodb
-```
-
-</div>
-<!-- ------------ Script Tab Ends----------- -->
-</div>
