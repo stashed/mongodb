@@ -94,7 +94,7 @@ func NewCmdBackup() *cobra.Command {
 			}
 
 			var backupOutput *restic.BackupOutput
-			backupOutput, err = opt.backupMonogDB()
+			backupOutput, err = opt.backupMongoDB()
 			if err != nil {
 				backupOutput = &restic.BackupOutput{
 					HostBackupStats: []api_v1beta1.HostBackupStats{
@@ -149,7 +149,7 @@ func NewCmdBackup() *cobra.Command {
 	return cmd
 }
 
-func (opt *mongoOptions) backupMonogDB() (*restic.BackupOutput, error) {
+func (opt *mongoOptions) backupMongoDB() (*restic.BackupOutput, error) {
 	// apply nice, ionice settings from env
 	var err error
 	opt.setupOptions.Nice, err = util.NiceSettingsFromEnv()
