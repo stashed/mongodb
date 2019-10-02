@@ -60,7 +60,7 @@ metadata:
   name: sample-mgo-rs
   namespace: demo
 spec:
-  version: "3.4.17"
+  version: "3.4.22"
   replicas: 3
   replicaSet:
     name: rs0
@@ -88,7 +88,7 @@ Let's check if the database is ready to use,
 ```console
 $ kubectl get mg -n demo sample-mgo-rs
 NAME            VERSION   STATUS    AGE
-sample-mgo-rs   3.4.17    Running   1m
+sample-mgo-rs   3.4.22    Running   1m
 ```
 
 The database is `Running`. Verify that KubeDB has created a Secret and a Service for this database using the following commands,
@@ -132,7 +132,7 @@ metadata:
     app.kubernetes.io/instance: sample-mgo-rs
     app.kubernetes.io/managed-by: kubedb.com
     app.kubernetes.io/name: mongodb
-    app.kubernetes.io/version: 3.4.17
+    app.kubernetes.io/version: 3.4.22
     kubedb.com/kind: MongoDB
     kubedb.com/name: sample-mgo-rs
   name: sample-mgo-rs
@@ -149,7 +149,7 @@ spec:
   secret:
     name: sample-mgo-rs-auth
   type: kubedb.com/mongodb
-  version: "3.4.17"
+  version: "3.4.22"
 ```
 
 Stash uses the `AppBinding` crd to connect with the target database. It requires the following two fields to set in AppBinding's `Spec` section.
@@ -179,7 +179,7 @@ metadata:
   name: sample-mgo-rs-ssl
   namespace: demo
 spec:
-  version: "3.4.17"
+  version: "3.4.22"
   replicas: 3
   replicaSet:
     name: rs0
@@ -206,7 +206,7 @@ metadata:
     app.kubernetes.io/instance: sample-mgo-rs-ssl
     app.kubernetes.io/managed-by: kubedb.com
     app.kubernetes.io/name: mongodb
-    app.kubernetes.io/version: 3.4.17
+    app.kubernetes.io/version: 3.4.22
     kubedb.com/kind: MongoDB
     kubedb.com/name: sample-mgo-rs-ssl
   name: sample-mgo-rs-ssl
@@ -224,7 +224,7 @@ spec:
   secret:
     name: sample-mgo-rs-ssl-cert
   type: kubedb.com/mongodb
-  version: 3.4.17
+  version: 3.4.22
 ```
 
 Here, `mongo-sh-rs-cert` contains few required certificates, and one of them is `client.pem` which is required to backup/restore ssl enabled mongodb server using stash-mongodb.
@@ -358,7 +358,7 @@ metadata:
 spec:
   schedule: "*/5 * * * *"
   task:
-    name: mongodb-backup-3.4.17
+    name: mongodb-backup-3.4.22
   repository:
     name: gcs-repo-replicaset
   target:
@@ -446,7 +446,7 @@ Now, wait for a moment. Stash will pause the BackupConfiguration. Verify that th
 ```console
 $ kubectl get backupconfiguration -n demo sample-mgo-rs-backup
 NAME                  TASK                         SCHEDULE      PAUSED   AGE
-sample-mgo-rs-backup  mongodb-backup-3.4.17        */5 * * * *   true     26m
+sample-mgo-rs-backup  mongodb-backup-3.4.22        */5 * * * *   true     26m
 ```
 
 Notice the `PAUSED` column. Value `true` for this field means that the BackupConfiguration has been paused.
@@ -467,7 +467,7 @@ metadata:
   name: restored-mgo-rs
   namespace: demo
 spec:
-  version: "3.4.17"
+  version: "3.4.22"
   databaseSecret:
     secretName: sample-mgo-rs-auth
   replicas: 3
@@ -502,7 +502,7 @@ If you check the database status, you will see it is stuck in `Initializing` sta
 ```console
 $ kubectl get mg -n demo restored-mgo-rs
 NAME              VERSION   STATUS         AGE
-restored-mgo-rs   3.4.17    Initializing   2m
+restored-mgo-rs   3.4.22    Initializing   2m
 ```
 
 **Create RestoreSession:**
@@ -533,7 +533,7 @@ metadata:
     kubedb.com/kind: MongoDB
 spec:
   task:
-    name: mongodb-restore-3.4.17
+    name: mongodb-restore-3.4.22
   repository:
     name: gcs-repo-replicaset
   target:
@@ -584,7 +584,7 @@ At first, check if the database has gone into `Running` state by the following c
 ```console
 $ kubectl get mg -n demo restored-mgo-rs
 NAME              VERSION   STATUS    AGE
-restored-mgo-rs   3.4.17    Running   3m
+restored-mgo-rs   3.4.22    Running   3m
 ```
 
 Now, exec into the database pod and list available tables,
@@ -681,7 +681,7 @@ metadata:
 spec:
   schedule: "*/5 * * * *"
   task:
-    name: mongodb-backup-3.4.17
+    name: mongodb-backup-3.4.22
   repository:
     name: gcs-repo-custom
   target:
@@ -725,7 +725,7 @@ metadata:
   name: restored-mongodb
   namespace: demo
 spec:
-  version: "3.4.17"
+  version: "3.4.22"
   storageType: Durable
   databaseSecret:
     secretName: sample-mgo-rs-auth
@@ -754,7 +754,7 @@ metadata:
     kubedb.com/kind: MongoDB
 spec:
   task:
-    name: mongodb-restore-3.4.17
+    name: mongodb-restore-3.4.22
   repository:
     name: gcs-repo-custom
   target:
@@ -772,14 +772,14 @@ mongodb.kubedb.com/restored-mongodb created
 
 $ kubectl get mg -n demo restored-mongodb
 NAME               VERSION   STATUS         AGE
-restored-mongodb   3.4.17    Initializing   56s
+restored-mongodb   3.4.22    Initializing   56s
 
 $ kubectl create -f https://github.com/stashed/mongodb/raw/{{< param "info.subproject_version" >}}/docs/examples/restore/replicaset/restoresession-standalone.yaml
 restoresession.stash.appscode.com/sample-mongodb-restore created
 
 $ kubectl get mg -n demo restored-mongodb
 NAME               VERSION   STATUS    AGE
-restored-mongodb   3.4.17    Running   2m
+restored-mongodb   3.4.22    Running   2m
 ```
 
 Now, exec into the database pod and list available tables,
