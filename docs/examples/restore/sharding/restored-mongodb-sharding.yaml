@@ -6,7 +6,7 @@ metadata:
 spec:
   databaseSecret:
     secretName: sample-mgo-sh-auth
-  version: 3.6-v4
+  version: 3.6.8
   shardTopology:
     configServer:
       replicas: 3
