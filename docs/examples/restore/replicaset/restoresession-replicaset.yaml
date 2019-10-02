@@ -7,7 +7,7 @@ metadata:
     kubedb.com/kind: MongoDB
 spec:
   task:
-    name: mongodb-restore-3.4.22
+    name: mongodb-restore-3.6
   repository:
     name: gcs-repo-replicaset
   target:
