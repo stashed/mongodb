@@ -10,22 +10,22 @@ MongoDB backup and restore plugin for [Stash by AppsCode](https://appscode.com/p
 
 ## Install
 
-Install MongoDB 3.4 backup or restore plugin for Stash as below.
+Install MongoDB 3.4.17 backup or restore plugin for Stash as below.
 
 ```console
 helm repo add appscode https://charts.appscode.com/stable/
 helm repo update
-helm install appscode/stash-mongodb --name=stash-mongodb-3.4 --version=3.4
+helm install appscode/stash-mongodb --name=stash-mongodb-3.4.17 --version=3.4.17
 ```
 
 To install catalog for all supported MongoDB versions, please visit [here](https://github.com/stashed/catalog).
 
 ## Uninstall
 
-Uninstall MongoDB 3.4 backup or restore plugin for Stash as below.
+Uninstall MongoDB 3.4.17 backup or restore plugin for Stash as below.
 
 ```console
-helm delete stash-mongodb-3.4
+helm delete stash-mongodb-3.4.17
 ```
 
 ## Support

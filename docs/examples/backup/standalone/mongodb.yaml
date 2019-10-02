@@ -4,7 +4,7 @@ metadata:
   name: sample-mongodb
   namespace: demo
 spec:
-  version: "3.4-v4"
+  version: "3.4.17"
   storageType: Durable
   storage:
     storageClassName: "standard"
