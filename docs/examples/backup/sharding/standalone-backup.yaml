@@ -35,7 +35,7 @@ metadata:
 spec:
   schedule: "*/5 * * * *"
   task:
-    name: mongodb-backup-3.6
+    name: mongodb-backup-3.4
   repository:
     name: gcs-repo-custom
   target:
@@ -44,5 +44,6 @@ spec:
       kind: AppBinding
       name: sample-mgo-sh-custom
   retentionPolicy:
+    name: keep-last-5
     keepLast: 5
     prune: true

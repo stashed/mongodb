@@ -20,7 +20,7 @@ Stash supports taking [backup and restores MongoDB ReplicaSet clusters in "idiom
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using Minikube.
 - Install Stash in your cluster following the steps [here](/docs/setup/install.md).
-- Install MongoDB addon for Stash following the steps [here](/docs/addons/mongodb/setup/install.md)
+- Install MongoDB addon for Stash following the steps [here](/docs/addons/mongodb/setup/install.md).
 - Install [KubeDB](https://kubedb.com) in your cluster following the steps [here](https://kubedb.com/docs/setup/install/). This step is optional. You can deploy your database using any method you want. We are using KubeDB because KubeDB simplifies many of the difficult or tedious management tasks of running a production grade databases on private and public clouds.
 - If you are not familiar with how Stash backup and restore MongoDB databases, please check the following guide [here](/docs/addons/mongodb/overview.md).
 
@@ -60,17 +60,18 @@ metadata:
   name: sample-mgo-rs
   namespace: demo
 spec:
-  version: "3.6-v4"
+  version: "3.4-v4"
   replicas: 3
   replicaSet:
     name: rs0
   storage:
     storageClassName: "standard"
     accessModes:
-      - ReadWriteOnce
+    - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
+  terminationPolicy: WipeOut
 ```
 
 Create the above `MongoDB` crd,
@@ -87,7 +88,7 @@ Let's check if the database is ready to use,
 ```console
 $ kubectl get mg -n demo sample-mgo-rs
 NAME            VERSION   STATUS    AGE
-sample-mgo-rs   3.6-v4    Running   1m
+sample-mgo-rs   3.4-v4    Running   1m
 ```
 
 The database is `Running`. Verify that KubeDB has created a Secret and a Service for this database using the following commands,
@@ -126,27 +127,16 @@ $ kubectl get appbindings -n demo sample-mgo-rs -o yaml
 apiVersion: appcatalog.appscode.com/v1alpha1
 kind: AppBinding
 metadata:
-  creationTimestamp: "2019-07-19T12:19:39Z"
-  generation: 1
   labels:
     app.kubernetes.io/component: database
     app.kubernetes.io/instance: sample-mgo-rs
     app.kubernetes.io/managed-by: kubedb.com
     app.kubernetes.io/name: mongodb
-    app.kubernetes.io/version: 3.6-v4
+    app.kubernetes.io/version: 3.4-v4
     kubedb.com/kind: MongoDB
     kubedb.com/name: sample-mgo-rs
   name: sample-mgo-rs
   namespace: demo
-  ownerReferences:
-    - apiVersion: kubedb.com/v1alpha1
-      blockOwnerDeletion: false
-      kind: MongoDB
-      name: sample-mgo-rs
-      uid: 42dd1639-aa1f-11e9-acf7-42010a8000dc
-  resourceVersion: "1137355"
-  selfLink: /apis/appcatalog.appscode.com/v1alpha1/namespaces/demo/appbindings/sample-mgo-rs
-  uid: 7af03255-aa1f-11e9-acf7-42010a8000dc
 spec:
   clientConfig:
     service:
@@ -159,6 +149,7 @@ spec:
   secret:
     name: sample-mgo-rs-auth
   type: kubedb.com/mongodb
+  version: "3.4.22"
 ```
 
 Stash uses the `AppBinding` crd to connect with the target database. It requires the following two fields to set in AppBinding's `Spec` section.
@@ -185,10 +176,10 @@ So, in KubeDB, the following `CRD` deploys a mongodb replicaset where ssl is ena
 apiVersion: kubedb.com/v1alpha1
 kind: MongoDB
 metadata:
-  name: sample-mgo-rs
+  name: sample-mgo-rs-ssl
   namespace: demo
 spec:
-  version: "3.6-v4"
+  version: "3.4-v4"
   replicas: 3
   replicaSet:
     name: rs0
@@ -210,40 +201,30 @@ After the deploy is done, kubedb will create a appbinding that will look like:
 apiVersion: appcatalog.appscode.com/v1alpha1
 kind: AppBinding
 metadata:
-  creationTimestamp: "2019-07-19T12:19:39Z"
-  generation: 1
   labels:
     app.kubernetes.io/component: database
-    app.kubernetes.io/instance: sample-mgo-rs
+    app.kubernetes.io/instance: sample-mgo-rs-ssl
     app.kubernetes.io/managed-by: kubedb.com
     app.kubernetes.io/name: mongodb
-    app.kubernetes.io/version: 3.6-v4
+    app.kubernetes.io/version: 3.4-v4
     kubedb.com/kind: MongoDB
-    kubedb.com/name: sample-mgo-rs
-  name: sample-mgo-rs
+    kubedb.com/name: sample-mgo-rs-ssl
+  name: sample-mgo-rs-ssl
   namespace: demo
-  ownerReferences:
-    - apiVersion: kubedb.com/v1alpha1
-      blockOwnerDeletion: false
-      kind: MongoDB
-      name: sample-mgo-rs
-      uid: 42dd1639-aa1f-11e9-acf7-42010a8000dc
-  resourceVersion: "1137355"
-  selfLink: /apis/appcatalog.appscode.com/v1alpha1/namespaces/demo/appbindings/sample-mgo-rs
-  uid: 7af03255-aa1f-11e9-acf7-42010a8000dc
 spec:
   clientConfig:
-    caBundle: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUM0RENDQWNpZ0F3SUJBZ0lCQURBTkJna3Foa2lHOXcwQkFRc0ZBREFoTVJJd0VBWURWUVFLRXdsTGRXSmwKWkdJNlEwRXhDekFKQmdOVkJBTVRBa05CTUI0WERURTVNRGd3TVRFd01Ua3lPVm9YRFRJNU1EY3lPVEV3TVRreQpPVm93SVRFU01CQUdBMVVFQ2hNSlMzVmlaV1JpT2tOQk1Rc3dDUVlEVlFRREV3SkRRVENDQVNJd0RRWUpLb1pJCmh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTTQvWXpwbGhNTWlkUmREZEM0ejcvOXdkNWpZaitKeVl3d0EKQTJncktvYkxkQlB1YTNWNFB2TjJOOHNCaXArOUZycFFPVXkzOFpBdmZ4a1V1YkZOUVNoS3JkNnlGbWZRQjBhbApHOHB3dkcwblJoWEdWTHI3REVaaysrSjhZQWZwbzBlOHR6K29zZDVRMkpjN3JiRlFVbVFDYzJzc0ZXcGJSdy93CjFmeWhlaldTSjVnUnBYUG96ZHhxRkloTm9sbVgrQiswWVdrVHJ0QmJlcUZibnhkTm9oVmJDYzJtaHZOdnNoMHUKdWIvY1h1anhQR3ljNzZLYTEyZVhUS3FWTm9Jczg1TkdEbzlaSXBWZUhkRG1ld1ZQZVROcFlxWE9zMTRSOTNHWgozb0FoWW5JbG5veGFrOXEreE1Td01Vd0hwL0JyL0dRSkdGRlEyVDdSWWNMUS9HclYrdGtDQXdFQUFhTWpNQ0V3CkRnWURWUjBQQVFIL0JBUURBZ0trTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3RFFZSktvWklodmNOQVFFTEJRQUQKZ2dFQkFLMXphNHQ5NjZBejYwZmJyQWh2bW5ZTXlPNUIvVWxaT01RcGhqRWRMOVBHekpSMG1uY1FOeWNoTFNqQwpkeDFaRG1iME9iSzh3WUgrbisyaW9DWTdiRFZBSjZTaHU3SkhBeDl4NGRkOG1HR0pCN1NUMGlxL3RJbGJmK2J0ClBNUnBEYmJ5YUZTVnpacXJvdTFJNkZycUwvQXVhTThzTUg5KzYzOW5zVS9XQWtIZWVVN0hhOWdpZXNwR0QrdGoKcUowOHBXcDB5Wndaa1plK3RyVUR6QmI1Um9VaWlMTGkxZXlKN0oyZmtvNk1OcXY1UkF2R2g2Y1ROcEtCbUdKQgpvaTUvSTgyQ1ovaGVYSXdpUkFrZ2NEbXpVRW1kaEk2OUZCMlQxVTNNVGNaaWtaSnRUdW13SXpFbWFZK3NySVdtCkZCdU1MMmdCRUhibEt3NFBjdmY3dWcvOGlHRT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
+    caBundle: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUM0RENDQWNpZ0F3SUJBZ0lCQURBTkJna3Foa2lHOXcwQkFRc0ZBREFoTVJJd0VBWURWUVFLRXdscmRXSmwKWkdJNlkyRXhDekFKQmdOVkJBTVRBbU5oTUI0WERURTVNRGt6TURFME1UYzBORm9YRFRJNU1Ea3lOekUwTVRjMApORm93SVRFU01CQUdBMVVFQ2hNSmEzVmlaV1JpT21OaE1Rc3dDUVlEVlFRREV3SmpZVENDQVNJd0RRWUpLb1pJCmh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBS2tMMmh6Q3ZzTXdUdUJ2cjJyTnlCcGZzcHduNGlLQS9ncloKZVM4RHFkTmJicVFZUy91WEhJbUFwaitnQ3lPTmJ2QU01b1c1VEgyMUtXWm1SSmxZUkxpWXhrVVdJS3kxa2lxMApvRTVCR0c4TWZaZEl6RXROWEpJUnpaSFoyVW5hMTZzWG5CNUFxWGQvSkJiY0tzWVM0TzczSFZLbUg1VWVTdVBjCnhRVk0xRVNlZHBmOVJLcVlBbnVxN0ZrTWE2RXJUaFk5VDM5ZjJDdWR1SVFzcFFUb2VmdjZPeEcrVWtBZkJNN2sKeThweEFKUk5hSjhXRmN2Z2s2NlZBK1V4SHUwRW1uK09SYWZlWG1VVFBOT09uaE9tam9PV2ZtbitWZmxNeWk3RgpkK2dYZWYwdHRSc0JROVFjb25ZR1N4TzBGR0dMR3pLdTlaelROSkFCcFhwcXd5cTVYeUVDQXdFQUFhTWpNQ0V3CkRnWURWUjBQQVFIL0JBUURBZ0trTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3RFFZSktvWklodmNOQVFFTEJRQUQKZ2dFQkFGSXh1T1VKU0xWakVZTVQ1R2xWZ0o3QU1Remczd2dpV1lHR0J6SEo3UzBaMnJSb3FXUFpvNlVwZVlrWApTRDFUM1ZuTDJBQVhCYWpuVUtpb1ZZNlNFSlBMU3Urelg1VEx4TGs2SzRWMTZjOFJDT3lBYUFqM0NXTjk4bVNCCmhtTEliNjZYR1R1M3JBNlVpMFYxVU9JeW1GZS9jd09FMFExT3lzamwyZHQ2c3pITWtjNENFVG1nOFZsei9SVngKeVBDdGhmaGpCSm9oc25VcTkvU3FiamMyZC9yOW1lK1hNZjd3ZGUyMEZFU2g1cW1scUNybnp2UENHMEpkRlFVUgpDLzJQODJZcjJiUUgzckg2RkxiN0l4cFRLTWdDbjZVbUcxL3VacnpRTEpBTTAxUkxSQVZVRy9OTzBoYjJoWE1tCnZkaFNqTFM2N05Kakl5RVRRczc5QzFhZkt4RT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
     service:
-      name: sample-mgo-rs
+      name: sample-mgo-rs-ssl
       port: 27017
       scheme: mongodb
   parameters:
     replicaSets:
-      host-0: rs0/sample-mgo-rs-0.sample-mgo-rs-gvr.demo.svc,sample-mgo-rs-1.sample-mgo-rs-gvr.demo.svc,sample-mgo-rs-2.sample-mgo-rs-gvr.demo.svc
+      host-0: rs0/sample-mgo-rs-ssl-0.sample-mgo-rs-ssl-gvr.demo.svc,sample-mgo-rs-ssl-1.sample-mgo-rs-ssl-gvr.demo.svc,sample-mgo-rs-ssl-2.sample-mgo-rs-ssl-gvr.demo.svc
   secret:
-    name: mongo-sh-rs-cert
+    name: sample-mgo-rs-ssl-cert
   type: kubedb.com/mongodb
+  version: 3.4.22
 ```
 
 Here, `mongo-sh-rs-cert` contains few required certificates, and one of them is `client.pem` which is required to backup/restore ssl enabled mongodb server using stash-mongodb.
@@ -377,7 +358,7 @@ metadata:
 spec:
   schedule: "*/5 * * * *"
   task:
-    name: mongodb-backup-3.6
+    name: mongodb-backup-3.4
   repository:
     name: gcs-repo-replicaset
   target:
@@ -386,6 +367,7 @@ spec:
       kind: AppBinding
       name: sample-mgo-rs
   retentionPolicy:
+    name: keep-last-5
     keepLast: 5
     prune: true
 ```
@@ -464,7 +446,7 @@ Now, wait for a moment. Stash will pause the BackupConfiguration. Verify that th
 ```console
 $ kubectl get backupconfiguration -n demo sample-mgo-rs-backup
 NAME                  TASK                      SCHEDULE      PAUSED   AGE
-sample-mgo-rs-backup  mongodb-backup-3.6        */5 * * * *   true     26m
+sample-mgo-rs-backup  mongodb-backup-3.4        */5 * * * *   true     26m
 ```
 
 Notice the `PAUSED` column. Value `true` for this field means that the BackupConfiguration has been paused.
@@ -485,7 +467,7 @@ metadata:
   name: restored-mgo-rs
   namespace: demo
 spec:
-  version: "3.6-v4"
+  version: "3.4-v4"
   databaseSecret:
     secretName: sample-mgo-rs-auth
   replicas: 3
@@ -494,7 +476,7 @@ spec:
   storage:
     storageClassName: "standard"
     accessModes:
-      - ReadWriteOnce
+    - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
@@ -520,7 +502,7 @@ If you check the database status, you will see it is stuck in `Initializing` sta
 ```console
 $ kubectl get mg -n demo restored-mgo-rs
 NAME              VERSION   STATUS         AGE
-restored-mgo-rs   3.6-v4    Initializing   2m
+restored-mgo-rs   3.4-v4    Initializing   2m
 ```
 
 **Create RestoreSession:**
@@ -551,7 +533,7 @@ metadata:
     kubedb.com/kind: MongoDB
 spec:
   task:
-    name: mongodb-restore-3.6
+    name: mongodb-restore-3.4
   repository:
     name: gcs-repo-replicaset
   target:
@@ -560,7 +542,7 @@ spec:
       kind: AppBinding
       name: restored-mgo-rs
   rules:
-    - snapshots: [latest]
+  - snapshots: [latest]
 ```
 
 Here,
@@ -602,7 +584,7 @@ At first, check if the database has gone into `Running` state by the following c
 ```console
 $ kubectl get mg -n demo restored-mgo-rs
 NAME              VERSION   STATUS    AGE
-restored-mgo-rs   3.6-v4    Running   3m
+restored-mgo-rs   3.4-v4    Running   3m
 ```
 
 Now, exec into the database pod and list available tables,
@@ -699,7 +681,7 @@ metadata:
 spec:
   schedule: "*/5 * * * *"
   task:
-    name: mongodb-backup-3.6
+    name: mongodb-backup-3.4
   repository:
     name: gcs-repo-custom
   target:
@@ -708,6 +690,7 @@ spec:
       kind: AppBinding
       name: sample-mgo-rs-custom
   retentionPolicy:
+    name: keep-last-5
     keepLast: 5
     prune: true
 ```
@@ -742,7 +725,7 @@ metadata:
   name: restored-mongodb
   namespace: demo
 spec:
-  version: "3.6-v4"
+  version: "3.4-v4"
   storageType: Durable
   databaseSecret:
     secretName: sample-mgo-rs-auth
@@ -771,7 +754,7 @@ metadata:
     kubedb.com/kind: MongoDB
 spec:
   task:
-    name: mongodb-restore-3.6
+    name: mongodb-restore-3.4
   repository:
     name: gcs-repo-custom
   target:
@@ -780,7 +763,7 @@ spec:
       kind: AppBinding
       name: restored-mongodb
   rules:
-    - snapshots: [latest]
+  - snapshots: [latest]
 ```
 
 ```console
@@ -789,14 +772,14 @@ mongodb.kubedb.com/restored-mongodb created
 
 $ kubectl get mg -n demo restored-mongodb
 NAME               VERSION   STATUS         AGE
-restored-mongodb   3.6-v4    Initializing   56s
+restored-mongodb   3.4-v4    Initializing   56s
 
 $ kubectl create -f https://github.com/stashed/mongodb/raw/{{< param "info.subproject_version" >}}/docs/examples/restore/replicaset/restoresession-standalone.yaml
 restoresession.stash.appscode.com/sample-mongodb-restore created
 
 $ kubectl get mg -n demo restored-mongodb
 NAME               VERSION   STATUS    AGE
-restored-mongodb   3.6-v4    Running   2m
+restored-mongodb   3.4-v4    Running   2m
 ```
 
 Now, exec into the database pod and list available tables,
@@ -849,8 +832,9 @@ So, from the above output, we can see the database `newdb` that we had created i
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```console
-kubectl delete restoresession -n demo sample-mgo-rs-restore sample-mongodb-restore
-kubectl delete backupconfiguration -n demo sample-mgo-rs-backup sample-mgo-rs-backup
-kubectl delete mg -n demo restored-mgo-rs restored-mgo-rs restored-mongodb
-kubectl delete repository -n demo gcs-repo-replicaset gcs-repo-custom
+kubectl delete -n demo restoresession sample-mgo-rs-restore sample-mongodb-restore
+kubectl delete -n demo backupconfiguration sample-mgo-rs-backup sample-mgo-rs-backup2
+kubectl delete -n demo mg sample-mgo-rs sample-mgo-rs-ssl restored-mgo-rs restored-mgo-rs restored-mongodb
+kubectl delete -n demo repository gcs-repo-replicaset gcs-repo-custom
+kubectl delete -n demo appbinding sample-mgo-rs-custom
 ```
