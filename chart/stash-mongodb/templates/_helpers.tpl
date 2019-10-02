@@ -31,7 +31,7 @@ Create chart name and version as used by the chart label.
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
-# default labels for posgres-stash resources
+# default labels for stash-mongodb resources
 {{- define "stash-mongodb.labels" -}}
 app.kubernetes.io/name: {{ include "stash-mongodb.name" . }}
 helm.sh/chart: {{ include "stash-mongodb.chart" . }}
