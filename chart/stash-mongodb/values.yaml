@@ -6,7 +6,7 @@
 docker:
   registry: stashed
   image: stash-mongodb
-  tag: 3.6
+  tag: 3.6.8
 
 # optional argument to send mongodump or mongorestore command
 backup:
