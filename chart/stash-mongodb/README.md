@@ -7,12 +7,12 @@
 ```console
 helm repo add appscode https://charts.appscode.com/stable/
 helm repo update
-helm install appscode/stash-mongodb --name=stash-mongodb-4.1.4 --version=4.1.4
+helm install appscode/stash-mongodb --name=stash-mongodb-4.1.7 --version=4.1.7
 ```
 
 ## Introduction
 
-This chart installs necessary `Function` and `Task` definition to backup or restore MongoDB database 4.1.4 using Stash.
+This chart installs necessary `Function` and `Task` definition to backup or restore MongoDB database 4.1.7 using Stash.
 
 ## Prerequisites
 
@@ -32,20 +32,20 @@ helm repo add appscode https://charts.appscode.com/stable/
 helm repo update
 ```
 
-- Install the chart with the release name `stash-mongodb-4.1.4` run the following command,
+- Install the chart with the release name `stash-mongodb-4.1.7` run the following command,
 
 ```console
-helm install appscode/stash-mongodb --name=stash-mongodb-4.1.4 --version=4.1.4
+helm install appscode/stash-mongodb --name=stash-mongodb-4.1.7 --version=4.1.7
 ```
 
-The above commands installs `Functions` and `Task` crds that are necessary to backup MongoDB database 4.1.4 using Stash.
+The above commands installs `Functions` and `Task` crds that are necessary to backup MongoDB database 4.1.7 using Stash.
 
 ## Uninstalling the Chart
 
-To uninstall/delete the `stash-mongodb-4.1.4` run the following command,
+To uninstall/delete the `stash-mongodb-4.1.7` run the following command,
 
 ```console
-helm delete stash-mongodb-4.1.4
+helm delete stash-mongodb-4.1.7
 ```
 
 The command removes all the Kubernetes components associated with the chart and deletes the release.
@@ -58,7 +58,7 @@ The following table lists the configurable parameters of the `stash-mongodb` cha
 | ----------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------------- |
 | `docker.registry` | Docker registry used to pull respective images                                                                                | `stashed`       |
 | `docker.image`    | Docker image used to backup/restore MongoDB database                                                                          | `stash-mongodb` |
-| `docker.tag`      | Tag of the image that is used to backup/restore MongoDB database. This is usually same as the database version it can backup. | `4.1.4`         |
+| `docker.tag`      | Tag of the image that is used to backup/restore MongoDB database. This is usually same as the database version it can backup. | `4.1.7`         |
 | `backup.mgArgs`   | Optional arguments to pass to `mongodump` command during bakcup process                                                       |                 |
 | `restore.mgArgs`  | Optional arguments to pass to `mongorestore` command during restore process                                                   |                 |
 
@@ -67,5 +67,5 @@ Specify each parameter using the `--set key=value[,key=value]` argument to `helm
 For example:
 
 ```console
-helm install --name stash-mongodb-4.1.4 --set docker.registry=my-registry appscode/stash-mongodb
+helm install --name stash-mongodb-4.1.7 --set docker.registry=my-registry appscode/stash-mongodb
 ```

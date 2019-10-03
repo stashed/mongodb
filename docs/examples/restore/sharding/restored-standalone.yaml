@@ -4,7 +4,7 @@ metadata:
   name: restored-mongodb
   namespace: demo
 spec:
-  version: "4.1.4"
+  version: "4.1.7-v2"
   storageType: Durable
   databaseSecret:
     secretName: sample-mgo-sh-auth
