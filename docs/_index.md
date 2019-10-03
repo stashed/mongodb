@@ -5,6 +5,6 @@ menu:
     identifier: stash-mongodb-guides-{{ .subproject_version }}
     name: {{ .subproject_version }}
     parent: stash-mongodb-guides
-    weight: 60
+    weight: 65
 menu_name: product_stash_{{ .version }}
 ---
