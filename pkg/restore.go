@@ -192,15 +192,25 @@ func (opt *mongoOptions) restoreMongoDB() (*restic.RestoreOutput, error) {
 			}, adminCreds...),
 		}
 
+		userArgs := strings.Fields(opt.mongoArgs)
 		if isStandalone {
 			dumpOpt.StdoutPipeCommand.Args = append(dumpOpt.StdoutPipeCommand.Args, "--port="+fmt.Sprint(appBinding.Spec.ClientConfig.Service.Port))
 		} else {
 			// - port is already added in mongoDSN with replicasetName/host:port format.
 			// - oplog is enabled automatically for replicasets.
-			dumpOpt.StdoutPipeCommand.Args = append(dumpOpt.StdoutPipeCommand.Args, "--oplogReplay")
+			// Don't use --oplogReplay if user specify any of these arguments through opt.mongoArgs
+			// 1. --db
+			// 2. --collection
+			// 3. --nsInclude
+			// 4. --nsExclude
+			// xref: https://docs.mongodb.com/manual/reference/program/mongorestore/#cmdoption-mongorestore-oplogreplay
+			forbiddenArgs := []string{"--db", "--collection", "--nsInclude", "--nsExclude"}
+			if validArgs(userArgs, forbiddenArgs) {
+				dumpOpt.StdoutPipeCommand.Args = append(dumpOpt.StdoutPipeCommand.Args, "--oplogReplay")
+			}
 		}
 		if opt.mongoArgs != "" {
-			for _, arg := range strings.Fields(opt.mongoArgs) {
+			for _, arg := range userArgs {
 				dumpOpt.StdoutPipeCommand.Args = append(dumpOpt.StdoutPipeCommand.Args, arg)
 			}
 		}

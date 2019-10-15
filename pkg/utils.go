@@ -3,9 +3,11 @@ package pkg
 import (
 	"fmt"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/appscode/go/log"
+	strings_util "github.com/appscode/go/strings"
 	"k8s.io/client-go/kubernetes"
 	appcatalog_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 	"stash.appscode.dev/stash/pkg/restic"
@@ -50,4 +52,17 @@ func waitForDBReady(host string, port int32) {
 		log.Infoln("Waiting... database is not ready yet")
 		time.Sleep(5 * time.Second)
 	}
+}
+
+func validArgs(userArgs, forbiddenArgs []string) bool {
+	for i := range userArgs {
+		arg := strings.FieldsFunc(userArgs[i], func(r rune) bool {
+			return r == '=' || r == ' '
+		})
+
+		if len(arg) > 0 && strings.HasPrefix(arg[0], "-") && strings_util.Contains(forbiddenArgs, arg[0]) {
+			return false
+		}
+	}
+	return true
 }
