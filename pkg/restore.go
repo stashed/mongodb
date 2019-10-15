@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/appscode/go/flags"
 	"github.com/appscode/go/log"
@@ -199,7 +200,9 @@ func (opt *mongoOptions) restoreMongoDB() (*restic.RestoreOutput, error) {
 			dumpOpt.StdoutPipeCommand.Args = append(dumpOpt.StdoutPipeCommand.Args, "--oplogReplay")
 		}
 		if opt.mongoArgs != "" {
-			dumpOpt.StdoutPipeCommand.Args = append(dumpOpt.StdoutPipeCommand.Args, opt.mongoArgs)
+			for _, arg := range strings.Fields(opt.mongoArgs) {
+				dumpOpt.StdoutPipeCommand.Args = append(dumpOpt.StdoutPipeCommand.Args, arg)
+			}
 		}
 		return dumpOpt
 	}

@@ -244,7 +244,9 @@ func (opt *mongoOptions) backupMongoDB() (*restic.BackupOutput, error) {
 			backupOpt.StdinPipeCommand.Args = append(backupOpt.StdinPipeCommand.Args, "--oplog")
 		}
 		if opt.mongoArgs != "" {
-			backupOpt.StdinPipeCommand.Args = append(backupOpt.StdinPipeCommand.Args, opt.mongoArgs)
+			for _, arg := range strings.Fields(opt.mongoArgs) {
+				backupOpt.StdinPipeCommand.Args = append(backupOpt.StdinPipeCommand.Args, arg)
+			}
 		}
 		return backupOpt
 	}
