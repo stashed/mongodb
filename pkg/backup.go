@@ -18,6 +18,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	appcatalog_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
@@ -236,16 +237,30 @@ func (opt *mongoOptions) backupMongoDB() (*restic.BackupOutput, error) {
 				"--archive",
 			}, adminCreds...),
 		}
+		userArgs := strings.Fields(opt.mongoArgs)
+
 		if isStandalone {
 			backupOpt.StdinPipeCommand.Args = append(backupOpt.StdinPipeCommand.Args, "--port="+fmt.Sprint(appBinding.Spec.ClientConfig.Service.Port))
 		} else {
 			// - port is already added in mongoDSN with replicasetName/host:port format.
 			// - oplog is enabled automatically for replicasets.
-			backupOpt.StdinPipeCommand.Args = append(backupOpt.StdinPipeCommand.Args, "--oplog")
+			// Don't use --oplog if user specify any of these arguments through opt.mongoArgs
+			// 1. --db
+			// 2. --collection
+			// xref: https://docs.mongodb.com/manual/reference/program/mongodump/#cmdoption-mongodump-oplog
+			forbiddenArgs := sets.NewString(
+				"-d", "--db",
+				"-c", "--collection",
+			)
+			if !containsArg(userArgs, forbiddenArgs) {
+				backupOpt.StdinPipeCommand.Args = append(backupOpt.StdinPipeCommand.Args, "--oplog")
+			}
 		}
-		if opt.mongoArgs != "" {
-			backupOpt.StdinPipeCommand.Args = append(backupOpt.StdinPipeCommand.Args, opt.mongoArgs)
+
+		for _, arg := range userArgs {
+			backupOpt.StdinPipeCommand.Args = append(backupOpt.StdinPipeCommand.Args, arg)
 		}
+
 		return backupOpt
 	}
 
