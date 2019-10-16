@@ -209,11 +209,11 @@ func (opt *mongoOptions) restoreMongoDB() (*restic.RestoreOutput, error) {
 				dumpOpt.StdoutPipeCommand.Args = append(dumpOpt.StdoutPipeCommand.Args, "--oplogReplay")
 			}
 		}
-		if opt.mongoArgs != "" {
-			for _, arg := range userArgs {
-				dumpOpt.StdoutPipeCommand.Args = append(dumpOpt.StdoutPipeCommand.Args, arg)
-			}
+
+		for _, arg := range userArgs {
+			dumpOpt.StdoutPipeCommand.Args = append(dumpOpt.StdoutPipeCommand.Args, arg)
 		}
+
 		return dumpOpt
 	}
 
