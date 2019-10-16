@@ -13,6 +13,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	appcatalog_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
@@ -204,8 +205,13 @@ func (opt *mongoOptions) restoreMongoDB() (*restic.RestoreOutput, error) {
 			// 3. --nsInclude
 			// 4. --nsExclude
 			// xref: https://docs.mongodb.com/manual/reference/program/mongorestore/#cmdoption-mongorestore-oplogreplay
-			forbiddenArgs := []string{"--db", "--collection", "--nsInclude", "--nsExclude"}
-			if validArgs(userArgs, forbiddenArgs) {
+			forbiddenArgs := sets.NewString(
+				"-d", "--db",
+				"-c", "--collection",
+				"--nsInclude",
+				"--nsExclude",
+			)
+			if !containsArg(userArgs, forbiddenArgs) {
 				dumpOpt.StdoutPipeCommand.Args = append(dumpOpt.StdoutPipeCommand.Args, "--oplogReplay")
 			}
 		}

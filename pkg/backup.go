@@ -18,6 +18,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	appcatalog_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
@@ -247,8 +248,11 @@ func (opt *mongoOptions) backupMongoDB() (*restic.BackupOutput, error) {
 			// 1. --db
 			// 2. --collection
 			// xref: https://docs.mongodb.com/manual/reference/program/mongodump/#cmdoption-mongodump-oplog
-			forbiddenArgs := []string{"--db", "--collection"}
-			if validArgs(userArgs, forbiddenArgs) {
+			forbiddenArgs := sets.NewString(
+				"-d", "--db",
+				"-c", "--collection",
+			)
+			if !containsArg(userArgs, forbiddenArgs) {
 				backupOpt.StdinPipeCommand.Args = append(backupOpt.StdinPipeCommand.Args, "--oplog")
 			}
 		}
