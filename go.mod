@@ -3,13 +3,14 @@ module stash.appscode.dev/mongodb
 go 1.12
 
 require (
-	github.com/appscode/go v0.0.0-20190808133642-1d4ef1f1c1e0
+	github.com/appscode/go v0.0.0-20191016085057-e186b6c94a3b
 	github.com/codeskyblue/go-sh v0.0.0-20190412065543-76bd3d59ff27
 	github.com/pkg/errors v0.8.1
 	github.com/spf13/cobra v0.0.5
 	k8s.io/apimachinery v0.0.0-20190508063446-a3da69d3723c
 	k8s.io/client-go v11.0.0+incompatible
-	kmodules.xyz/client-go v0.0.0-20190808141354-bbb9e14f60ab
+	k8s.io/klog v0.3.1 // indirect
+	kmodules.xyz/client-go v0.0.0-20191016085444-3044854ca625
 	kmodules.xyz/custom-resources v0.0.0-20190808144301-114abf10dfe2
 	kubedb.dev/apimachinery v0.13.0-rc.0.0.20190830121921-d28870c9d73a
 	stash.appscode.dev/stash v0.9.0-rc.0.0.20190910104640-5f49f5d214aa
