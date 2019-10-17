@@ -8,10 +8,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/appscode/go/types"
-
 	"github.com/appscode/go/flags"
 	"github.com/appscode/go/log"
+	"github.com/appscode/go/types"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

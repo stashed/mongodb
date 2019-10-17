@@ -12,10 +12,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/appscode/go/types"
-
 	"github.com/appscode/go/flags"
 	"github.com/appscode/go/log"
+	"github.com/appscode/go/types"
 	"github.com/codeskyblue/go-sh"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
