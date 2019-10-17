@@ -10,6 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	appcatalog_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
+	stash_cs "stash.appscode.dev/stash/client/clientset/versioned"
 	"stash.appscode.dev/stash/pkg/restic"
 )
 
@@ -28,12 +29,16 @@ const (
 type mongoOptions struct {
 	kubeClient    kubernetes.Interface
 	catalogClient appcatalog_cs.Interface
+	stashClient   stash_cs.Interface
 
-	namespace      string
-	appBindingName string
-	mongoArgs      string
-	maxConcurrency int
-	outputDir      string
+	namespace               string
+	backupSessionName       string
+	restoreSessionName      string
+	appBindingName          string
+	mongoArgs               string
+	maxConcurrency          int
+	outputDir               string
+	enableStatusSubResource bool
 
 	setupOptions         restic.SetupOptions
 	backupOptions        []restic.BackupOptions

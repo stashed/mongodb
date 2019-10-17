@@ -24,9 +24,11 @@ spec:
   # target information
   - --namespace=${NAMESPACE:=default}
   - --appbinding=${TARGET_NAME:=}
+  - --restoresession=${RESTORE_SESSION:=}
   - --snapshot=${RESTORE_SNAPSHOTS:=}
   # output & metric information
   - --output-dir=${outputDir:=}
+  - --enable-status-subresource=${ENABLE_STATUS_SUBRESOURCE:=false}
   volumeMounts:
   - name: ${secretVolume}
     mountPath: /etc/repository/secret
