@@ -10,6 +10,7 @@ import (
 
 	"github.com/appscode/go/flags"
 	"github.com/appscode/go/log"
+	"github.com/appscode/go/types"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -19,6 +20,8 @@ import (
 	appcatalog_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 	"kubedb.dev/apimachinery/apis/config/v1alpha1"
 	api_v1beta1 "stash.appscode.dev/stash/apis/stash/v1beta1"
+	stash_cs "stash.appscode.dev/stash/client/clientset/versioned"
+	stash_cs_util "stash.appscode.dev/stash/client/clientset/versioned/typed/stash/v1beta1/util"
 	"stash.appscode.dev/stash/pkg/restic"
 	"stash.appscode.dev/stash/pkg/util"
 )
@@ -48,6 +51,10 @@ func NewCmdRestore() *cobra.Command {
 
 			// prepare client
 			config, err := clientcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)
+			if err != nil {
+				return err
+			}
+			opt.stashClient, err = stash_cs.NewForConfig(config)
 			if err != nil {
 				return err
 			}
@@ -88,6 +95,7 @@ func NewCmdRestore() *cobra.Command {
 	cmd.Flags().StringVar(&kubeconfigPath, "kubeconfig", kubeconfigPath, "Path to kubeconfig file with authorization information (the master location is set by the master flag).")
 	cmd.Flags().StringVar(&opt.namespace, "namespace", "default", "Namespace of Backup/Restore Session")
 	cmd.Flags().StringVar(&opt.appBindingName, "appbinding", opt.appBindingName, "Name of the app binding")
+	cmd.Flags().StringVar(&opt.restoreSessionName, "restoresession", opt.restoreSessionName, "Name of the respective RestoreSession object")
 	cmd.Flags().IntVar(&opt.maxConcurrency, "max-concurrency", 3, "maximum concurrent backup process to run to take backup from each replicasets")
 
 	cmd.Flags().StringVar(&opt.setupOptions.Provider, "provider", opt.setupOptions.Provider, "Backend provider (i.e. gcs, s3, azure etc)")
@@ -104,6 +112,7 @@ func NewCmdRestore() *cobra.Command {
 	cmd.Flags().StringVar(&opt.defaultDumpOptions.Snapshot, "snapshot", opt.defaultDumpOptions.Snapshot, "Snapshot to dump")
 
 	cmd.Flags().StringVar(&opt.outputDir, "output-dir", opt.outputDir, "Directory where output.json file will be written (keep empty if you don't need to write output in file)")
+	cmd.Flags().BoolVar(&opt.enableStatusSubResource, "enable-status-subresource", true, "Whether to use status sub-resource for crds")
 
 	return cmd
 }
@@ -136,6 +145,31 @@ func (opt *mongoOptions) restoreMongoDB() (*restic.RestoreOutput, error) {
 	if appBinding.Spec.Parameters != nil {
 		if err = json.Unmarshal(appBinding.Spec.Parameters.Raw, &parameters); err != nil {
 			log.Errorf("unable to unmarshal appBinding.Spec.Parameters.Raw. Reason: %v", err)
+		}
+	}
+
+	// Stash operator does not know how many hosts this plugin will restore. It sets totalHosts field of respective RestoreSession to 1.
+	// We must update the totalHosts field to the actual number of hosts it will restore.
+	// Otherwise, RestoreSession will stuck in "Running" state.
+	// Total hosts for MongoDB:
+	// 1. For stand-alone MongoDB, totalHosts=1.
+	// 2. For MongoDB ReplicaSet, totalHosts=1.
+	// 3. For sharded MongoDB, totalHosts=(number of shard + 1) // extra 1 for config server
+	// So, for stand-alone MongoDB and MongoDB ReplicaSet, we don't have to do anything.
+	// We only need to update totalHosts field for sharded MongoDB
+
+	// For sharded MongoDB, parameter.ConfigServer will not be empty
+	if parameters.ConfigServer != "" {
+		restoreSession, err := opt.stashClient.StashV1beta1().RestoreSessions(opt.namespace).Get(opt.restoreSessionName, metav1.GetOptions{})
+		if err != nil {
+			return nil, err
+		}
+		_, err = stash_cs_util.UpdateRestoreSessionStatus(opt.stashClient.StashV1beta1(), restoreSession, func(status *api_v1beta1.RestoreSessionStatus) *api_v1beta1.RestoreSessionStatus {
+			status.TotalHosts = types.Int32P(int32(len(parameters.ReplicaSets) + 1)) // for each shard there will be one key in parameters.ReplicaSet
+			return status
+		}, opt.enableStatusSubResource)
+		if err != nil {
+			return nil, err
 		}
 	}
 
