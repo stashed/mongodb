@@ -154,7 +154,6 @@ func NewCmdBackup() *cobra.Command {
 	cmd.Flags().BoolVar(&opt.defaultBackupOptions.RetentionPolicy.DryRun, "retention-dry-run", opt.defaultBackupOptions.RetentionPolicy.DryRun, "Specify whether to test retention policy without deleting actual data")
 
 	cmd.Flags().StringVar(&opt.outputDir, "output-dir", opt.outputDir, "Directory where output.json file will be written (keep empty if you don't need to write output in file)")
-	cmd.Flags().BoolVar(&opt.enableStatusSubResource, "enable-status-subresource", true, "Whether to use status sub-resource for crds")
 
 	return cmd
 }
@@ -212,7 +211,7 @@ func (opt *mongoOptions) backupMongoDB() (*restic.BackupOutput, error) {
 		_, err = stash_cs_util.UpdateBackupSessionStatus(opt.stashClient.StashV1beta1(), backupSession, func(status *api_v1beta1.BackupSessionStatus) *api_v1beta1.BackupSessionStatus {
 			status.TotalHosts = types.Int32P(int32(len(parameters.ReplicaSets) + 1)) // for each shard there will be one key in parameters.ReplicaSet
 			return status
-		}, opt.enableStatusSubResource)
+		})
 		if err != nil {
 			return nil, err
 		}

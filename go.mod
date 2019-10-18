@@ -9,11 +9,10 @@ require (
 	github.com/spf13/cobra v0.0.5
 	k8s.io/apimachinery v0.0.0-20190508063446-a3da69d3723c
 	k8s.io/client-go v11.0.0+incompatible
-	k8s.io/klog v0.3.1 // indirect
 	kmodules.xyz/client-go v0.0.0-20191016085444-3044854ca625
-	kmodules.xyz/custom-resources v0.0.0-20190808144301-114abf10dfe2
-	kubedb.dev/apimachinery v0.13.0-rc.0.0.20190830121921-d28870c9d73a
-	stash.appscode.dev/stash v0.9.0-rc.0.0.20190910104640-5f49f5d214aa
+	kmodules.xyz/custom-resources v0.0.0-20190927035424-65fe358bb045
+	kubedb.dev/apimachinery v0.13.0-rc.1.0.20191018033414-e2aca1186349
+	stash.appscode.dev/stash v0.9.0-rc.1.0.20191018180359-9ef3cfeba2a2
 )
 
 replace (
