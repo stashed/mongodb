@@ -28,7 +28,6 @@ spec:
   - --snapshot=${RESTORE_SNAPSHOTS:=}
   # output & metric information
   - --output-dir=${outputDir:=}
-  - --enable-status-subresource=${ENABLE_STATUS_SUBRESOURCE:=false}
   volumeMounts:
   - name: ${secretVolume}
     mountPath: /etc/repository/secret
