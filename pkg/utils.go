@@ -31,14 +31,13 @@ type mongoOptions struct {
 	catalogClient appcatalog_cs.Interface
 	stashClient   stash_cs.Interface
 
-	namespace               string
-	backupSessionName       string
-	restoreSessionName      string
-	appBindingName          string
-	mongoArgs               string
-	maxConcurrency          int
-	outputDir               string
-	enableStatusSubResource bool
+	namespace          string
+	backupSessionName  string
+	restoreSessionName string
+	appBindingName     string
+	mongoArgs          string
+	maxConcurrency     int
+	outputDir          string
 
 	setupOptions         restic.SetupOptions
 	backupOptions        []restic.BackupOptions
