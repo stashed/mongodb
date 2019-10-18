@@ -112,7 +112,6 @@ func NewCmdRestore() *cobra.Command {
 	cmd.Flags().StringVar(&opt.defaultDumpOptions.Snapshot, "snapshot", opt.defaultDumpOptions.Snapshot, "Snapshot to dump")
 
 	cmd.Flags().StringVar(&opt.outputDir, "output-dir", opt.outputDir, "Directory where output.json file will be written (keep empty if you don't need to write output in file)")
-	cmd.Flags().BoolVar(&opt.enableStatusSubResource, "enable-status-subresource", true, "Whether to use status sub-resource for crds")
 
 	return cmd
 }
@@ -167,7 +166,7 @@ func (opt *mongoOptions) restoreMongoDB() (*restic.RestoreOutput, error) {
 		_, err = stash_cs_util.UpdateRestoreSessionStatus(opt.stashClient.StashV1beta1(), restoreSession, func(status *api_v1beta1.RestoreSessionStatus) *api_v1beta1.RestoreSessionStatus {
 			status.TotalHosts = types.Int32P(int32(len(parameters.ReplicaSets) + 1)) // for each shard there will be one key in parameters.ReplicaSet
 			return status
-		}, opt.enableStatusSubResource)
+		})
 		if err != nil {
 			return nil, err
 		}
