@@ -407,7 +407,7 @@ Wait for the next schedule. Run the following command to watch `BackupSession` c
 $ kubectl get backupsession -n demo -w
 NAME                              INVOKER-TYPE          INVOKER-NAME           PHASE       AGE
 sample-mgo-rs-backup-1563540308   BackupConfiguration   sample-mgo-rs-backup   Running     5m19s
-sample-mgo-rs-backup-1563540308   BackupConfiguration   sample-mgo-rs-backup   Succeeded   5m19s
+sample-mgo-rs-backup-1563540308   BackupConfiguration   sample-mgo-rs-backup   Succeeded   5m45s
 ```
 
 We can see above that the backup session has succeeded. Now, we are going to verify that the backed up data has been stored in the backend.
