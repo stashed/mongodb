@@ -406,9 +406,9 @@ Wait for the next schedule. Run the following command to watch `BackupSession` c
 
 ```console
 $ kubectl get backupsession -n demo -w
-NAME                               BACKUPCONFIGURATION     PHASE       AGE
-sample-mongodb-backup-1561974001   sample-mongodb-backup   Running     5m19s
-sample-mongodb-backup-1561974001   sample-mongodb-backup   Succeeded   5m45s
+NAME                               INVOKER-TYPE          INVOKER-NAME            PHASE       AGE
+sample-mongodb-backup-1561974001   BackupConfiguration   sample-mongodb-backup   Running     5m19s
+sample-mongodb-backup-1561974001   BackupConfiguration   sample-mongodb-backup   Succeeded   5m45s
 ```
 
 We can see above that the backup session has succeeded. Now, we are going to verify that the backed up data has been stored in the backend.
