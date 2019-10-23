@@ -12,6 +12,12 @@ import (
 	"syscall"
 	"time"
 
+	api_v1beta1 "stash.appscode.dev/stash/apis/stash/v1beta1"
+	stash_cs "stash.appscode.dev/stash/client/clientset/versioned"
+	stash_cs_util "stash.appscode.dev/stash/client/clientset/versioned/typed/stash/v1beta1/util"
+	"stash.appscode.dev/stash/pkg/restic"
+	"stash.appscode.dev/stash/pkg/util"
+
 	"github.com/appscode/go/flags"
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
@@ -24,11 +30,6 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	appcatalog_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 	"kubedb.dev/apimachinery/apis/config/v1alpha1"
-	api_v1beta1 "stash.appscode.dev/stash/apis/stash/v1beta1"
-	stash_cs "stash.appscode.dev/stash/client/clientset/versioned"
-	stash_cs_util "stash.appscode.dev/stash/client/clientset/versioned/typed/stash/v1beta1/util"
-	"stash.appscode.dev/stash/pkg/restic"
-	"stash.appscode.dev/stash/pkg/util"
 )
 
 var (

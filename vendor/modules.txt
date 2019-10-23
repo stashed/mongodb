@@ -495,11 +495,11 @@ k8s.io/kube-openapi/pkg/common
 k8s.io/kube-openapi/pkg/util/proto
 # k8s.io/kubernetes v1.14.0 => k8s.io/kubernetes v1.14.0
 k8s.io/kubernetes/pkg/util/hash
-# k8s.io/utils v0.0.0-20190506122338-8fab8cb257d5 => k8s.io/utils v0.0.0-20190221042446-c2654d5206da
+# k8s.io/utils v0.0.0-20190506122338-8fab8cb257d5 => k8s.io/utils v0.0.0-20190514214443-0a167cbac756
 k8s.io/utils/integer
 k8s.io/utils/buffer
 k8s.io/utils/trace
-# kmodules.xyz/client-go v0.0.0-20191016085444-3044854ca625
+# kmodules.xyz/client-go v0.0.0-20191023042933-b12d1ccfaf57
 kmodules.xyz/client-go/logs
 kmodules.xyz/client-go/tools/cli
 kmodules.xyz/client-go/tools/analytics
@@ -528,7 +528,7 @@ kmodules.xyz/openshift/client/clientset/versioned/scheme
 kmodules.xyz/openshift/apis/security/v1
 # kmodules.xyz/webhook-runtime v0.0.0-20190808145328-4186c470d56b
 kmodules.xyz/webhook-runtime/apis/workload/v1
-# kubedb.dev/apimachinery v0.13.0-rc.1.0.20191018033414-e2aca1186349
+# kubedb.dev/apimachinery v0.13.0-rc.2
 kubedb.dev/apimachinery/apis/config/v1alpha1
 kubedb.dev/apimachinery/apis/config
 # sigs.k8s.io/kustomize v2.0.3+incompatible
@@ -556,7 +556,7 @@ sigs.k8s.io/kustomize/pkg/expansion
 sigs.k8s.io/kustomize/pkg/transformers/config/defaultconfig
 # sigs.k8s.io/yaml v1.1.0
 sigs.k8s.io/yaml
-# stash.appscode.dev/stash v0.9.0-rc.1.0.20191018180359-9ef3cfeba2a2
+# stash.appscode.dev/stash v0.9.0-rc.2
 stash.appscode.dev/stash/client/clientset/versioned/fake
 stash.appscode.dev/stash/apis/stash/v1beta1
 stash.appscode.dev/stash/client/clientset/versioned
