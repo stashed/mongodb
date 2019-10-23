@@ -6,12 +6,13 @@ import (
 	"strings"
 	"time"
 
+	stash_cs "stash.appscode.dev/stash/client/clientset/versioned"
+	"stash.appscode.dev/stash/pkg/restic"
+
 	"github.com/appscode/go/log"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	appcatalog_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
-	stash_cs "stash.appscode.dev/stash/client/clientset/versioned"
-	"stash.appscode.dev/stash/pkg/restic"
 )
 
 const (
