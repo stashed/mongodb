@@ -2,13 +2,13 @@
 title: Backup & Restore MongoDB ReplicaSet Cluster | Stash
 description: Backup and restore MongoDB ReplicaSet cluster using Stash
 menu:
-  product_stash_{{ .version }}:
+  docs_{{ .version }}:
     identifier: mongodb-replicaset-{{ .subproject_version }}
     name: MongoDB ReplicaSet Cluster
     parent: stash-mongodb-guides-{{ .subproject_version }}
     weight: 20
 product_name: stash
-menu_name: product_stash_{{ .version }}
+menu_name: docs_{{ .version }}
 section_menu_id: stash-addons
 ---
 
