@@ -2,13 +2,13 @@
 title: Backup & Restore Standalone MongoDB | Stash
 description: Backup and restore standalone MongoDB database using Stash
 menu:
-  product_stash_{{ .version }}:
+  docs_{{ .version }}:
     identifier: standalone-mongodb-{{ .subproject_version }}
     name: Standalone MongoDB
     parent: stash-mongodb-guides-{{ .subproject_version }}
     weight: 10
 product_name: stash
-menu_name: product_stash_{{ .version }}
+menu_name: docs_{{ .version }}
 section_menu_id: stash-addons
 ---
 
