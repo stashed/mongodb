@@ -454,6 +454,8 @@ Now, if we navigate to the GCS bucket, we are going to see backed up data has be
 
 ## Restore MongoDB Sharding
 
+> N.B.: Mongorestore may not work for Replicaset and Sharding. Use `4.0.11` image for restore purpose. issue link: http://mongodb.2344371.n4.nabble.com/mongorestore-oplogReplay-looping-forever-td25243.html
+
 In this section, we are going to restore the database from the backup we have taken in the previous section. We are going to deploy a new sharded database and initialize it from the backup.
 
 **Stop Taking Backup of the Old Database:**
