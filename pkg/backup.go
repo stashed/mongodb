@@ -242,7 +242,7 @@ func (opt *mongoOptions) backupMongoDB() (*restic.BackupOutput, error) {
 		mongoCreds = []interface{}{
 			"--tls",
 			"--tlsCAFile", filepath.Join(opt.setupOptions.ScratchDir, MongoTLSCertFileName),
-			"--tlsCertificateKeyFile", filepath.Join(opt.setupOptions.ScratchDir, MongoClientPemFileName),
+			"--tlsPEMKeyFile", filepath.Join(opt.setupOptions.ScratchDir, MongoClientPemFileName),
 		}
 		dumpCreds = []interface{}{
 			"--ssl",
