@@ -193,9 +193,15 @@ func (opt *mongoOptions) restoreMongoDB() (*restic.RestoreOutput, error) {
 		if err := ioutil.WriteFile(filepath.Join(opt.setupOptions.ScratchDir, MongoTLSCertFileName), appBinding.Spec.ClientConfig.CABundle, os.ModePerm); err != nil {
 			return nil, errors.Wrap(err, "failed to write key for CA certificate")
 		}
-		adminCreds = []interface{}{
+		mongoCreds = []interface{}{
+			"--tls",
+			"--tlsCAFile", filepath.Join(opt.setupOptions.ScratchDir, MongoTLSCertFileName),
+			"--tlsCertificateKeyFile", filepath.Join(opt.setupOptions.ScratchDir, MongoClientPemFileName),
+		}
+		dumpCreds = []interface{}{
 			"--ssl",
 			"--sslCAFile", filepath.Join(opt.setupOptions.ScratchDir, MongoTLSCertFileName),
+			"--sslPEMKeyFile", filepath.Join(opt.setupOptions.ScratchDir, MongoClientPemFileName),
 		}
 
 		// get certificate secret to get client certificate
@@ -210,19 +216,22 @@ func (opt *mongoOptions) restoreMongoDB() (*restic.RestoreOutput, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "unable to get user from ssl.")
 		}
-		adminCreds = append(adminCreds, []interface{}{
-			"--sslPEMKeyFile", filepath.Join(opt.setupOptions.ScratchDir, MongoClientPemFileName),
+		userAuth := []interface{}{
 			"-u", user,
 			"--authenticationMechanism", "MONGODB-X509",
 			"--authenticationDatabase", "$external",
-		}...)
+		}
+		mongoCreds = append(mongoCreds, userAuth...)
+		dumpCreds = append(dumpCreds, userAuth...)
 
 	} else {
-		adminCreds = []interface{}{
+		userAuth := []interface{}{
 			"--username", string(appBindingSecret.Data[MongoUserKey]),
 			"--password", string(appBindingSecret.Data[MongoPasswordKey]),
 			"--authenticationDatabase", "admin",
 		}
+		mongoCreds = append(mongoCreds, userAuth...)
+		dumpCreds = append(dumpCreds, userAuth...)
 	}
 
 	getDumpOpts := func(mongoDSN, hostKey string, isStandalone bool) restic.DumpOptions {
@@ -240,7 +249,7 @@ func (opt *mongoOptions) restoreMongoDB() (*restic.RestoreOutput, error) {
 			Args: append([]interface{}{
 				"--host", mongoDSN,
 				"--archive",
-			}, adminCreds...),
+			}, dumpCreds...),
 		}
 
 		userArgs := strings.Fields(opt.mongoArgs)
