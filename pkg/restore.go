@@ -245,13 +245,13 @@ func (opt *mongoOptions) restoreMongoDB() (*restic.RestoreOutput, error) {
 
 		userArgs := strings.Fields(opt.mongoArgs)
 		if isStandalone {
-			dumpOpt.StdoutPipeCommand.Args = append(dumpOpt.StdoutPipeCommand.Args, []string{
+			dumpOpt.StdoutPipeCommand.Args = append(dumpOpt.StdoutPipeCommand.Args, []interface{}{
 				"--port=" + fmt.Sprint(appBinding.Spec.ClientConfig.Service.Port),
 				"--nsExclude=config.changelog",
 				// while restoring sharded data to a standalone, restoring config.changelog gives authentication error.
 				// Also, this collection is only part of sharding. so, let's skip this. ref: https://docs.mongodb.com/manual/reference/config-database/#config.changelog
 				// This is the only case in 3.4.17 and 3.4.22
-			})
+			}...)
 		} else {
 			// - port is already added in mongoDSN with replicasetName/host:port format.
 			// - oplog is enabled automatically for replicasets.
