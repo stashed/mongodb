@@ -28,6 +28,7 @@ import (
 	"syscall"
 	"time"
 
+	"stash.appscode.dev/stash/apis"
 	api_v1beta1 "stash.appscode.dev/stash/apis/stash/v1beta1"
 	stash_cs "stash.appscode.dev/stash/client/clientset/versioned"
 	stash_cs_util "stash.appscode.dev/stash/client/clientset/versioned/typed/stash/v1beta1/util"
@@ -225,12 +226,17 @@ func (opt *mongoOptions) backupMongoDB() (*restic.BackupOutput, error) {
 		if err != nil {
 			return nil, err
 		}
-		_, err = stash_cs_util.UpdateBackupSessionStatus(opt.stashClient.StashV1beta1(), backupSession, func(status *api_v1beta1.BackupSessionStatus) *api_v1beta1.BackupSessionStatus {
-			status.TotalHosts = types.Int32P(int32(len(parameters.ReplicaSets) + 1)) // for each shard there will be one key in parameters.ReplicaSet
-			return status
-		})
-		if err != nil {
-			return nil, err
+		for i, target := range backupSession.Status.Targets {
+			if target.Ref.Kind == apis.KindAppBinding && target.Ref.Name == appBinding.Name {
+				_, err = stash_cs_util.UpdateBackupSessionStatus(opt.stashClient.StashV1beta1(), backupSession, func(status *api_v1beta1.BackupSessionStatus) *api_v1beta1.BackupSessionStatus {
+					status.Targets[i].TotalHosts = types.Int32P(int32(len(parameters.ReplicaSets) + 1)) // for each shard there will be one key in parameters.ReplicaSet
+					return status
+				})
+				if err != nil {
+					return nil, err
+				}
+				break
+			}
 		}
 	}
 
