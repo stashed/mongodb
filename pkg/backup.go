@@ -28,6 +28,7 @@ import (
 	"syscall"
 	"time"
 
+	"stash.appscode.dev/stash/apis"
 	api_v1beta1 "stash.appscode.dev/stash/apis/stash/v1beta1"
 	stash_cs "stash.appscode.dev/stash/client/clientset/versioned"
 	stash_cs_util "stash.appscode.dev/stash/client/clientset/versioned/typed/stash/v1beta1/util"
@@ -156,16 +157,16 @@ func NewCmdBackup() *cobra.Command {
 	cmd.Flags().StringVar(&opt.setupOptions.SecretDir, "secret-dir", opt.setupOptions.SecretDir, "Directory where storage secret has been mounted")
 	cmd.Flags().StringVar(&opt.setupOptions.ScratchDir, "scratch-dir", opt.setupOptions.ScratchDir, "Temporary directory")
 	cmd.Flags().BoolVar(&opt.setupOptions.EnableCache, "enable-cache", opt.setupOptions.EnableCache, "Specify whether to enable caching for restic")
-	cmd.Flags().IntVar(&opt.setupOptions.MaxConnections, "max-connections", opt.setupOptions.MaxConnections, "Specify maximum concurrent connections for GCS, Azure and B2 backend")
+	cmd.Flags().Int64Var(&opt.setupOptions.MaxConnections, "max-connections", opt.setupOptions.MaxConnections, "Specify maximum concurrent connections for GCS, Azure and B2 backend")
 
 	cmd.Flags().StringVar(&opt.defaultBackupOptions.Host, "hostname", opt.defaultBackupOptions.Host, "Name of the host machine")
 
-	cmd.Flags().IntVar(&opt.defaultBackupOptions.RetentionPolicy.KeepLast, "retention-keep-last", opt.defaultBackupOptions.RetentionPolicy.KeepLast, "Specify value for retention strategy")
-	cmd.Flags().IntVar(&opt.defaultBackupOptions.RetentionPolicy.KeepHourly, "retention-keep-hourly", opt.defaultBackupOptions.RetentionPolicy.KeepHourly, "Specify value for retention strategy")
-	cmd.Flags().IntVar(&opt.defaultBackupOptions.RetentionPolicy.KeepDaily, "retention-keep-daily", opt.defaultBackupOptions.RetentionPolicy.KeepDaily, "Specify value for retention strategy")
-	cmd.Flags().IntVar(&opt.defaultBackupOptions.RetentionPolicy.KeepWeekly, "retention-keep-weekly", opt.defaultBackupOptions.RetentionPolicy.KeepWeekly, "Specify value for retention strategy")
-	cmd.Flags().IntVar(&opt.defaultBackupOptions.RetentionPolicy.KeepMonthly, "retention-keep-monthly", opt.defaultBackupOptions.RetentionPolicy.KeepMonthly, "Specify value for retention strategy")
-	cmd.Flags().IntVar(&opt.defaultBackupOptions.RetentionPolicy.KeepYearly, "retention-keep-yearly", opt.defaultBackupOptions.RetentionPolicy.KeepYearly, "Specify value for retention strategy")
+	cmd.Flags().Int64Var(&opt.defaultBackupOptions.RetentionPolicy.KeepLast, "retention-keep-last", opt.defaultBackupOptions.RetentionPolicy.KeepLast, "Specify value for retention strategy")
+	cmd.Flags().Int64Var(&opt.defaultBackupOptions.RetentionPolicy.KeepHourly, "retention-keep-hourly", opt.defaultBackupOptions.RetentionPolicy.KeepHourly, "Specify value for retention strategy")
+	cmd.Flags().Int64Var(&opt.defaultBackupOptions.RetentionPolicy.KeepDaily, "retention-keep-daily", opt.defaultBackupOptions.RetentionPolicy.KeepDaily, "Specify value for retention strategy")
+	cmd.Flags().Int64Var(&opt.defaultBackupOptions.RetentionPolicy.KeepWeekly, "retention-keep-weekly", opt.defaultBackupOptions.RetentionPolicy.KeepWeekly, "Specify value for retention strategy")
+	cmd.Flags().Int64Var(&opt.defaultBackupOptions.RetentionPolicy.KeepMonthly, "retention-keep-monthly", opt.defaultBackupOptions.RetentionPolicy.KeepMonthly, "Specify value for retention strategy")
+	cmd.Flags().Int64Var(&opt.defaultBackupOptions.RetentionPolicy.KeepYearly, "retention-keep-yearly", opt.defaultBackupOptions.RetentionPolicy.KeepYearly, "Specify value for retention strategy")
 	cmd.Flags().StringSliceVar(&opt.defaultBackupOptions.RetentionPolicy.KeepTags, "retention-keep-tags", opt.defaultBackupOptions.RetentionPolicy.KeepTags, "Specify value for retention strategy")
 	cmd.Flags().BoolVar(&opt.defaultBackupOptions.RetentionPolicy.Prune, "retention-prune", opt.defaultBackupOptions.RetentionPolicy.Prune, "Specify whether to prune old snapshot data")
 	cmd.Flags().BoolVar(&opt.defaultBackupOptions.RetentionPolicy.DryRun, "retention-dry-run", opt.defaultBackupOptions.RetentionPolicy.DryRun, "Specify whether to test retention policy without deleting actual data")
@@ -225,12 +226,17 @@ func (opt *mongoOptions) backupMongoDB() (*restic.BackupOutput, error) {
 		if err != nil {
 			return nil, err
 		}
-		_, err = stash_cs_util.UpdateBackupSessionStatus(opt.stashClient.StashV1beta1(), backupSession, func(status *api_v1beta1.BackupSessionStatus) *api_v1beta1.BackupSessionStatus {
-			status.TotalHosts = types.Int32P(int32(len(parameters.ReplicaSets) + 1)) // for each shard there will be one key in parameters.ReplicaSet
-			return status
-		})
-		if err != nil {
-			return nil, err
+		for i, target := range backupSession.Status.Targets {
+			if target.Ref.Kind == apis.KindAppBinding && target.Ref.Name == appBinding.Name {
+				_, err = stash_cs_util.UpdateBackupSessionStatus(opt.stashClient.StashV1beta1(), backupSession, func(status *api_v1beta1.BackupSessionStatus) *api_v1beta1.BackupSessionStatus {
+					status.Targets[i].TotalHosts = types.Int32P(int32(len(parameters.ReplicaSets) + 1)) // for each shard there will be one key in parameters.ReplicaSet
+					return status
+				})
+				if err != nil {
+					return nil, err
+				}
+				break
+			}
 		}
 	}
 
