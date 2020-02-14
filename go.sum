@@ -779,6 +779,8 @@ kmodules.xyz/objectstore-api v0.0.0-20200213071506-f176860e67f7 h1:b2ahs7RkOilWV
 kmodules.xyz/objectstore-api v0.0.0-20200213071506-f176860e67f7/go.mod h1:AE1rz+T/3dlUwH5pLgCNghWeeFfeVBnBXKJVpsLHlmc=
 kmodules.xyz/offshoot-api v0.0.0-20200103145223-2c4f520520d2 h1:c/wxNy8KgaS8v/htruqtL0YgrKciUKroK1zXPVZHuqg=
 kmodules.xyz/offshoot-api v0.0.0-20200103145223-2c4f520520d2/go.mod h1:k1M+OOFHbMeS6N6OB2j9smKfMCyQOEQjZ3SLZ/KSe+w=
+kmodules.xyz/offshoot-api v0.0.0-20200207061254-705ac16690ec h1:JdgvQhxyFXnxInPK42R3saSBjkhiiy8k5Uc9UdneVqE=
+kmodules.xyz/offshoot-api v0.0.0-20200207061254-705ac16690ec/go.mod h1:k1M+OOFHbMeS6N6OB2j9smKfMCyQOEQjZ3SLZ/KSe+w=
 kmodules.xyz/openshift v0.0.0-20191127054841-113eeb13704f/go.mod h1:de9+Zk2+wtGhRmGFBZ9T4+0lJZr4rHXW0dHffCaeO+g=
 kmodules.xyz/openshift v0.0.0-20191127145035-f6c48a90dbb7 h1:9PImU28r8bt+QoW7FkYbJ+prsZSNtwctLeXJj3wJK5U=
 kmodules.xyz/openshift v0.0.0-20191127145035-f6c48a90dbb7/go.mod h1:de9+Zk2+wtGhRmGFBZ9T4+0lJZr4rHXW0dHffCaeO+g=
@@ -805,6 +807,6 @@ sigs.k8s.io/yaml v1.1.0/go.mod h1:UJmg0vDUVViEyp3mgSv9WPwZCDxu4rQW1olrI1uml+o=
 software.sslmate.com/src/go-pkcs12 v0.0.0-20180114231543-2291e8f0f237/go.mod h1:/xvNRWUqm0+/ZMiF4EX00vrSCMsE4/NHb+Pt3freEeQ=
 stash.appscode.dev/stash v0.9.0-rc.3 h1:31g/AeYfZwayvynNh72kqRCUzson9kj3YRnrI2V9rPs=
 stash.appscode.dev/stash v0.9.0-rc.3/go.mod h1:2oNiS7Vg3PKZxT6u2Q1+etbTEPNFOpR0/hx1kxnGVOU=
-stash.appscode.dev/stash v0.9.0-rc.5.0.20200213085659-8a333665b417 h1:I46b5xO79CoqBHBkgv/geyk+38Gd35lMglzkqw9Jkc8=
-stash.appscode.dev/stash v0.9.0-rc.5.0.20200213085659-8a333665b417/go.mod h1:Uo4nB1op0EsNPHlvszLXfteV2wNGuHYTuhSEnIUiUnc=
+stash.appscode.dev/stash v0.9.0-rc.5.0.20200214063951-acb1e6e35cd6 h1:uQ8pEziLfk63ZlsjqkABy5b1uNUXplF+RxA8C8sH9SE=
+stash.appscode.dev/stash v0.9.0-rc.5.0.20200214063951-acb1e6e35cd6/go.mod h1:0Ci4lcxa5Aw7Hcj2forrT/O3S4FtdV961JMgSpWixQY=
 vbom.ml/util v0.0.0-20160121211510-db5cfe13f5cc/go.mod h1:so/NYdZXCz+E3ZpW0uAoCj6uzU2+8OWDFv/HxUSs7kI=
