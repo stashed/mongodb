@@ -22,8 +22,8 @@ import (
 	"strings"
 	"time"
 
-	stash_cs "stash.appscode.dev/stash/client/clientset/versioned"
-	"stash.appscode.dev/stash/pkg/restic"
+	stash_cs "stash.appscode.dev/apimachinery/client/clientset/versioned"
+	"stash.appscode.dev/apimachinery/pkg/restic"
 
 	"github.com/appscode/go/log"
 	"k8s.io/apimachinery/pkg/util/sets"
