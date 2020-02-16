@@ -24,11 +24,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	api_v1beta1 "stash.appscode.dev/stash/apis/stash/v1beta1"
-	stash_cs "stash.appscode.dev/stash/client/clientset/versioned"
-	stash_cs_util "stash.appscode.dev/stash/client/clientset/versioned/typed/stash/v1beta1/util"
-	"stash.appscode.dev/stash/pkg/restic"
-	"stash.appscode.dev/stash/pkg/util"
+	api_v1beta1 "stash.appscode.dev/apimachinery/apis/stash/v1beta1"
+	stash_cs "stash.appscode.dev/apimachinery/client/clientset/versioned"
+	stash_cs_util "stash.appscode.dev/apimachinery/client/clientset/versioned/typed/stash/v1beta1/util"
+	"stash.appscode.dev/apimachinery/pkg/restic"
 
 	"github.com/appscode/go/flags"
 	"github.com/appscode/go/log"
@@ -40,6 +39,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	appcatalog_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
+	v1 "kmodules.xyz/offshoot-api/api/v1"
 	"kubedb.dev/apimachinery/apis/config/v1alpha1"
 )
 
@@ -137,11 +137,11 @@ func NewCmdRestore() *cobra.Command {
 func (opt *mongoOptions) restoreMongoDB() (*restic.RestoreOutput, error) {
 	// apply nice, ionice settings from env
 	var err error
-	opt.setupOptions.Nice, err = util.NiceSettingsFromEnv()
+	opt.setupOptions.Nice, err = v1.NiceSettingsFromEnv()
 	if err != nil {
 		return nil, err
 	}
-	opt.setupOptions.IONice, err = util.IONiceSettingsFromEnv()
+	opt.setupOptions.IONice, err = v1.IONiceSettingsFromEnv()
 	if err != nil {
 		return nil, err
 	}
