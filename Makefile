@@ -134,8 +134,10 @@ version:
 	@echo ::set-output name=commit_hash::$(commit_hash)
 	@echo ::set-output name=commit_timestamp::$(commit_timestamp)
 
+.PHONY: gen
 gen:
-	@true
+	@yq r vendor/stash.appscode.dev/installer/api/crds/installer.stash.appscode.com_stashmongodbs.yaml spec.validation.openAPIV3Schema.properties.spec > /tmp/stash-mongodb-values.openapiv3_schema.yaml
+	@yq d /tmp/stash-mongodb-values.openapiv3_schema.yaml description > charts/stash-mongodb/values.openapiv3_schema.yaml
 
 fmt: $(BUILD_DIRS)
 	@docker run                                                 \
