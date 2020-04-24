@@ -1,0 +1,41 @@
+properties:
+  backup:
+    properties:
+      args:
+        type: string
+    required:
+    - args
+    type: object
+  fullnameOverride:
+    type: string
+  image:
+    properties:
+      registry:
+        type: string
+      repository:
+        type: string
+      tag:
+        type: string
+    required:
+    - registry
+    - repository
+    - tag
+    type: object
+  maxConcurrency:
+    format: int32
+    type: integer
+  nameOverride:
+    type: string
+  restore:
+    properties:
+      args:
+        type: string
+    required:
+    - args
+    type: object
+required:
+- backup
+- image
+- maxConcurrency
+- restore
+type: object

@@ -5,7 +5,7 @@ metadata:
   labels:
     {{- include "stash-mongodb.labels" . | nindent 4 }}
 spec:
-  image: {{ .Values.docker.registry }}/{{ .Values.docker.image }}:{{- .Values.docker.tag }}
+  image: {{ .Values.image.registry }}/{{ .Values.image.repository }}:{{- .Values.image.tag }}
   args:
   - backup-mongo
   # setup information
@@ -19,7 +19,7 @@ spec:
   - --enable-cache=${ENABLE_CACHE:=true}
   - --max-connections=${MAX_CONNECTIONS:=0} # 0 indicates use default connection limit
   - --hostname=${HOSTNAME:=}
-  - --mongo-args=${mgArgs:={{ .Values.backup.mgArgs }}} # optional arguments pass to mgdump command
+  - --mongo-args=${args:={{ .Values.backup.args }}} # optional arguments pass to mgdump command
   - --max-concurrency=${MAX_CONCURRENCY:={{ .Values.maxConcurrency}}}
   # target information
   - --namespace=${NAMESPACE:=default}
