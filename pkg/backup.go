@@ -57,14 +57,15 @@ var (
 	cleanupFuncs []func() error
 )
 
-func init() {
+func checkCommandExists() error {
 	var err error
 	if MongoCMD, err = exec.LookPath("mongo"); err != nil {
-		log.Fatalln("unable to look for mongo command. reason:", err)
+		return fmt.Errorf("unable to look for mongo command. reason: %v", err)
 	}
 	if OpenSSLCMD, err = exec.LookPath("openssl"); err != nil {
-		log.Fatalln("unable to look for openssl command. reason:", err)
+		return fmt.Errorf("unable to look for openssl command. reason: %v", err)
 	}
+	return nil
 }
 
 func NewCmdBackup() *cobra.Command {
@@ -87,6 +88,9 @@ func NewCmdBackup() *cobra.Command {
 		Use:               "backup-mongo",
 		Short:             "Takes a backup of Mongo DB",
 		DisableAutoGenTag: true,
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			return checkCommandExists()
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			defer cleanup()
 

@@ -63,6 +63,9 @@ func NewCmdRestore() *cobra.Command {
 		Use:               "restore-mongo",
 		Short:             "Restores MongoDB Backup",
 		DisableAutoGenTag: true,
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			return checkCommandExists()
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			flags.EnsureRequiredFlags(cmd, "appbinding", "provider", "secret-dir")
 
