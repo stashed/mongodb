@@ -54,13 +54,13 @@ The command removes all the Kubernetes components associated with the chart and 
 
 The following table lists the configurable parameters of the `stash-mongodb` chart and their default values.
 
-| Parameter         | Description                                                                                                                   | Default         |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------------- |
-| `docker.registry` | Docker registry used to pull respective images                                                                                | `stashed`       |
-| `docker.image`    | Docker image used to backup/restore MongoDB database                                                                          | `stash-mongodb` |
-| `docker.tag`      | Tag of the image that is used to backup/restore MongoDB database. This is usually same as the database version it can backup. | `4.2.3`        |
-| `backup.mgArgs`   | Optional arguments to pass to `mongodump` command during bakcup process                                                       |                 |
-| `restore.mgArgs`  | Optional arguments to pass to `mongorestore` command during restore process                                                   |                 |
+| Parameter          | Description                                                                                                                   | Default         |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------- | --------------- |
+| `image.registry`   | Docker registry used to pull respective images                                                                                | `stashed`       |
+| `image.repository` | Docker image used to backup/restore MongoDB database                                                                          | `stash-mongodb` |
+| `image.tag`        | Tag of the image that is used to backup/restore MongoDB database. This is usually same as the database version it can backup. | `4.2.3`         |
+| `backup.args`      | Optional arguments to pass to `mongodump` command during bakcup process                                                       |                 |
+| `restore.args`     | Optional arguments to pass to `mongorestore` command during restore process                                                   |                 |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 
