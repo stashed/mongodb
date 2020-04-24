@@ -23,7 +23,7 @@ import (
 	"os"
 	"testing"
 
-	"stash.appscode.dev/installer/apis/installer/v1alpha1"
+	"stash.appscode.dev/mongodb/apis/installer/v1alpha1"
 
 	diff "github.com/yudai/gojsondiff"
 	"github.com/yudai/gojsondiff/formatter"
