@@ -37,10 +37,12 @@ message ImageRef {
 }
 
 message MongoDBBackup {
+  // +optional
   optional string args = 1;
 }
 
 message MongoDBRestore {
+  // +optional
   optional string args = 1;
 }
 
