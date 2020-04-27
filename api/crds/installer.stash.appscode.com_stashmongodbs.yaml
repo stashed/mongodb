@@ -44,8 +44,6 @@ spec:
               properties:
                 args:
                   type: string
-              required:
-              - args
               type: object
             fullnameOverride:
               type: string
@@ -71,8 +69,6 @@ spec:
               properties:
                 args:
                   type: string
-              required:
-              - args
               type: object
           required:
           - backup
