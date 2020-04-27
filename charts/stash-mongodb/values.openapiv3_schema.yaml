@@ -3,8 +3,6 @@ properties:
     properties:
       args:
         type: string
-    required:
-    - args
     type: object
   fullnameOverride:
     type: string
@@ -30,8 +28,6 @@ properties:
     properties:
       args:
         type: string
-    required:
-    - args
     type: object
 required:
 - backup
