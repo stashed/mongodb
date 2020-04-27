@@ -15510,7 +15510,6 @@ func schema_mongodb_apis_installer_v1alpha1_MongoDBBackup(ref common.ReferenceCa
 						},
 					},
 				},
-				Required: []string{"args"},
 			},
 		},
 	}
@@ -15529,7 +15528,6 @@ func schema_mongodb_apis_installer_v1alpha1_MongoDBRestore(ref common.ReferenceC
 						},
 					},
 				},
-				Required: []string{"args"},
 			},
 		},
 	}
