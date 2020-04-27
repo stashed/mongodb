@@ -43,9 +43,9 @@ type StashMongoDB struct {
 
 // StashMongoDBSpec is the schema for Stash MongoDB values file
 type StashMongoDBSpec struct {
-	//+optional
+	// +optional
 	NameOverride string `json:"nameOverride" protobuf:"bytes,1,opt,name=nameOverride"`
-	//+optional
+	// +optional
 	FullnameOverride string         `json:"fullnameOverride" protobuf:"bytes,2,opt,name=fullnameOverride"`
 	Image            ImageRef       `json:"image" protobuf:"bytes,3,opt,name=image"`
 	Backup           MongoDBBackup  `json:"backup" protobuf:"bytes,4,opt,name=backup"`
@@ -60,10 +60,12 @@ type ImageRef struct {
 }
 
 type MongoDBBackup struct {
+	// +optional
 	Args string `json:"args" protobuf:"bytes,1,opt,name=args"`
 }
 
 type MongoDBRestore struct {
+	// +optional
 	Args string `json:"args" protobuf:"bytes,1,opt,name=args"`
 }
 
