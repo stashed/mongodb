@@ -1,18 +1,18 @@
 # stash-mongodb
 
-[stash-mongodb](https://github.com/stashed/stash-mongodb) - MongoDB database backup/restore plugin for [Stash by AppsCode](https://appscode.com/products/stash/).
+[stash-mongodb](https://github.com/stashed/mongodb) - MongoDB database backup/restore plugin for [Stash by AppsCode](https://stash.run)
 
 ## TL;DR;
 
 ```console
-helm repo add appscode https://charts.appscode.com/stable/
-helm repo update
-helm install stash-mongodb-4.1.7 appscode/stash-mongodb -n kube-system --version=4.1.7
+$ helm repo add appscode https://charts.appscode.com/stable/
+$ helm repo update
+$ helm install stash-mongodb-4.1.7 appscode/stash-mongodb -n kube-system --version=4.1.7
 ```
 
 ## Introduction
 
-This chart installs necessary `Function` and `Task` definition to backup or restore MongoDB database 4.1.7 using Stash.
+This chart deploys necessary `Function` and `Task` definition to backup or restore MongoDB database 4.1.7 using Stash on a [Kubernetes](http://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager.
 
 ## Prerequisites
 
@@ -20,32 +20,22 @@ This chart installs necessary `Function` and `Task` definition to backup or rest
 
 ## Installing the Chart
 
-- Add AppsCode chart repository to your helm repository list,
+To install the chart with the release name `stash-mongodb-4.1.7`:
 
 ```console
-helm repo add appscode https://charts.appscode.com/stable/
+$ helm install stash-mongodb-4.1.7 appscode/stash-mongodb -n kube-system --version=4.1.7
 ```
 
-- Update helm repositories to fetch latest charts from the remove repository,
+The command deploys necessary `Function` and `Task` definition to backup or restore MongoDB database 4.1.7 using Stash on the Kubernetes cluster in the default configuration. The [configuration](#configuration) section lists the parameters that can be configured during installation.
 
-```console
-helm repo update
-```
-
-- Install the chart with the release name `stash-mongodb-4.1.7` run the following command,
-
-```console
-helm install stash-mongodb-4.1.7 appscode/stash-mongodb -n kube-system --version=4.1.7
-```
-
-The above commands installs `Functions` and `Task` crds that are necessary to backup MongoDB database 4.1.7 using Stash.
+> **Tip**: List all releases using `helm list`
 
 ## Uninstalling the Chart
 
-To uninstall/delete the `stash-mongodb-4.1.7` run the following command,
+To uninstall/delete the `stash-mongodb-4.1.7`:
 
 ```console
-helm uninstall stash-mongodb-4.1.7 -n kube-system
+$ helm delete stash-mongodb-4.1.7 -n kube-system
 ```
 
 The command removes all the Kubernetes components associated with the chart and deletes the release.
@@ -54,18 +44,27 @@ The command removes all the Kubernetes components associated with the chart and 
 
 The following table lists the configurable parameters of the `stash-mongodb` chart and their default values.
 
-| Parameter          | Description                                                                                                                   | Default         |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------- | --------------- |
-| `image.registry`   | Docker registry used to pull respective images                                                                                | `stashed`       |
-| `image.repository` | Docker image used to backup/restore MongoDB database                                                                          | `stash-mongodb` |
-| `image.tag`        | Tag of the image that is used to backup/restore MongoDB database. This is usually same as the database version it can backup. | `4.1.7`         |
-| `backup.args`      | Optional arguments to pass to `mongodump` command during bakcup process                                                       |                 |
-| `restore.args`     | Optional arguments to pass to `mongorestore` command during restore process                                                   |                 |
+|    Parameter     |                                                          Description                                                          |     Default     |
+|------------------|-------------------------------------------------------------------------------------------------------------------------------|-----------------|
+| nameOverride     | Overrides name template                                                                                                       | `""`            |
+| fullnameOverride | Overrides fullname template                                                                                                   | `""`            |
+| image.registry   | Docker registry used to pull MongoDB addon image                                                                              | `stashed`       |
+| image.repository | Docker image used to backup/restore MongoDB database                                                                          | `stash-mongodb` |
+| image.tag        | Tag of the image that is used to backup/restore MongoDB database. This is usually same as the database version it can backup. | `"4.1.7"`       |
+| backup.args      | Arguments to pass to `mongodump` command during bakcup process                                                                | `""`            |
+| restore.args     | Arguments to pass to `mongorestore` command during restore process                                                            | `""`            |
+| maxConcurrency   | Maximum concurrency to perform backup or restore tasks                                                                        | `3`             |
 
-Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 
-For example:
+Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example:
 
 ```console
-helm install stash-mongodb-4.1.7 appscode/stash-mongodb -n kube-system --set docker.registry=my-registry
+$ helm install stash-mongodb-4.1.7 appscode/stash-mongodb -n kube-system --version=4.1.7 --set image.registry=stashed
+```
+
+Alternatively, a YAML file that specifies the values for the parameters can be provided while
+installing the chart. For example:
+
+```console
+$ helm install stash-mongodb-4.1.7 appscode/stash-mongodb -n kube-system --version=4.1.7 --values values.yaml
 ```
