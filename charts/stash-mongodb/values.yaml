@@ -2,18 +2,26 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+# Overrides name template
 nameOverride: ""
+# Overrides fullname template
 fullnameOverride: ""
 
 image:
+  # Docker registry used to pull MongoDB addon image
   registry: stashed
+  # Docker image used to backup/restore MongoDB database
   repository: stash-mongodb
+  # Tag of the image that is used to backup/restore MongoDB database.
+  # This is usually same as the database version it can backup.
   tag: "3.4.22"
 
 # optional argument to send mongodump or mongorestore command
 backup:
+  # Arguments to pass to `mongodump` command during bakcup process
   args: ""
 restore:
+  # Arguments to pass to `mongorestore` command during restore process
   args: ""
 
 # Maximum concurrency to perform backup or restore tasks
