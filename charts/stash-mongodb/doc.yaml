@@ -1,0 +1,19 @@
+project:
+  name: stash-mongodb
+  shortName: stash-mongodb
+  url: https://github.com/stashed/mongodb
+  description: "MongoDB database backup/restore plugin for [Stash by AppsCode](https://stash.run)"
+  app: "necessary `Function` and `Task` definition to backup or restore MongoDB database 3.4.17 using Stash"
+repository:
+  url: https://charts.appscode.com/stable/
+  name: appscode
+chart:
+  name: stash-mongodb
+  version: "3.4.17"
+  values: "-- generate from values file --"
+  valuesExample: "-- generate from values file --"
+prerequisites:
+- Kubernetes 1.11+
+release:
+  name: stash-mongodb-3.4.17
+  namespace: kube-system
