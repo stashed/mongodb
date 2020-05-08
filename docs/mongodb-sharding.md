@@ -4,7 +4,7 @@ description: Backup and restore sharded MongoDB cluster using Stash
 menu:
   docs_{{ .version }}:
     identifier: sharded-mongodb-{{ .subproject_version }}
-    name: MongoDB Shareded Cluster
+    name: MongoDB Sharded Cluster
     parent: stash-mongodb-guides-{{ .subproject_version }}
     weight: 30
 product_name: stash

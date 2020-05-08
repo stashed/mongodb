@@ -18,7 +18,7 @@ image:
 
 # optional argument to send mongodump or mongorestore command
 backup:
-  # Arguments to pass to `mongodump` command during bakcup process
+  # Arguments to pass to `mongodump` command during backup process
   args: ""
 restore:
   # Arguments to pass to `mongorestore` command during restore process
