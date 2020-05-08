@@ -51,7 +51,7 @@ The following table lists the configurable parameters of the `stash-mongodb` cha
 | image.registry   | Docker registry used to pull MongoDB addon image                                                                              | `stashed`       |
 | image.repository | Docker image used to backup/restore MongoDB database                                                                          | `stash-mongodb` |
 | image.tag        | Tag of the image that is used to backup/restore MongoDB database. This is usually same as the database version it can backup. | `"4.1.7"`       |
-| backup.args      | Arguments to pass to `mongodump` command during bakcup process                                                                | `""`            |
+| backup.args      | Arguments to pass to `mongodump` command during backup process                                                                | `""`            |
 | restore.args     | Arguments to pass to `mongorestore` command during restore process                                                            | `""`            |
 | maxConcurrency   | Maximum concurrency to perform backup or restore tasks                                                                        | `3`             |
 
