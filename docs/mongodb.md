@@ -236,7 +236,7 @@ spec:
   secret:
     name: my-database-credentials-secret
   # type field is optional. you can keep it empty.
-  # if you keep it emtpty then the value of TARGET_APP_RESOURCE variable
+  # if you keep it empty then the value of TARGET_APP_RESOURCE variable
   # will be set to "appbinding" during auto-backup.
   type: mongodb
 ```
