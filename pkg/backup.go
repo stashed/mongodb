@@ -17,6 +17,7 @@ limitations under the License.
 package pkg
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -194,12 +195,12 @@ func (opt *mongoOptions) backupMongoDB() (*restic.BackupOutput, error) {
 	}
 
 	// get app binding
-	appBinding, err := opt.catalogClient.AppcatalogV1alpha1().AppBindings(opt.namespace).Get(opt.appBindingName, metav1.GetOptions{})
+	appBinding, err := opt.catalogClient.AppcatalogV1alpha1().AppBindings(opt.namespace).Get(context.TODO(), opt.appBindingName, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
 	// get secret
-	appBindingSecret, err := opt.kubeClient.CoreV1().Secrets(opt.namespace).Get(appBinding.Spec.Secret.Name, metav1.GetOptions{})
+	appBindingSecret, err := opt.kubeClient.CoreV1().Secrets(opt.namespace).Get(context.TODO(), appBinding.Spec.Secret.Name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -227,16 +228,22 @@ func (opt *mongoOptions) backupMongoDB() (*restic.BackupOutput, error) {
 
 	// For sharded MongoDB, parameter.ConfigServer will not be empty
 	if parameters.ConfigServer != "" {
-		backupSession, err := opt.stashClient.StashV1beta1().BackupSessions(opt.namespace).Get(opt.backupSessionName, metav1.GetOptions{})
+		backupSession, err := opt.stashClient.StashV1beta1().BackupSessions(opt.namespace).Get(context.TODO(), opt.backupSessionName, metav1.GetOptions{})
 		if err != nil {
 			return nil, err
 		}
 		for i, target := range backupSession.Status.Targets {
 			if target.Ref.Kind == apis.KindAppBinding && target.Ref.Name == appBinding.Name {
-				_, err = stash_cs_util.UpdateBackupSessionStatus(opt.stashClient.StashV1beta1(), backupSession, func(status *api_v1beta1.BackupSessionStatus) *api_v1beta1.BackupSessionStatus {
-					status.Targets[i].TotalHosts = types.Int32P(int32(len(parameters.ReplicaSets) + 1)) // for each shard there will be one key in parameters.ReplicaSet
-					return status
-				})
+				_, err = stash_cs_util.UpdateBackupSessionStatus(
+					context.TODO(),
+					opt.stashClient.StashV1beta1(),
+					backupSession.ObjectMeta,
+					func(status *api_v1beta1.BackupSessionStatus) *api_v1beta1.BackupSessionStatus {
+						status.Targets[i].TotalHosts = types.Int32P(int32(len(parameters.ReplicaSets) + 1)) // for each shard there will be one key in parameters.ReplicaSet
+						return status
+					},
+					metav1.UpdateOptions{},
+				)
 				if err != nil {
 					return nil, err
 				}
