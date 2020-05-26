@@ -318,7 +318,7 @@ secret/gcs-secret created
 
 **Create Repository:**
 
-Now, crete a `Respository` using this secret. Below is the YAML of Repository crd we are going to create,
+Now, crete a `Repository` using this secret. Below is the YAML of Repository crd we are going to create,
 
 ```yaml
 apiVersion: stash.appscode.com/v1alpha1
