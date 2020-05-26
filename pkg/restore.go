@@ -17,6 +17,7 @@ limitations under the License.
 package pkg
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -150,12 +151,12 @@ func (opt *mongoOptions) restoreMongoDB() (*restic.RestoreOutput, error) {
 	}
 
 	// get app binding
-	appBinding, err := opt.catalogClient.AppcatalogV1alpha1().AppBindings(opt.namespace).Get(opt.appBindingName, metav1.GetOptions{})
+	appBinding, err := opt.catalogClient.AppcatalogV1alpha1().AppBindings(opt.namespace).Get(context.TODO(), opt.appBindingName, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
 	// get secret
-	appBindingSecret, err := opt.kubeClient.CoreV1().Secrets(opt.namespace).Get(appBinding.Spec.Secret.Name, metav1.GetOptions{})
+	appBindingSecret, err := opt.kubeClient.CoreV1().Secrets(opt.namespace).Get(context.TODO(), appBinding.Spec.Secret.Name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -180,14 +181,20 @@ func (opt *mongoOptions) restoreMongoDB() (*restic.RestoreOutput, error) {
 
 	// For sharded MongoDB, parameter.ConfigServer will not be empty
 	if parameters.ConfigServer != "" {
-		restoreSession, err := opt.stashClient.StashV1beta1().RestoreSessions(opt.namespace).Get(opt.restoreSessionName, metav1.GetOptions{})
+		restoreSession, err := opt.stashClient.StashV1beta1().RestoreSessions(opt.namespace).Get(context.TODO(), opt.restoreSessionName, metav1.GetOptions{})
 		if err != nil {
 			return nil, err
 		}
-		_, err = stash_cs_util.UpdateRestoreSessionStatus(opt.stashClient.StashV1beta1(), restoreSession, func(status *api_v1beta1.RestoreSessionStatus) *api_v1beta1.RestoreSessionStatus {
-			status.TotalHosts = types.Int32P(int32(len(parameters.ReplicaSets) + 1)) // for each shard there will be one key in parameters.ReplicaSet
-			return status
-		})
+		_, err = stash_cs_util.UpdateRestoreSessionStatus(
+			context.TODO(),
+			opt.stashClient.StashV1beta1(),
+			restoreSession.ObjectMeta,
+			func(status *api_v1beta1.RestoreSessionStatus) *api_v1beta1.RestoreSessionStatus {
+				status.TotalHosts = types.Int32P(int32(len(parameters.ReplicaSets) + 1)) // for each shard there will be one key in parameters.ReplicaSet
+				return status
+			},
+			metav1.UpdateOptions{},
+		)
 		if err != nil {
 			return nil, err
 		}
