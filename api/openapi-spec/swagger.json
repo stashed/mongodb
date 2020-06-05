@@ -965,7 +965,8 @@
         "image",
         "backup",
         "restore",
-        "maxConcurrency"
+        "maxConcurrency",
+        "waitTimeout"
       ],
       "properties": {
         "backup": {
@@ -986,6 +987,10 @@
         },
         "restore": {
           "$ref": "#/definitions/dev.appscode.stash.mongodb.apis.installer.v1alpha1.MongoDBRestore"
+        },
+        "waitTimeout": {
+          "type": "integer",
+          "format": "int64"
         }
       }
     },
