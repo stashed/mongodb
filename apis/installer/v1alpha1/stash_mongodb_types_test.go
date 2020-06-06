@@ -41,7 +41,7 @@ func TestStashMongoDBDefaultValues(t *testing.T) {
 }
 
 func compareStashMongoDBDefaultValues() (string, error) {
-	data, err := ioutil.ReadFile("../../../../mongodb/charts/stash-mongodb/values.yaml")
+	data, err := ioutil.ReadFile("../../../charts/stash-mongodb/values.yaml")
 	if err != nil {
 		return "", err
 	}
