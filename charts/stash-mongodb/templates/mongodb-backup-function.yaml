@@ -21,6 +21,7 @@ spec:
   - --hostname=${HOSTNAME:=}
   - --mongo-args=${args:={{ .Values.backup.args }}} # optional arguments pass to mgdump command
   - --max-concurrency=${MAX_CONCURRENCY:={{ .Values.maxConcurrency}}}
+  - --wait-timeout=${waitTimeout:={{ .Values.waitTimeout}}}
   # target information
   - --namespace=${NAMESPACE:=default}
   - --appbinding=${TARGET_NAME:=}
