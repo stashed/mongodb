@@ -54,6 +54,7 @@ type mongoOptions struct {
 	appBindingName     string
 	mongoArgs          string
 	maxConcurrency     int
+	waitTimeout        int32
 	outputDir          string
 
 	setupOptions         restic.SetupOptions
@@ -63,9 +64,9 @@ type mongoOptions struct {
 	defaultDumpOptions   restic.DumpOptions
 }
 
-func waitForDBReady(host string, port int32) {
+func waitForDBReady(host string, port, waitTimeout int32) {
 	log.Infoln("Checking database connection")
-	cmd := fmt.Sprintf(`nc "%s" "%d" -w 30`, host, port)
+	cmd := fmt.Sprintf(`nc "%s" "%d" -w %d`, host, port, waitTimeout)
 	for {
 		if err := exec.Command(cmd).Run(); err != nil {
 			break
