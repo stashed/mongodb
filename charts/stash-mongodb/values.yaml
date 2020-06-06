@@ -26,3 +26,6 @@ restore:
 
 # Maximum concurrency to perform backup or restore tasks
 maxConcurrency: 3
+
+# Number of seconds to wait for the database to be ready before backup/restore process.
+waitTimeout: 300
