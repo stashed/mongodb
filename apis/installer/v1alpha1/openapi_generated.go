@@ -15715,8 +15715,14 @@ func schema_mongodb_apis_installer_v1alpha1_StashMongoDBSpec(ref common.Referenc
 							Format: "int32",
 						},
 					},
+					"waitTimeout": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"integer"},
+							Format: "int64",
+						},
+					},
 				},
-				Required: []string{"image", "backup", "restore", "maxConcurrency"},
+				Required: []string{"image", "backup", "restore", "maxConcurrency", "waitTimeout"},
 			},
 		},
 		Dependencies: []string{
