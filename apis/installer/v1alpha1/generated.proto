@@ -77,5 +77,7 @@ message StashMongoDBSpec {
   optional MongoDBRestore restore = 5;
 
   optional int32 maxConcurrency = 6;
+
+  optional int64 waitTimeout = 7;
 }
 
