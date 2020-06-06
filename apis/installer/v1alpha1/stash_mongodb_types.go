@@ -51,6 +51,7 @@ type StashMongoDBSpec struct {
 	Backup           MongoDBBackup  `json:"backup" protobuf:"bytes,4,opt,name=backup"`
 	Restore          MongoDBRestore `json:"restore" protobuf:"bytes,5,opt,name=restore"`
 	MaxConcurrency   int32          `json:"maxConcurrency" protobuf:"varint,6,opt,name=maxConcurrency"`
+	WaitTimeout      int64          `json:"waitTimeout" protobuf:"varint,7,opt,name=waitTimeout"`
 }
 
 type ImageRef struct {
