@@ -54,6 +54,7 @@ The following table lists the configurable parameters of the `stash-mongodb` cha
 | backup.args      | Arguments to pass to `mongodump` command during backup process                                                                | `""`            |
 | restore.args     | Arguments to pass to `mongorestore` command during restore process                                                            | `""`            |
 | maxConcurrency   | Maximum concurrency to perform backup or restore tasks                                                                        | `3`             |
+| waitTimeout      | Number of seconds to wait for the database to be ready before backup/restore process.                                         | `300`           |
 
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example:
