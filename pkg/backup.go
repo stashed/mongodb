@@ -207,6 +207,12 @@ func (opt *mongoOptions) backupMongoDB() (*restic.BackupOutput, error) {
 		return nil, err
 	}
 
+	// transform secret
+	err = appBinding.TransformSecret(opt.kubeClient, appBindingSecret.Data)
+	if err != nil {
+		return nil, err
+	}
+
 	// wait for DB ready
 	waitForDBReady(appBinding.Spec.ClientConfig.Service.Name, appBinding.Spec.ClientConfig.Service.Port, opt.waitTimeout)
 
