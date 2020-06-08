@@ -163,6 +163,12 @@ func (opt *mongoOptions) restoreMongoDB() (*restic.RestoreOutput, error) {
 		return nil, err
 	}
 
+	// transform secret
+	err = appBinding.TransformSecret(opt.kubeClient, appBindingSecret.Data)
+	if err != nil {
+		return nil, err
+	}
+
 	// unmarshal parameter is the field has value
 	parameters := v1alpha1.MongoDBConfiguration{}
 	if appBinding.Spec.Parameters != nil {
