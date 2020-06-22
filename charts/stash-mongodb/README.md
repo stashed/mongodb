@@ -12,7 +12,7 @@ $ helm install stash-mongodb-3.6.13 appscode/stash-mongodb -n kube-system --vers
 
 ## Introduction
 
-This chart deploys necessary `Function` and `Task` definition to backup or restore MongoDB database 3.6.13 using Stash on a [Kubernetes](http://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager.
+This chart deploys necessary `Function` and `Task` definition to backup or restore MongoDB 3.6.13 using Stash on a [Kubernetes](http://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager.
 
 ## Prerequisites
 
@@ -26,7 +26,7 @@ To install the chart with the release name `stash-mongodb-3.6.13`:
 $ helm install stash-mongodb-3.6.13 appscode/stash-mongodb -n kube-system --version=3.6.13
 ```
 
-The command deploys necessary `Function` and `Task` definition to backup or restore MongoDB database 3.6.13 using Stash on the Kubernetes cluster in the default configuration. The [configuration](#configuration) section lists the parameters that can be configured during installation.
+The command deploys necessary `Function` and `Task` definition to backup or restore MongoDB 3.6.13 using Stash on the Kubernetes cluster in the default configuration. The [configuration](#configuration) section lists the parameters that can be configured during installation.
 
 > **Tip**: List all releases using `helm list`
 
