@@ -7,7 +7,7 @@
 ```console
 $ helm repo add appscode https://charts.appscode.com/stable/
 $ helm repo update
-$ helm install stash-mongodb-4.0.3-beta.20200708 appscode/stash-mongodb -n kube-system --version=4.0.3-beta.20200708
+$ helm install stash-mongodb-4.0.3-beta.20200709 appscode/stash-mongodb -n kube-system --version=4.0.3-beta.20200709
 ```
 
 ## Introduction
@@ -20,10 +20,10 @@ This chart deploys necessary `Function` and `Task` definition to backup or resto
 
 ## Installing the Chart
 
-To install the chart with the release name `stash-mongodb-4.0.3-beta.20200708`:
+To install the chart with the release name `stash-mongodb-4.0.3-beta.20200709`:
 
 ```console
-$ helm install stash-mongodb-4.0.3-beta.20200708 appscode/stash-mongodb -n kube-system --version=4.0.3-beta.20200708
+$ helm install stash-mongodb-4.0.3-beta.20200709 appscode/stash-mongodb -n kube-system --version=4.0.3-beta.20200709
 ```
 
 The command deploys necessary `Function` and `Task` definition to backup or restore MongoDB 4.0.3 using Stash on the Kubernetes cluster in the default configuration. The [configuration](#configuration) section lists the parameters that can be configured during installation.
@@ -32,10 +32,10 @@ The command deploys necessary `Function` and `Task` definition to backup or rest
 
 ## Uninstalling the Chart
 
-To uninstall/delete the `stash-mongodb-4.0.3-beta.20200708`:
+To uninstall/delete the `stash-mongodb-4.0.3-beta.20200709`:
 
 ```console
-$ helm delete stash-mongodb-4.0.3-beta.20200708 -n kube-system
+$ helm delete stash-mongodb-4.0.3-beta.20200709 -n kube-system
 ```
 
 The command removes all the Kubernetes components associated with the chart and deletes the release.
@@ -60,12 +60,12 @@ The following table lists the configurable parameters of the `stash-mongodb` cha
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example:
 
 ```console
-$ helm install stash-mongodb-4.0.3-beta.20200708 appscode/stash-mongodb -n kube-system --version=4.0.3-beta.20200708 --set image.registry=stashed
+$ helm install stash-mongodb-4.0.3-beta.20200709 appscode/stash-mongodb -n kube-system --version=4.0.3-beta.20200709 --set image.registry=stashed
 ```
 
 Alternatively, a YAML file that specifies the values for the parameters can be provided while
 installing the chart. For example:
 
 ```console
-$ helm install stash-mongodb-4.0.3-beta.20200708 appscode/stash-mongodb -n kube-system --version=4.0.3-beta.20200708 --values values.yaml
+$ helm install stash-mongodb-4.0.3-beta.20200709 appscode/stash-mongodb -n kube-system --version=4.0.3-beta.20200709 --values values.yaml
 ```
