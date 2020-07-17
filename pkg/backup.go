@@ -34,6 +34,7 @@ import (
 	stash_cs "stash.appscode.dev/apimachinery/client/clientset/versioned"
 	stash_cs_util "stash.appscode.dev/apimachinery/client/clientset/versioned/typed/stash/v1beta1/util"
 	"stash.appscode.dev/apimachinery/pkg/restic"
+	api_util "stash.appscode.dev/apimachinery/pkg/util"
 
 	"github.com/appscode/go/flags"
 	"github.com/appscode/go/log"
@@ -45,6 +46,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
+	appcatalog "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	appcatalog_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 	v1 "kmodules.xyz/offshoot-api/api/v1"
 	"kubedb.dev/apimachinery/apis/config/v1alpha1"
@@ -125,15 +127,23 @@ func NewCmdBackup() *cobra.Command {
 				return err
 			}
 
+			targetRef := api_v1beta1.TargetRef{
+				APIVersion: appcatalog.SchemeGroupVersion.String(),
+				Kind:       appcatalog.ResourceKindApp,
+				Name:       opt.appBindingName,
+			}
 			var backupOutput *restic.BackupOutput
-			backupOutput, err = opt.backupMongoDB()
+			backupOutput, err = opt.backupMongoDB(targetRef)
 			if err != nil {
 				backupOutput = &restic.BackupOutput{
-					HostBackupStats: []api_v1beta1.HostBackupStats{
-						{
-							Hostname: opt.defaultBackupOptions.Host,
-							Phase:    api_v1beta1.HostBackupFailed,
-							Error:    err.Error(),
+					BackupTargetStatus: api_v1beta1.BackupTargetStatus{
+						Ref: targetRef,
+						Stats: []api_v1beta1.HostBackupStats{
+							{
+								Hostname: opt.defaultBackupOptions.Host,
+								Phase:    api_v1beta1.HostBackupFailed,
+								Error:    err.Error(),
+							},
 						},
 					},
 				}
@@ -184,9 +194,25 @@ func NewCmdBackup() *cobra.Command {
 	return cmd
 }
 
-func (opt *mongoOptions) backupMongoDB() (*restic.BackupOutput, error) {
+func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic.BackupOutput, error) {
+	// if any pre-backup actions has been assigned to it, execute them
+	actionOptions := api_util.ActionOptions{
+		StashClient:       opt.stashClient,
+		TargetRef:         targetRef,
+		SetupOptions:      opt.setupOptions,
+		BackupSessionName: opt.backupSessionName,
+		Namespace:         opt.namespace,
+	}
+	err := api_util.ExecutePreBackupActions(actionOptions)
+	if err != nil {
+		return nil, err
+	}
+	// wait until the backend repository has been initialized.
+	err = api_util.WaitForBackendRepository(actionOptions)
+	if err != nil {
+		return nil, err
+	}
 	// apply nice, ionice settings from env
-	var err error
 	opt.setupOptions.Nice, err = v1.NiceSettingsFromEnv()
 	if err != nil {
 		return nil, err
@@ -438,7 +464,7 @@ func (opt *mongoOptions) backupMongoDB() (*restic.BackupOutput, error) {
 	resticWrapper.HideCMD()
 
 	// Run backup
-	return resticWrapper.RunParallelBackup(opt.backupOptions, opt.maxConcurrency)
+	return resticWrapper.RunParallelBackup(opt.backupOptions, targetRef, opt.maxConcurrency)
 }
 
 // cleanup usually unlocks the locked servers
