@@ -39,6 +39,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
+	appcatalog "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	appcatalog_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 	v1 "kmodules.xyz/offshoot-api/api/v1"
 	"kubedb.dev/apimachinery/apis/config/v1alpha1"
@@ -89,15 +90,23 @@ func NewCmdRestore() *cobra.Command {
 				return err
 			}
 
+			targetRef := api_v1beta1.TargetRef{
+				APIVersion: appcatalog.SchemeGroupVersion.String(),
+				Kind:       appcatalog.ResourceKindApp,
+				Name:       opt.appBindingName,
+			}
 			var restoreOutput *restic.RestoreOutput
-			restoreOutput, err = opt.restoreMongoDB()
+			restoreOutput, err = opt.restoreMongoDB(targetRef)
 			if err != nil {
 				restoreOutput = &restic.RestoreOutput{
-					HostRestoreStats: []api_v1beta1.HostRestoreStats{
-						{
-							Hostname: opt.defaultDumpOptions.Host,
-							Phase:    api_v1beta1.HostRestoreFailed,
-							Error:    err.Error(),
+					RestoreTargetStatus: api_v1beta1.RestoreMemberStatus{
+						Ref: targetRef,
+						Stats: []api_v1beta1.HostRestoreStats{
+							{
+								Hostname: opt.defaultDumpOptions.Host,
+								Phase:    api_v1beta1.HostRestoreFailed,
+								Error:    err.Error(),
+							},
 						},
 					},
 				}
@@ -140,7 +149,7 @@ func NewCmdRestore() *cobra.Command {
 	return cmd
 }
 
-func (opt *mongoOptions) restoreMongoDB() (*restic.RestoreOutput, error) {
+func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*restic.RestoreOutput, error) {
 	// apply nice, ionice settings from env
 	var err error
 	opt.setupOptions.Nice, err = v1.NiceSettingsFromEnv()
@@ -341,5 +350,5 @@ func (opt *mongoOptions) restoreMongoDB() (*restic.RestoreOutput, error) {
 	resticWrapper.HideCMD()
 
 	// Run dump
-	return resticWrapper.ParallelDump(opt.dumpOptions, opt.maxConcurrency)
+	return resticWrapper.ParallelDump(opt.dumpOptions, targetRef, opt.maxConcurrency)
 }
