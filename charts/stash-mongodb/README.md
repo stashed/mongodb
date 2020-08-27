@@ -7,7 +7,7 @@
 ```console
 $ helm repo add appscode https://charts.appscode.com/stable/
 $ helm repo update
-$ helm install stash-mongodb-4.0.11-rc.20200827 appscode/stash-mongodb -n kube-system --version=4.0.11-rc.20200827
+$ helm install stash-mongodb-4.0.11-v1 appscode/stash-mongodb -n kube-system --version=4.0.11-v1
 ```
 
 ## Introduction
@@ -20,10 +20,10 @@ This chart deploys necessary `Function` and `Task` definition to backup or resto
 
 ## Installing the Chart
 
-To install the chart with the release name `stash-mongodb-4.0.11-rc.20200827`:
+To install the chart with the release name `stash-mongodb-4.0.11-v1`:
 
 ```console
-$ helm install stash-mongodb-4.0.11-rc.20200827 appscode/stash-mongodb -n kube-system --version=4.0.11-rc.20200827
+$ helm install stash-mongodb-4.0.11-v1 appscode/stash-mongodb -n kube-system --version=4.0.11-v1
 ```
 
 The command deploys necessary `Function` and `Task` definition to backup or restore MongoDB 4.0.11 using Stash on the Kubernetes cluster in the default configuration. The [configuration](#configuration) section lists the parameters that can be configured during installation.
@@ -32,10 +32,10 @@ The command deploys necessary `Function` and `Task` definition to backup or rest
 
 ## Uninstalling the Chart
 
-To uninstall/delete the `stash-mongodb-4.0.11-rc.20200827`:
+To uninstall/delete the `stash-mongodb-4.0.11-v1`:
 
 ```console
-$ helm delete stash-mongodb-4.0.11-rc.20200827 -n kube-system
+$ helm delete stash-mongodb-4.0.11-v1 -n kube-system
 ```
 
 The command removes all the Kubernetes components associated with the chart and deletes the release.
@@ -44,28 +44,28 @@ The command removes all the Kubernetes components associated with the chart and 
 
 The following table lists the configurable parameters of the `stash-mongodb` chart and their default values.
 
-|    Parameter     |                                                          Description                                                          |       Default        |
-|------------------|-------------------------------------------------------------------------------------------------------------------------------|----------------------|
-| nameOverride     | Overrides name template                                                                                                       | `""`                 |
-| fullnameOverride | Overrides fullname template                                                                                                   | `""`                 |
-| image.registry   | Docker registry used to pull MongoDB addon image                                                                              | `stashed`            |
-| image.repository | Docker image used to backup/restore MongoDB database                                                                          | `stash-mongodb`      |
-| image.tag        | Tag of the image that is used to backup/restore MongoDB database. This is usually same as the database version it can backup. | `4.0.11-rc.20200827` |
-| backup.args      | Arguments to pass to `mongodump` command during backup process                                                                | `""`                 |
-| restore.args     | Arguments to pass to `mongorestore` command during restore process                                                            | `""`                 |
-| maxConcurrency   | Maximum concurrency to perform backup or restore tasks                                                                        | `3`                  |
-| waitTimeout      | Number of seconds to wait for the database to be ready before backup/restore process.                                         | `300`                |
+|    Parameter     |                                                          Description                                                          |     Default     |
+|------------------|-------------------------------------------------------------------------------------------------------------------------------|-----------------|
+| nameOverride     | Overrides name template                                                                                                       | `""`            |
+| fullnameOverride | Overrides fullname template                                                                                                   | `""`            |
+| image.registry   | Docker registry used to pull MongoDB addon image                                                                              | `stashed`       |
+| image.repository | Docker image used to backup/restore MongoDB database                                                                          | `stash-mongodb` |
+| image.tag        | Tag of the image that is used to backup/restore MongoDB database. This is usually same as the database version it can backup. | `4.0.11-v1`     |
+| backup.args      | Arguments to pass to `mongodump` command during backup process                                                                | `""`            |
+| restore.args     | Arguments to pass to `mongorestore` command during restore process                                                            | `""`            |
+| maxConcurrency   | Maximum concurrency to perform backup or restore tasks                                                                        | `3`             |
+| waitTimeout      | Number of seconds to wait for the database to be ready before backup/restore process.                                         | `300`           |
 
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`. For example:
 
 ```console
-$ helm install stash-mongodb-4.0.11-rc.20200827 appscode/stash-mongodb -n kube-system --version=4.0.11-rc.20200827 --set image.registry=stashed
+$ helm install stash-mongodb-4.0.11-v1 appscode/stash-mongodb -n kube-system --version=4.0.11-v1 --set image.registry=stashed
 ```
 
 Alternatively, a YAML file that specifies the values for the parameters can be provided while
 installing the chart. For example:
 
 ```console
-$ helm install stash-mongodb-4.0.11-rc.20200827 appscode/stash-mongodb -n kube-system --version=4.0.11-rc.20200827 --values values.yaml
+$ helm install stash-mongodb-4.0.11-v1 appscode/stash-mongodb -n kube-system --version=4.0.11-v1 --values values.yaml
 ```
