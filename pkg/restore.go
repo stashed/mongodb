@@ -35,6 +35,7 @@ import (
 	"github.com/appscode/go/types"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
@@ -227,11 +228,22 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 		}
 
 		// get certificate secret to get client certificate
-		data, ok := appBindingSecret.Data[MongoClientPemFileName]
+		var pemBytes []byte
+		var ok bool
+		pemBytes, ok = appBindingSecret.Data[MongoClientPemFileName]
 		if !ok {
-			return nil, errors.Wrap(err, "unable to get client certificate from secret.")
+			crt, ok := appBindingSecret.Data[core.TLSCertKey]
+			if !ok {
+				return nil, errors.Wrap(err, "unable to retrieve tls.crt from secret.")
+			}
+			key, ok := appBindingSecret.Data[core.TLSPrivateKeyKey]
+			if !ok {
+				return nil, errors.Wrap(err, "unable to retrieve tls.key from secret.")
+			}
+			pemBytes = append(crt[:], []byte("\n")...)
+			pemBytes = append(pemBytes, key...)
 		}
-		if err := ioutil.WriteFile(filepath.Join(opt.setupOptions.ScratchDir, MongoClientPemFileName), data, os.ModePerm); err != nil {
+		if err := ioutil.WriteFile(filepath.Join(opt.setupOptions.ScratchDir, MongoClientPemFileName), pemBytes, os.ModePerm); err != nil {
 			return nil, errors.Wrap(err, "failed to write client certificate")
 		}
 		user, err := getSSLUser(filepath.Join(opt.setupOptions.ScratchDir, MongoClientPemFileName))
