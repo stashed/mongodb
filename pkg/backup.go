@@ -42,6 +42,7 @@ import (
 	"github.com/codeskyblue/go-sh"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	license "go.bytebuilders.dev/license-verifier/kubernetes"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -112,6 +113,10 @@ func NewCmdBackup() *cobra.Command {
 
 			// prepare client
 			config, err := clientcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)
+			if err != nil {
+				return err
+			}
+			err = license.CheckLicenseEndpoint(config, apiServiceName, SupportedProducts)
 			if err != nil {
 				return err
 			}
