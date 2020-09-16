@@ -12,7 +12,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.0.0
 	github.com/yudai/gojsondiff v1.0.0
-	go.bytebuilders.dev/license-verifier/kubernetes v0.2.3-0.20200915092602-8974756aacb0
+	go.bytebuilders.dev/license-verifier/kubernetes v0.3.0
 	k8s.io/api v0.18.5
 	k8s.io/apiextensions-apiserver v0.18.5
 	k8s.io/apimachinery v0.18.5
