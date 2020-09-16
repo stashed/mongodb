@@ -30,6 +30,7 @@ spec:
   - --snapshot=${RESTORE_SNAPSHOTS:=}
   # output & metric information
   - --output-dir=${outputDir:=}
+  - --license-apiservice=${LICENSE_APISERVICE:=}
   volumeMounts:
   - name: ${secretVolume}
     mountPath: /etc/repository/secret
