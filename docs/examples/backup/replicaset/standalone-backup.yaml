@@ -12,7 +12,6 @@ spec:
   secret:
     name: sample-mgo-rs-auth
   type: kubedb.com/mongodb
-
 ---
 apiVersion: stash.appscode.com/v1alpha1
 kind: Repository
@@ -25,7 +24,6 @@ spec:
       bucket: appscode-qa
       prefix: demo/mongodb/sample-mgo-rs/standalone
     storageSecretName: gcs-secret
-
 ---
 apiVersion: stash.appscode.com/v1beta1
 kind: BackupConfiguration
@@ -35,7 +33,7 @@ metadata:
 spec:
   schedule: "*/5 * * * *"
   task:
-    name: mongodb-backup-3.6.8
+    name: mongodb-backup-3.6.8-v2
   repository:
     name: gcs-repo-custom
   target:
