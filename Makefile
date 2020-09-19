@@ -301,6 +301,16 @@ chart-contents-%:
 		yq w -i ./charts/$*/Chart.yaml version --tag '!!str' $(CHART_VERSION);             \
 		yq w -i ./charts/$*/doc.yaml chart.version --tag '!!str' $(CHART_VERSION);         \
 		yq w -i ./charts/$*/doc.yaml release.name --tag '!!str' $(BIN)-$(CHART_VERSION);   \
+		yq w -i ./docs/examples/backup/replicaset/backupconfiguration-replicaset.yaml spec.task.name --tag '!!str' mongodb-backup-$(CHART_VERSION); \
+		yq w -i ./docs/examples/backup/replicaset/standalone-backup.yaml spec.task.name --tag '!!str' mongodb-backup-$(CHART_VERSION); \
+		yq w -i ./docs/examples/backup/sharding/backupconfiguration-sharding.yaml spec.task.name --tag '!!str' mongodb-backup-$(CHART_VERSION); \
+		yq w -i ./docs/examples/backup/sharding/standalone-backup.yaml spec.task.name --tag '!!str' mongodb-backup-$(CHART_VERSION); \
+		yq w -i ./docs/examples/backup/standalone/backupconfiguration.yaml spec.task.name --tag '!!str' mongodb-backup-$(CHART_VERSION); \
+		yq w -i ./docs/examples/restore/replicaset/restoresession-replicaset.yaml spec.task.name --tag '!!str' mongodb-restore-$(CHART_VERSION); \
+		yq w -i ./docs/examples/restore/replicaset/restoresession-standalone.yaml spec.task.name --tag '!!str' mongodb-restore-$(CHART_VERSION); \
+		yq w -i ./docs/examples/restore/sharding/restoresession-sharding.yaml spec.task.name --tag '!!str' mongodb-restore-$(CHART_VERSION); \
+		yq w -i ./docs/examples/restore/sharding/restoresession-standalone.yaml spec.task.name --tag '!!str' mongodb-restore-$(CHART_VERSION); \
+		yq w -i ./docs/examples/restore/standalone/restoresession.yaml spec.task.name --tag '!!str' mongodb-restore-$(CHART_VERSION); \
 	fi
 	@if [ ! -z "$(APP_VERSION)" ]; then                                                    \
 		yq w -i ./charts/$*/Chart.yaml appVersion --tag '!!str' $(APP_VERSION);            \
