@@ -289,8 +289,6 @@ github.com/go-openapi/spec v0.18.0/go.mod h1:XkF/MOi14NmjsfZ8VtAKf8pIlbZzyoTvZsd
 github.com/go-openapi/spec v0.19.2/go.mod h1:sCxk3jxKgioEJikev4fgkNmwS+3kuYdJtcsZsD5zxMY=
 github.com/go-openapi/spec v0.19.3 h1:0XRyw8kguri6Yw4SxhsQA/atC88yqrk0+G4YhI2wabc=
 github.com/go-openapi/spec v0.19.3/go.mod h1:FpwSN1ksY1eteniUU7X0N/BgJ7a4WvBFVA8Lj9mJglo=
-github.com/go-openapi/spec v0.19.7 h1:0xWSeMd35y5avQAThZR2PkEuqSosoS5t6gDH4L8n11M=
-github.com/go-openapi/spec v0.19.7/go.mod h1:Hm2Jr4jv8G1ciIAo+frC/Ft+rR2kQDh8JHKHb3gWUSk=
 github.com/go-openapi/spec v0.19.8 h1:qAdZLh1r6QF/hI/gTq+TJTvsQUodZsM7KLqkAJdiJNg=
 github.com/go-openapi/spec v0.19.8/go.mod h1:Hm2Jr4jv8G1ciIAo+frC/Ft+rR2kQDh8JHKHb3gWUSk=
 github.com/go-openapi/strfmt v0.17.0/go.mod h1:P82hnJI0CXkErkXi8IKjPbNBM6lV6+5pLP5l494TcyU=
@@ -1304,11 +1302,9 @@ kmodules.xyz/client-go v0.0.0-20200818143024-600fef263e03/go.mod h1:sY/eoe4ktxZE
 kmodules.xyz/client-go v0.0.0-20200818171030-24b2ce405feb h1:0yIIoTfkhR4JAgx8UyXbP7oAveVAOcf66+D+20Uj/Uc=
 kmodules.xyz/client-go v0.0.0-20200818171030-24b2ce405feb/go.mod h1:sY/eoe4ktxZEoHpr5NpAQ5s22VSwTE8psJtKVeVgLRY=
 kmodules.xyz/client-go v0.0.0-20200903033732-dab39b86c81b/go.mod h1:sY/eoe4ktxZEoHpr5NpAQ5s22VSwTE8psJtKVeVgLRY=
-kmodules.xyz/client-go v0.0.0-20200915091229-7df16c29f4e8 h1:C6+M9aTLhPCmsJ8dmhPvkr7Qe2MN+iiY3kZvbonhS9E=
-kmodules.xyz/client-go v0.0.0-20200915091229-7df16c29f4e8/go.mod h1:sY/eoe4ktxZEoHpr5NpAQ5s22VSwTE8psJtKVeVgLRY=
 kmodules.xyz/client-go v0.0.0-20200922200830-63d86b6e5b63/go.mod h1:JZN34jqk6ZlR+QOnBPpnUVBab4rmfamqxfSvLaulBMY=
-kmodules.xyz/client-go v0.0.0-20201008164401-74d81f261ec5 h1:mGySTT2dC8u2FQDUFbDLcOt7GM+IkXqlH2xzATyddKg=
-kmodules.xyz/client-go v0.0.0-20201008164401-74d81f261ec5/go.mod h1:pnRh7gtJ6ErPJQBkQeRlpD95KRtxhD4eGrYagZEU8RM=
+kmodules.xyz/client-go v0.0.0-20201011221802-3180ab67d845 h1:7ytqOvrfdq5Ul5SicCyy0s1YnnBSGu33hSZaBEcTbXs=
+kmodules.xyz/client-go v0.0.0-20201011221802-3180ab67d845/go.mod h1:pnRh7gtJ6ErPJQBkQeRlpD95KRtxhD4eGrYagZEU8RM=
 kmodules.xyz/constants v0.0.0-20200506032633-a21e58ceec72/go.mod h1:DbiFk1bJ1KEO94t1SlAn7tzc+Zz95rSXgyUKa2nzPmY=
 kmodules.xyz/crd-schema-fuzz v0.0.0-20200521005638-2433a187de95 h1:v0S/+ftzL6Xrs9XevgchAOJyPKlRQXPiZf87xotj3X4=
 kmodules.xyz/crd-schema-fuzz v0.0.0-20200521005638-2433a187de95/go.mod h1:jpu8xFsDKd6kAWUAKk8oTu/GQGBWqhrcaDeOJdaCJnk=
@@ -1363,6 +1359,6 @@ software.sslmate.com/src/go-pkcs12 v0.0.0-20180114231543-2291e8f0f237/go.mod h1:
 sourcegraph.com/sqs/pbtypes v0.0.0-20180604144634-d3ebe8f20ae4/go.mod h1:ketZ/q3QxT9HOBeFhu6RdvsftgpsbFHBF5Cas6cDKZ0=
 stash.appscode.dev/apimachinery v0.10.0 h1:zKmaANWOTH89J7a/D1FwXFUWAQdI1rA5Nr82WbnLGm8=
 stash.appscode.dev/apimachinery v0.10.0/go.mod h1:TpdBIAiHCtpkUB13SDUyCZ6y+5wmzXBMAf9e72cSPO4=
-stash.appscode.dev/apimachinery v0.11.0 h1:ntvpZDGRsM0f99TBMYrvdtPiF7+d/0th13/EW9d978c=
-stash.appscode.dev/apimachinery v0.11.0/go.mod h1:Cw+8L2u+1T7ZqfYvB2ktdXD/bsWslXNG/bIhk/sV+qs=
+stash.appscode.dev/apimachinery v0.11.3-0.20201012035827-8f31689080d6 h1:HzGwwdUhJhqJRYnAAeoparQ9nj42w6pAMoA6dpZoUlY=
+stash.appscode.dev/apimachinery v0.11.3-0.20201012035827-8f31689080d6/go.mod h1:ieNywb/MTJs/n1T2wMBEr1m13Ek+ygTnhPCsaqqcyBI=
 vbom.ml/util v0.0.0-20160121211510-db5cfe13f5cc/go.mod h1:so/NYdZXCz+E3ZpW0uAoCj6uzU2+8OWDFv/HxUSs7kI=
