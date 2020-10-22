@@ -24,7 +24,7 @@ require (
 	kmodules.xyz/offshoot-api v0.0.0-20200922211229-36acc531abab
 	kubedb.dev/apimachinery v0.14.0-beta.2
 	sigs.k8s.io/yaml v1.2.0
-	stash.appscode.dev/apimachinery v0.11.3-0.20201012035827-8f31689080d6
+	stash.appscode.dev/apimachinery v0.11.3
 )
 
 // release-1.18
