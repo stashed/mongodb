@@ -67,7 +67,7 @@ spec:
   storage:
     storageClassName: "standard"
     accessModes:
-      - ReadWriteOnce
+    - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
@@ -91,7 +91,7 @@ NAME             VERSION        STATUS    AGE
 sample-mongodb   4.2.3         Running   2m9s
 ```
 
-The database is `Running`. Verify that KubeDB has created a Secret and a Service for this database using the following commands,
+The database is `Ready`. Verify that KubeDB has created a Secret and a Service for this database using the following commands,
 
 ```console
 $ kubectl get secret -n demo -l=kubedb.com/name=sample-mongodb
@@ -330,8 +330,8 @@ metadata:
 spec:
   backend:
     gcs:
-      bucket: appscode-qa
-      prefix: /demo/mongodb/sample-mongodb
+      bucket: stash-testing
+      prefix: demo/mongodb/sample-mongodb
     storageSecretName: gcs-secret
 ```
 
@@ -458,8 +458,8 @@ Notice the `PAUSED` column. Value `true` for this field means that the BackupCon
 
 Now, we have to deploy the restored database similarly as we have deployed the original `sample-psotgres` database. However, this time there will be the following differences:
 
-- We have to use the same secret that was used in the original database. We are going to specify it using `spec.databaseSecret` field.
-- We have to specify `spec.init` section to tell KubeDB that we are going to use Stash to initialize this database from backup. KubeDB will keep the database phase to `Initializing` until Stash finishes its initialization.
+- We have to use the same secret that was used in the original database. We are going to specify it using `spec.authSecret` field.
+- We have to specify `spec.init` section to tell KubeDB that it should wait until Stash complete restoring data for first time.
 
 Below is the YAML for `MongoDB` crd we are going deploy to initialize from backup,
 
@@ -488,7 +488,7 @@ spec:
 
 Here,
 
-- `spec.init.stashRestoreSession.name` specifies the `RestoreSession` crd name that we are going to use to restore this database.
+- `spec.init.waitForInitialRestore` specifies that KubeDB should wait until Stash restores the data for first time.
 
 Let's create the above database,
 

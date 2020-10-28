@@ -18,4 +18,3 @@ spec:
   init:
     waitForInitialRestore: true
   terminationPolicy: WipeOut
-

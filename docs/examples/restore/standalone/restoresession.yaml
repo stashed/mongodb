@@ -6,8 +6,6 @@ metadata:
   labels:
     app.kubernetes.io/name: mongodbs.kubedb.com
 spec:
-  task:
-    name: mongodb-restore-v2021.03.08
   repository:
     name: gcs-repo
   target:
