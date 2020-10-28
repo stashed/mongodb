@@ -1304,6 +1304,8 @@ kmodules.xyz/client-go v0.0.0-20200903033732-dab39b86c81b/go.mod h1:sY/eoe4ktxZE
 kmodules.xyz/client-go v0.0.0-20200922200830-63d86b6e5b63/go.mod h1:JZN34jqk6ZlR+QOnBPpnUVBab4rmfamqxfSvLaulBMY=
 kmodules.xyz/client-go v0.0.0-20201021051118-03dac1aea508 h1:LjidyEzvw1rSlwRQLWNfElleLJ6vr9Uu5tn5H6JO+QA=
 kmodules.xyz/client-go v0.0.0-20201021051118-03dac1aea508/go.mod h1:pnRh7gtJ6ErPJQBkQeRlpD95KRtxhD4eGrYagZEU8RM=
+kmodules.xyz/client-go v0.0.0-20201027113349-01a6d453d836 h1:oRtOV4teHgELaRJx+mjkpjlO03S9xl1g020RUoU4FDI=
+kmodules.xyz/client-go v0.0.0-20201027113349-01a6d453d836/go.mod h1:pnRh7gtJ6ErPJQBkQeRlpD95KRtxhD4eGrYagZEU8RM=
 kmodules.xyz/constants v0.0.0-20200506032633-a21e58ceec72/go.mod h1:DbiFk1bJ1KEO94t1SlAn7tzc+Zz95rSXgyUKa2nzPmY=
 kmodules.xyz/crd-schema-fuzz v0.0.0-20200521005638-2433a187de95 h1:v0S/+ftzL6Xrs9XevgchAOJyPKlRQXPiZf87xotj3X4=
 kmodules.xyz/crd-schema-fuzz v0.0.0-20200521005638-2433a187de95/go.mod h1:jpu8xFsDKd6kAWUAKk8oTu/GQGBWqhrcaDeOJdaCJnk=
@@ -1322,6 +1324,8 @@ kmodules.xyz/offshoot-api v0.0.0-20200521035628-e135bf07b226 h1:RZ7H0gl1z/9jLI74
 kmodules.xyz/offshoot-api v0.0.0-20200521035628-e135bf07b226/go.mod h1:IbK+hCI23UfTDMzG7hos9sERCase2xsFK+XC0Ns3OCg=
 kmodules.xyz/offshoot-api v0.0.0-20200922211229-36acc531abab h1:d/4AFAN0TfKgwhjbQYzwXXHT/5/vTP7SAAvS4uJX+wQ=
 kmodules.xyz/offshoot-api v0.0.0-20200922211229-36acc531abab/go.mod h1:Wy3/mWK2lWQOviKVpBtiCEYtLaYIaSiym8leZNKBUd4=
+kmodules.xyz/offshoot-api v0.0.0-20201027212804-f5e6dc573558 h1:/gk1vlGimdRj3fYS2NUsoV4UKQxW/I2ORXssnz2sBNI=
+kmodules.xyz/offshoot-api v0.0.0-20201027212804-f5e6dc573558/go.mod h1:+tGJRjfzEFm01qWQZcmTkFhB5dWA1jKHXnlUS6O4ZkQ=
 kmodules.xyz/openshift v0.0.0-20200522123204-ce4abf5433c8/go.mod h1:nVhGcoB3Bi7Ots5+g972Ap/vtyIrrtoK3Z3aulNux7w=
 kmodules.xyz/prober v0.0.0-20200521101241-adf06150535c h1:aV6O9NbDpnFVra/D8c7b7TjI05w/CyI5CYJ8IBg6lg8=
 kmodules.xyz/prober v0.0.0-20200521101241-adf06150535c/go.mod h1:XYWZkfQquD09Mn+O7piHS+SEPq9oFV1Wy2WZ9DA+oeA=
