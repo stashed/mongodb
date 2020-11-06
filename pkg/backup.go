@@ -36,15 +36,16 @@ import (
 	"stash.appscode.dev/apimachinery/pkg/restic"
 	api_util "stash.appscode.dev/apimachinery/pkg/util"
 
-	"github.com/appscode/go/flags"
-	"github.com/appscode/go/log"
-	"github.com/appscode/go/types"
 	"github.com/codeskyblue/go-sh"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	license "go.bytebuilders.dev/license-verifier/kubernetes"
+	"gomodules.xyz/pointer"
+	"gomodules.xyz/x/flags"
+	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
@@ -279,9 +280,9 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 					context.TODO(),
 					opt.stashClient.StashV1beta1(),
 					backupSession.ObjectMeta,
-					func(status *api_v1beta1.BackupSessionStatus) *api_v1beta1.BackupSessionStatus {
-						status.Targets[i].TotalHosts = types.Int32P(int32(len(parameters.ReplicaSets) + 1)) // for each shard there will be one key in parameters.ReplicaSet
-						return status
+					func(status *api_v1beta1.BackupSessionStatus) (types.UID, *api_v1beta1.BackupSessionStatus) {
+						status.Targets[i].TotalHosts = pointer.Int32P(int32(len(parameters.ReplicaSets) + 1)) // for each shard there will be one key in parameters.ReplicaSet
+						return backupSession.UID, status
 					},
 					metav1.UpdateOptions{},
 				)
