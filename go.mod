@@ -26,7 +26,7 @@ require (
 	kmodules.xyz/offshoot-api v0.0.0-20201105074700-8675f5f686f2
 	kubedb.dev/apimachinery v0.14.0-beta.2
 	sigs.k8s.io/yaml v1.2.0
-	stash.appscode.dev/apimachinery v0.11.6-0.20201106214826-132a511faa97
+	stash.appscode.dev/apimachinery v0.11.6
 )
 
 replace bitbucket.org/ww/goautoneg => gomodules.xyz/goautoneg v0.0.0-20120707110453-a547fc61f48d
