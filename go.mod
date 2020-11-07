@@ -11,8 +11,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.1.1
 	github.com/yudai/gojsondiff v1.0.0
-	go.bytebuilders.dev/license-verifier v0.5.0 // indirect
-	go.bytebuilders.dev/license-verifier/kubernetes v0.5.0
+	go.bytebuilders.dev/license-verifier/kubernetes v0.5.1
 	gomodules.xyz/pointer v0.0.0-20201105071923-daf60fa55209
 	gomodules.xyz/runtime v0.0.0-20201104200926-d838b09dda8b
 	gomodules.xyz/x v0.0.0-20201105065653-91c568df6331
