@@ -13,7 +13,7 @@ image:
   repository: stash-mongodb
   # Tag of the image that is used to backup/restore MongoDB database.
   # This is usually same as the database version it can backup.
-  tag: 4.0.11-v4
+  tag: 4.0.11-v5
 # optional argument to send mongodump or mongorestore command
 backup:
   # Arguments to pass to `mongodump` command during backup process
