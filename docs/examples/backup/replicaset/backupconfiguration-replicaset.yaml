@@ -6,7 +6,7 @@ metadata:
 spec:
   schedule: "*/5 * * * *"
   task:
-    name: mongodb-backup-4.2.3-v4
+    name: mongodb-backup-4.2.3-v5
   repository:
     name: gcs-repo-replicaset
   target:
