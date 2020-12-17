@@ -33,7 +33,7 @@ metadata:
 spec:
   schedule: "*/5 * * * *"
   task:
-    name: mongodb-backup-v2020.11.06
+    name: mongodb-backup-v2020.12.17
   repository:
     name: gcs-repo-custom
   target:
