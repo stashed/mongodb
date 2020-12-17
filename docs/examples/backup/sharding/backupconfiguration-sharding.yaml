@@ -6,7 +6,7 @@ metadata:
 spec:
   schedule: "*/5 * * * *"
   task:
-    name: mongodb-backup-3.4.17-v4
+    name: mongodb-backup-3.4.17-v5
   repository:
     name: gcs-repo-sharding
   target:
