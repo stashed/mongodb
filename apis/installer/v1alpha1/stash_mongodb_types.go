@@ -21,12 +21,12 @@ import (
 )
 
 const (
-	ResourceKindStashMongoDB = "StashMongoDB"
-	ResourceStashMongoDB     = "stashmongodb"
-	ResourceStashMongoDBs    = "stashmongodbs"
+	ResourceKindStashMongodb = "StashMongodb"
+	ResourceStashMongodb     = "stashmongodb"
+	ResourceStashMongodbs    = "stashmongodbs"
 )
 
-// StashMongoDB defines the schama for Stash MongoDB Installer.
+// StashMongodb defines the schama for Stash MongoDB Installer.
 
 // +genclient
 // +genclient:skipVerbs=updateStatus
@@ -35,47 +35,47 @@ const (
 
 // +kubebuilder:object:root=true
 // +kubebuilder:resource:path=stashmongodbs,singular=stashmongodb,categories={stash,appscode}
-type StashMongoDB struct {
+type StashMongodb struct {
 	metav1.TypeMeta   `json:",inline,omitempty"`
-	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
-	Spec              StashMongoDBSpec `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+	Spec              StashMongodbSpec `json:"spec,omitempty"`
 }
 
-// StashMongoDBSpec is the schema for Stash MongoDB values file
-type StashMongoDBSpec struct {
+// StashMongodbSpec is the schema for Stash MongoDB values file
+type StashMongodbSpec struct {
 	// +optional
-	NameOverride string `json:"nameOverride" protobuf:"bytes,1,opt,name=nameOverride"`
+	NameOverride string `json:"nameOverride"`
 	// +optional
-	FullnameOverride string         `json:"fullnameOverride" protobuf:"bytes,2,opt,name=fullnameOverride"`
-	Image            ImageRef       `json:"image" protobuf:"bytes,3,opt,name=image"`
-	Backup           MongoDBBackup  `json:"backup" protobuf:"bytes,4,opt,name=backup"`
-	Restore          MongoDBRestore `json:"restore" protobuf:"bytes,5,opt,name=restore"`
-	MaxConcurrency   int32          `json:"maxConcurrency" protobuf:"varint,6,opt,name=maxConcurrency"`
-	WaitTimeout      int64          `json:"waitTimeout" protobuf:"varint,7,opt,name=waitTimeout"`
+	FullnameOverride string         `json:"fullnameOverride"`
+	Image            ImageRef       `json:"image"`
+	Backup           MongoDBBackup  `json:"backup"`
+	Restore          MongoDBRestore `json:"restore"`
+	MaxConcurrency   int32          `json:"maxConcurrency"`
+	WaitTimeout      int64          `json:"waitTimeout"`
 }
 
 type ImageRef struct {
-	Registry   string `json:"registry" protobuf:"bytes,1,opt,name=registry"`
-	Repository string `json:"repository" protobuf:"bytes,2,opt,name=repository"`
-	Tag        string `json:"tag" protobuf:"bytes,3,opt,name=tag"`
+	Registry   string `json:"registry"`
+	Repository string `json:"repository"`
+	Tag        string `json:"tag"`
 }
 
 type MongoDBBackup struct {
 	// +optional
-	Args string `json:"args" protobuf:"bytes,1,opt,name=args"`
+	Args string `json:"args"`
 }
 
 type MongoDBRestore struct {
 	// +optional
-	Args string `json:"args" protobuf:"bytes,1,opt,name=args"`
+	Args string `json:"args"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// StashMongoDBList is a list of StashMongoDBs
-type StashMongoDBList struct {
+// StashMongodbList is a list of StashMongodbs
+type StashMongodbList struct {
 	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
-	// Items is a list of StashMongoDB CRD objects
-	Items []StashMongoDB `json:"items,omitempty" protobuf:"bytes,2,rep,name=items"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+	// Items is a list of StashMongodb CRD objects
+	Items []StashMongodb `json:"items,omitempty"`
 }
