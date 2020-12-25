@@ -15,7 +15,7 @@ Install MongoDB 3.6.13 backup or restore plugin for Stash as below.
 ```console
 helm repo add appscode https://charts.appscode.com/stable/
 helm repo update
-helm install appscode/stash-mongodb --name=stash-mongodb-3.6.13 --version=3.6.13
+helm install stash-mongodb-4.1.13 appscode/stash-mongodb --version=4.1.13 --namespace=kube-system
 ```
 
 To install catalog for all supported MongoDB versions, please visit [here](https://github.com/stashed/catalog).
@@ -25,7 +25,7 @@ To install catalog for all supported MongoDB versions, please visit [here](https
 Uninstall MongoDB 3.6.13 backup or restore plugin for Stash as below.
 
 ```console
-helm delete stash-mongodb-3.6.13
+helm delete stash-mongodb--4.1.13 --namespace=kube-system
 ```
 
 ## Support
