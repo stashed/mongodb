@@ -39,7 +39,6 @@ $ helm delete stash-mongodb-4.2.3-v5 -n kube-system
 ```
 
 The command removes all the Kubernetes components associated with the chart and deletes the release.
-
 ## Configuration
 
 The following table lists the configurable parameters of the `stash-mongodb` chart and their default values.
