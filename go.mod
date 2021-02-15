@@ -7,7 +7,7 @@ require (
 	github.com/google/gofuzz v1.1.0
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.1.1
-	go.bytebuilders.dev/license-verifier/kubernetes v0.6.1
+	go.bytebuilders.dev/license-verifier/kubernetes v0.7.0
 	gomodules.xyz/pointer v0.0.0-20201105071923-daf60fa55209
 	gomodules.xyz/x v0.0.0-20201105065653-91c568df6331
 	k8s.io/api v0.18.9
