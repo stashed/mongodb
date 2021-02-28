@@ -4,7 +4,7 @@ metadata:
   name: sample-mgo-rs-restore
   namespace: demo
   labels:
-    kubedb.com/kind: MongoDB
+    app.kubernetes.io/name: mongodbs.kubedb.com
 spec:
   task:
     name: mongodb-restore-3.6.8-v5
