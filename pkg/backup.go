@@ -349,7 +349,7 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 		}
 
 		// setup pipe command
-		backupOpt.StdinPipeCommand = restic.Command{
+		backupCmd := restic.Command{
 			Name: MongoDumpCMD,
 			Args: append([]interface{}{
 				"--host", mongoDSN,
@@ -359,7 +359,7 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 		userArgs := strings.Fields(opt.mongoArgs)
 
 		if isStandalone {
-			backupOpt.StdinPipeCommand.Args = append(backupOpt.StdinPipeCommand.Args, "--port="+fmt.Sprint(appBinding.Spec.ClientConfig.Service.Port))
+			backupCmd.Args = append(backupCmd.Args, "--port="+fmt.Sprint(appBinding.Spec.ClientConfig.Service.Port))
 		} else {
 			// - port is already added in mongoDSN with replicasetName/host:port format.
 			// - oplog is enabled automatically for replicasets.
@@ -372,14 +372,16 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 				"-c", "--collection",
 			)
 			if !containsArg(userArgs, forbiddenArgs) {
-				backupOpt.StdinPipeCommand.Args = append(backupOpt.StdinPipeCommand.Args, "--oplog")
+				backupCmd.Args = append(backupCmd.Args, "--oplog")
 			}
 		}
 
 		for _, arg := range userArgs {
-			backupOpt.StdinPipeCommand.Args = append(backupOpt.StdinPipeCommand.Args, arg)
+			backupCmd.Args = append(backupCmd.Args, arg)
 		}
 
+		// append the backup command into the pipe
+		backupOpt.StdinPipeCommands = append(backupOpt.StdinPipeCommands, backupCmd)
 		return backupOpt
 	}
 
