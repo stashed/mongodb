@@ -1,12 +1,12 @@
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MongoDB
 metadata:
   name: restored-mgo-sh
   namespace: demo
 spec:
-  databaseSecret:
-    secretName: sample-mgo-sh-auth
-  version: 3.6.13
+  authSecret:
+    name: sample-mgo-sh-auth
+  version: 4.1.13
   shardTopology:
     configServer:
       replicas: 3
@@ -17,8 +17,6 @@ spec:
         storageClassName: standard
     mongos:
       replicas: 2
-      strategy:
-        type: RollingUpdate
     shard:
       replicas: 3
       shards: 3
@@ -28,6 +26,5 @@ spec:
             storage: 1Gi
         storageClassName: standard
   init:
-    stashRestoreSession:
-      name: sample-mgo-sh-restore
+    waitForInitialRestore: true
   terminationPolicy: WipeOut
