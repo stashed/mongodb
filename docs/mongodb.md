@@ -56,7 +56,7 @@ Let's deploy a sample MongoDB database and insert some data into it.
 Below is the YAML of a sample MongoDB crd that we are going to create for this tutorial:
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MongoDB
 metadata:
   name: sample-mongodb
@@ -130,9 +130,7 @@ metadata:
     app.kubernetes.io/component: database
     app.kubernetes.io/instance: sample-mongodb
     app.kubernetes.io/managed-by: kubedb.com
-    app.kubernetes.io/name: mongodb
-    app.kubernetes.io/version: 3.4.17
-    kubedb.com/kind: MongoDB
+    app.kubernetes.io/name: mongodbs.kubedb.com
     kubedb.com/name: sample-mongodb
   name: sample-mongodb
   namespace: demo
@@ -168,7 +166,7 @@ User need to provide the following fields in case of SSL is enabled,
 So, in KubeDB, the following `CRD` deploys a mongodb replicaset where ssl is enabled (`requireSSL` sslmode),
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MongoDB
 metadata:
   name: sample-mongodb-ssl
@@ -190,6 +188,7 @@ spec:
 After the deploy is done, kubedb will create a appbinding that will look like:
 
 ```yaml
+apiVersion: appcatalog.appscode.com/v1alpha1
 kind: AppBinding
 metadata:
   labels:
@@ -197,8 +196,8 @@ metadata:
     app.kubernetes.io/instance: sample-mongodb-ssl
     app.kubernetes.io/managed-by: kubedb.com
     app.kubernetes.io/name: mongodb
-    app.kubernetes.io/version: 3.4.17
-    kubedb.com/kind: MongoDB
+    app.kubernetes.io/version: 4.1.13
+    app.kubernetes.io/name: mongodbs.kubedb.com
     kubedb.com/name: sample-mongodb-ssl
   name: sample-mongodb-ssl
   namespace: demo
@@ -465,7 +464,7 @@ Now, we have to deploy the restored database similarly as we have deployed the o
 Below is the YAML for `MongoDB` crd we are going deploy to initialize from backup,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MongoDB
 metadata:
   name: restored-mongodb
@@ -473,8 +472,8 @@ metadata:
 spec:
   version: "3.4.17"
   storageType: Durable
-  databaseSecret:
-    secretName: sample-mongodb-auth
+  authSecret:
+    name: sample-mongodb-auth
   storage:
     storageClassName: "standard"
     accessModes:
@@ -483,8 +482,7 @@ spec:
       requests:
         storage: 1Gi
   init:
-    stashRestoreSession:
-      name: sample-mongodb-restore
+    waitForInitialRestore: true
   terminationPolicy: WipeOut
 ```
 
@@ -530,7 +528,7 @@ metadata:
   name: sample-mongodb-restore
   namespace: demo
   labels:
-    kubedb.com/kind: MongoDB
+    app.kubernetes.io/name: mongodbs.kubedb.com
 spec:
   task:
     name: mongodb-restore-{{< param "info.subproject_version" >}}
@@ -547,13 +545,13 @@ spec:
 
 Here,
 
-- `metadata.labels` specifies a `kubedb.com/kind: MongoDB` label that is used by KubeDB to watch this `RestoreSession`.
+- `metadata.labels` specifies a `app.kubernetes.io/name: mongodbs.kubedb.com` label that is used by KubeDB to watch this `RestoreSession`.
 - `spec.task.name` specifies the name of the `Task` crd that specifies the Functions and their execution order to restore a MongoDB database.
 - `spec.repository.name` specifies the `Repository` crd that holds the backend information where our backed up data has been stored.
 - `spec.target.ref` refers to the AppBinding crd for the `restored-mongodb` database.
 - `spec.rules` specifies that we are restoring from the latest backup snapshot of the database.
 
-> **Warning:** Label `kubedb.com/kind: MongoDB` is mandatory if you are using KubeDB to deploy the database. Otherwise, the database will be stuck in `Initializing` state.
+> **Warning:** Label `app.kubernetes.io/name: mongodbs.kubedb.com` is mandatory if you are using KubeDB to deploy the database. Otherwise, the database will be stuck in `Initializing` state.
 
 Let's create the `RestoreSession` crd we have shown above,
 

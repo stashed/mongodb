@@ -1,4 +1,4 @@
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MongoDB
 metadata:
   name: sample-mgo-sh-ssl
@@ -15,8 +15,6 @@ spec:
         storageClassName: standard
     mongos:
       replicas: 2
-      strategy:
-        type: RollingUpdate
     shard:
       replicas: 3
       shards: 3

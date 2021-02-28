@@ -1,4 +1,4 @@
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MongoDB
 metadata:
   name: restored-mongodb
@@ -6,8 +6,8 @@ metadata:
 spec:
   version: "3.4.17"
   storageType: Durable
-  databaseSecret:
-    secretName: sample-mgo-rs-auth
+  authSecret:
+    name: sample-mgo-rs-auth
   storage:
     storageClassName: "standard"
     accessModes:
@@ -16,6 +16,5 @@ spec:
       requests:
         storage: 1Gi
   init:
-    stashRestoreSession:
-      name: sample-mongodb-restore
+    waitForInitialRestore: true
   terminationPolicy: WipeOut
