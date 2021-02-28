@@ -56,7 +56,7 @@ Let's deploy a sample MongoDB Sharding database and insert some data into it.
 Below is the YAML of a sample MongoDB crd that we are going to create for this tutorial:
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MongoDB
 metadata:
   name: sample-mgo-sh
@@ -73,8 +73,6 @@ spec:
         storageClassName: standard
     mongos:
       replicas: 2
-      strategy:
-        type: RollingUpdate
     shard:
       replicas: 3
       shards: 3
@@ -146,9 +144,7 @@ metadata:
     app.kubernetes.io/component: database
     app.kubernetes.io/instance: sample-mgo-sh
     app.kubernetes.io/managed-by: kubedb.com
-    app.kubernetes.io/name: mongodb
-    app.kubernetes.io/version: 4.2.3
-    kubedb.com/kind: MongoDB
+    app.kubernetes.io/name: mongodbs.kubedb.com
     kubedb.com/name: sample-mgo-sh
   name: sample-mgo-sh
   namespace: demo
@@ -159,6 +155,8 @@ spec:
       port: 27017
       scheme: mongodb
   parameters:
+    apiVersion: config.kubedb.com/v1alpha1
+    kind: MongoConfiguration
     configServer: cnfRepSet/sample-mgo-sh-configsvr-0.sample-mgo-sh-configsvr-gvr.demo.svc:27017,sample-mgo-sh-configsvr-1.sample-mgo-sh-configsvr-gvr.demo.svc:27017,sample-mgo-sh-configsvr-2.sample-mgo-sh-configsvr-gvr.demo.svc:27017
     replicaSets:
       host-0: shard0/sample-mgo-sh-shard0-0.sample-mgo-sh-shard0-gvr.demo.svc:27017,sample-mgo-sh-shard0-1.sample-mgo-sh-shard0-gvr.demo.svc:27017,sample-mgo-sh-shard0-2.sample-mgo-sh-shard0-gvr.demo.svc:27017
@@ -192,7 +190,7 @@ User need to provide the following fields in case of SSL is enabled,
 So, in KubeDB, the following `CRD` deploys a mongodb replicaset where ssl is enabled (`requireSSL` sslmode),
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MongoDB
 metadata:
   name: sample-mgo-sh-ssl
@@ -209,8 +207,6 @@ spec:
         storageClassName: standard
     mongos:
       replicas: 2
-      strategy:
-        type: RollingUpdate
     shard:
       replicas: 3
       shards: 3
@@ -234,9 +230,7 @@ metadata:
     app.kubernetes.io/component: database
     app.kubernetes.io/instance: sample-mgo-sh-ssl
     app.kubernetes.io/managed-by: kubedb.com
-    app.kubernetes.io/name: mongodb
-    app.kubernetes.io/version: 4.2.3
-    kubedb.com/kind: MongoDB
+    app.kubernetes.io/name: mongodbs.kubedb.com
     kubedb.com/name: sample-mgo-sh-ssl
   name: sample-mgo-sh-ssl
   namespace: demo
@@ -248,6 +242,8 @@ spec:
       port: 27017
       scheme: mongodb
   parameters:
+    apiVersion: config.kubedb.com/v1alpha1
+    kind: MongoConfiguration
     configServer: cnfRepSet/sample-mgo-sh-ssl-configsvr-0.sample-mgo-sh-ssl-configsvr-gvr.demo.svc:27017,sample-mgo-sh-ssl-configsvr-1.sample-mgo-sh-ssl-configsvr-gvr.demo.svc:27017,sample-mgo-sh-ssl-configsvr-2.sample-mgo-sh-ssl-configsvr-gvr.demo.svc:27017
     replicaSets:
       host-0: shard0/sample-mgo-sh-ssl-shard0-0.sample-mgo-sh-ssl-shard0-gvr.demo.svc:27017,sample-mgo-sh-ssl-shard0-1.sample-mgo-sh-ssl-shard0-gvr.demo.svc:27017,sample-mgo-sh-ssl-shard0-2.sample-mgo-sh-ssl-shard0-gvr.demo.svc:27017
@@ -489,15 +485,15 @@ Now, we have to deploy the restored database similarly as we have deployed the o
 Below is the YAML for `MongoDB` crd we are going deploy to initialize from backup,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MongoDB
 metadata:
   name: restored-mgo-sh
   namespace: demo
 spec:
-  databaseSecret:
-    secretName: sample-mgo-sh-auth
-  version: 4.2.3
+  authSecret:
+    name: sample-mgo-sh-auth
+  version: 4.1.13
   shardTopology:
     configServer:
       replicas: 3
@@ -508,8 +504,6 @@ spec:
         storageClassName: standard
     mongos:
       replicas: 2
-      strategy:
-        type: RollingUpdate
     shard:
       replicas: 3
       shards: 3
@@ -519,8 +513,7 @@ spec:
             storage: 1Gi
         storageClassName: standard
   init:
-    stashRestoreSession:
-      name: sample-mgo-sh-restore
+    waitForInitialRestore: true
   terminationPolicy: WipeOut
 ```
 
@@ -568,7 +561,7 @@ metadata:
   name: sample-mgo-sh-restore
   namespace: demo
   labels:
-    kubedb.com/kind: MongoDB
+    app.kubernetes.io/name: mongodbs.kubedb.com
 spec:
   task:
     name: mongodb-restore-{{< param "info.subproject_version" >}}
@@ -585,13 +578,13 @@ spec:
 
 Here,
 
-- `metadata.labels` specifies a `kubedb.com/kind: MongoDB` label that is used by KubeDB to watch this `RestoreSession`.
+- `metadata.labels` specifies a `app.kubernetes.io/name: mongodbs.kubedb.com` label that is used by KubeDB to watch this `RestoreSession`.
 - `spec.task.name` specifies the name of the `Task` crd that specifies the Functions and their execution order to restore a MongoDB database.
 - `spec.repository.name` specifies the `Repository` crd that holds the backend information where our backed up data has been stored.
 - `spec.target.ref` refers to the AppBinding crd for the `restored-mgo-sh` database.
 - `spec.rules` specifies that we are restoring from the latest backup snapshot of the database.
 
-> **Warning:** Label `kubedb.com/kind: MongoDB` is mandatory if you are using KubeDB to deploy the database. Otherwise, the database will be stuck in `Initializing` state.
+> **Warning:** Label `app.kubernetes.io/name: mongodbs.kubedb.com` is mandatory if you are using KubeDB to deploy the database. Otherwise, the database will be stuck in `Initializing` state.
 
 Let's create the `RestoreSession` crd we have shown above,
 
@@ -763,7 +756,7 @@ No additional configuration is needed to restore the sharded cluster to a standa
 Standalone MongoDB,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MongoDB
 metadata:
   name: restored-mongodb
@@ -771,8 +764,8 @@ metadata:
 spec:
   version: "4.2.3"
   storageType: Durable
-  databaseSecret:
-    secretName: sample-mgo-sh-auth
+  authSecret:
+    name: sample-mgo-sh-auth
   storage:
     storageClassName: "standard"
     accessModes:
@@ -781,8 +774,7 @@ spec:
       requests:
         storage: 1Gi
   init:
-    stashRestoreSession:
-      name: sample-mongodb-restore
+    waitForInitialRestore: true
   terminationPolicy: WipeOut
 ```
 
@@ -795,7 +787,7 @@ metadata:
   name: sample-mongodb-restore
   namespace: demo
   labels:
-    kubedb.com/kind: MongoDB
+    app.kubernetes.io/name: mongodbs.kubedb.com
 spec:
   task:
     name: mongodb-restore-{{< param "info.subproject_version" >}}
