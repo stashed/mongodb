@@ -281,7 +281,7 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 		}
 
 		// setup pipe command
-		dumpOpt.StdoutPipeCommand = restic.Command{
+		restoreCmd := restic.Command{
 			Name: MongoRestoreCMD,
 			Args: append([]interface{}{
 				"--host", mongoDSN,
@@ -291,13 +291,7 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 
 		userArgs := strings.Fields(opt.mongoArgs)
 		if isStandalone {
-			dumpOpt.StdoutPipeCommand.Args = append(dumpOpt.StdoutPipeCommand.Args, []interface{}{
-				"--port=" + fmt.Sprint(appBinding.Spec.ClientConfig.Service.Port),
-				"--nsExclude=config.changelog",
-				// while restoring sharded data to a standalone, restoring config.changelog gives authentication error.
-				// Also, this collection is only part of sharding. so, let's skip this. ref: https://docs.mongodb.com/manual/reference/config-database/#config.changelog
-				// This is the only case in 3.4.17 and 3.4.22
-			}...)
+			restoreCmd.Args = append(restoreCmd.Args, "--port="+fmt.Sprint(appBinding.Spec.ClientConfig.Service.Port))
 		} else {
 			// - port is already added in mongoDSN with replicasetName/host:port format.
 			// - oplog is enabled automatically for replicasets.
@@ -314,14 +308,16 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 				"--nsExclude",
 			)
 			if !containsArg(userArgs, forbiddenArgs) {
-				dumpOpt.StdoutPipeCommand.Args = append(dumpOpt.StdoutPipeCommand.Args, "--oplogReplay")
+				restoreCmd.Args = append(restoreCmd.Args, "--oplogReplay")
 			}
 		}
 
 		for _, arg := range userArgs {
-			dumpOpt.StdoutPipeCommand.Args = append(dumpOpt.StdoutPipeCommand.Args, arg)
+			restoreCmd.Args = append(restoreCmd.Args, arg)
 		}
 
+		// add the restore command to the pipeline
+		dumpOpt.StdoutPipeCommands = append(dumpOpt.StdoutPipeCommands, restoreCmd)
 		return dumpOpt
 	}
 
