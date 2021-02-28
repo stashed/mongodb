@@ -290,7 +290,7 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 		}
 
 		// setup pipe command
-		dumpOpt.StdoutPipeCommand = restic.Command{
+		restoreCmd := restic.Command{
 			Name: MongoRestoreCMD,
 			Args: append([]interface{}{
 				"--host", mongoDSN,
@@ -300,7 +300,7 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 
 		userArgs := strings.Fields(opt.mongoArgs)
 		if isStandalone {
-			dumpOpt.StdoutPipeCommand.Args = append(dumpOpt.StdoutPipeCommand.Args, "--port="+fmt.Sprint(appBinding.Spec.ClientConfig.Service.Port))
+			restoreCmd.Args = append(restoreCmd.Args, "--port="+fmt.Sprint(appBinding.Spec.ClientConfig.Service.Port))
 		} else {
 			// - port is already added in mongoDSN with replicasetName/host:port format.
 			// - oplog is enabled automatically for replicasets.
@@ -317,14 +317,16 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 				"--nsExclude",
 			)
 			if !containsArg(userArgs, forbiddenArgs) {
-				dumpOpt.StdoutPipeCommand.Args = append(dumpOpt.StdoutPipeCommand.Args, "--oplogReplay")
+				restoreCmd.Args = append(restoreCmd.Args, "--oplogReplay")
 			}
 		}
 
 		for _, arg := range userArgs {
-			dumpOpt.StdoutPipeCommand.Args = append(dumpOpt.StdoutPipeCommand.Args, arg)
+			restoreCmd.Args = append(restoreCmd.Args, arg)
 		}
 
+		// add the restore command to the pipeline
+		dumpOpt.StdoutPipeCommands = append(dumpOpt.StdoutPipeCommands, restoreCmd)
 		return dumpOpt
 	}
 
