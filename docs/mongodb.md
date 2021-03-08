@@ -62,7 +62,7 @@ metadata:
   name: sample-mongodb
   namespace: demo
 spec:
-  version: "3.6.13"
+  version: "3.6.13-v1"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -143,7 +143,7 @@ spec:
   secret:
     name: sample-mongodb-auth
   type: kubedb.com/mongodb
-  version: "3.6.13"
+  version: "3.6.13-v1"
 ```
 
 Stash uses the `AppBinding` crd to connect with the target database. It requires the following two fields to set in AppBinding's `Spec` section.
@@ -172,7 +172,7 @@ metadata:
   name: sample-mongodb-ssl
   namespace: demo
 spec:
-  version: "3.6.13"
+  version: "3.6.13-v1"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -196,7 +196,7 @@ metadata:
     app.kubernetes.io/instance: sample-mongodb-ssl
     app.kubernetes.io/managed-by: kubedb.com
     app.kubernetes.io/name: mongodb
-    app.kubernetes.io/version: 4.1.13
+    app.kubernetes.io/version: "3.6.13-v1"
     app.kubernetes.io/name: mongodbs.kubedb.com
     kubedb.com/name: sample-mongodb-ssl
   name: sample-mongodb-ssl
@@ -211,7 +211,7 @@ spec:
   secret:
     name: sample-mongodb-ssl-cert
   type: kubedb.com/mongodb
-  version: "3.6.13"
+  version: "3.6.13-v1"
 ```
 
 Here, `sample-mongodb-cert` contains few required certificates, and one of them is `client.pem` which is required to backup/restore ssl enabled mongodb server using stash-mongodb.
@@ -470,7 +470,7 @@ metadata:
   name: restored-mongodb
   namespace: demo
 spec:
-  version: "3.6.13"
+  version: "3.6.13-v1"
   storageType: Durable
   authSecret:
     name: sample-mongodb-auth
