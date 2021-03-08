@@ -493,7 +493,7 @@ metadata:
 spec:
   authSecret:
     name: sample-mgo-sh-auth
-  version: 4.1.13
+  version: 4.2.3
   shardTopology:
     configServer:
       replicas: 3
