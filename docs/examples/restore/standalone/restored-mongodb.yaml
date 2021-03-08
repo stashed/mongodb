@@ -4,7 +4,7 @@ metadata:
   name: restored-mongodb
   namespace: demo
 spec:
-  version: "3.6.13"
+  version: "3.6.13-v1"
   storageType: Durable
   authSecret:
     name: sample-mongodb-auth
