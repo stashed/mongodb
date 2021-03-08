@@ -62,7 +62,7 @@ metadata:
   name: sample-mongodb
   namespace: demo
 spec:
-  version: "4.1.13"
+  version: "4.2.3"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -88,7 +88,7 @@ Let's check if the database is ready to use,
 ```console
 $ kubectl get mg -n demo sample-mongodb
 NAME             VERSION        STATUS    AGE
-sample-mongodb   4.1.13         Running   2m9s
+sample-mongodb   4.2.3         Running   2m9s
 ```
 
 The database is `Running`. Verify that KubeDB has created a Secret and a Service for this database using the following commands,
@@ -143,7 +143,7 @@ spec:
   secret:
     name: sample-mongodb-auth
   type: kubedb.com/mongodb
-  version: "4.1.13"
+  version: "4.2.3"
 ```
 
 Stash uses the `AppBinding` crd to connect with the target database. It requires the following two fields to set in AppBinding's `Spec` section.
@@ -172,7 +172,7 @@ metadata:
   name: sample-mongodb-ssl
   namespace: demo
 spec:
-  version: "4.1.13"
+  version: "4.2.3"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -196,7 +196,7 @@ metadata:
     app.kubernetes.io/instance: sample-mongodb-ssl
     app.kubernetes.io/managed-by: kubedb.com
     app.kubernetes.io/name: mongodb
-    app.kubernetes.io/version: 4.1.13
+    app.kubernetes.io/version: 4.2.3
     app.kubernetes.io/name: mongodbs.kubedb.com
     kubedb.com/name: sample-mongodb-ssl
   name: sample-mongodb-ssl
@@ -211,7 +211,7 @@ spec:
   secret:
     name: sample-mongodb-ssl-cert
   type: kubedb.com/mongodb
-  version: "4.1.13"
+  version: "4.2.3"
 ```
 
 Here, `sample-mongodb-cert` contains few required certificates, and one of them is `client.pem` which is required to backup/restore ssl enabled mongodb server using stash-mongodb.
@@ -470,7 +470,7 @@ metadata:
   name: restored-mongodb
   namespace: demo
 spec:
-  version: "4.1.13"
+  version: "4.2.3"
   storageType: Durable
   authSecret:
     name: sample-mongodb-auth
@@ -502,7 +502,7 @@ If you check the database status, you will see it is stuck in `Initializing` sta
 ```console
 $ kubectl get mg -n demo restored-mongodb
 NAME               VERSION        STATUS         AGE
-restored-mongodb   4.1.13         Initializing   17s
+restored-mongodb   4.2.3         Initializing   17s
 ```
 
 **Create RestoreSession:**
@@ -582,7 +582,7 @@ At first, check if the database has gone into `Running` state by the following c
 ```console
 $ kubectl get mg -n demo restored-mongodb
 NAME               VERSION        STATUS    AGE
-restored-mongodb   4.1.13         Running   105m
+restored-mongodb   4.2.3         Running   105m
 ```
 
 Now, find out the database pod by the following command,
