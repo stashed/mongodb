@@ -62,7 +62,7 @@ metadata:
   name: sample-mgo-sh
   namespace: demo
 spec:
-  version: 3.4.17
+  version: "3.4.17-v1"
   shardTopology:
     configServer:
       replicas: 3
@@ -165,7 +165,7 @@ spec:
   secret:
     name: sample-mgo-sh-auth
   type: kubedb.com/mongodb
-  version: 3.4.17
+  version: "3.4.17-v1"
 ```
 
 Stash uses the `AppBinding` crd to connect with the target database. It requires the following two fields to set in AppBinding's `Spec` section.
@@ -196,7 +196,7 @@ metadata:
   name: sample-mgo-sh-ssl
   namespace: demo
 spec:
-  version: 3.4.17
+  version: "3.4.17-v1"
   shardTopology:
     configServer:
       replicas: 3
@@ -252,7 +252,7 @@ spec:
   secret:
     name: sample-mgo-sh-ssl-cert
   type: kubedb.com/mongodb
-  version: 3.4.17
+  version: "3.4.17-v1"
 ```
 
 Here, `sample-mgo-sh-cert` contains few required certificates, and one of them is `client.pem` which is required to backup/restore ssl enabled mongodb server using stash-mongodb.
@@ -493,7 +493,7 @@ metadata:
 spec:
   authSecret:
     name: sample-mgo-sh-auth
-  version: 4.1.13
+  version: "3.4.17-v1"
   shardTopology:
     configServer:
       replicas: 3
@@ -762,7 +762,7 @@ metadata:
   name: restored-mongodb
   namespace: demo
 spec:
-  version: "3.4.17"
+  version: "3.4.17-v1"
   storageType: Durable
   authSecret:
     name: sample-mgo-sh-auth
