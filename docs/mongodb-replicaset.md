@@ -62,7 +62,7 @@ metadata:
   name: sample-mgo-rs
   namespace: demo
 spec:
-  version: "4.0.5-v2"
+  version: "4.0.5-v3"
   replicas: 3
   replicaSet:
     name: rs0
@@ -181,7 +181,7 @@ metadata:
   name: sample-mgo-rs-ssl
   namespace: demo
 spec:
-  version: "4.0.5-v2"
+  version: "4.0.5-v3"
   replicas: 3
   replicaSet:
     name: rs0
@@ -469,7 +469,7 @@ metadata:
   name: restored-mgo-rs
   namespace: demo
 spec:
-  version: "4.1.13"
+  version: "4.0.5-v3"
   authSecret:
     name: sample-mgo-rs-auth
   replicas: 3
@@ -726,7 +726,7 @@ metadata:
   name: restored-mongodb
   namespace: demo
 spec:
-  version: "4.0.5-v2"
+  version: "4.0.5-v3"
   storageType: Durable
   authSecret:
     name: sample-mgo-rs-auth
