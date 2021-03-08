@@ -62,7 +62,7 @@ metadata:
   name: sample-mongodb
   namespace: demo
 spec:
-  version: "4.1.7-v2"
+  version: "4.1.7-v3"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -172,7 +172,7 @@ metadata:
   name: sample-mongodb-ssl
   namespace: demo
 spec:
-  version: "4.1.7-v2"
+  version: "4.1.7-v3"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -196,7 +196,7 @@ metadata:
     app.kubernetes.io/instance: sample-mongodb-ssl
     app.kubernetes.io/managed-by: kubedb.com
     app.kubernetes.io/name: mongodb
-    app.kubernetes.io/version: 4.1.13
+    app.kubernetes.io/version: 4.1.7-v3
     app.kubernetes.io/name: mongodbs.kubedb.com
     kubedb.com/name: sample-mongodb-ssl
   name: sample-mongodb-ssl
@@ -470,7 +470,7 @@ metadata:
   name: restored-mongodb
   namespace: demo
 spec:
-  version: "4.1.7-v2"
+  version: "4.1.7-v3"
   storageType: Durable
   authSecret:
     name: sample-mongodb-auth

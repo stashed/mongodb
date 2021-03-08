@@ -62,7 +62,7 @@ metadata:
   name: sample-mgo-sh
   namespace: demo
 spec:
-  version: 4.1.7-v2
+  version: "4.1.7-v3"
   shardTopology:
     configServer:
       replicas: 3
@@ -196,7 +196,7 @@ metadata:
   name: sample-mgo-sh-ssl
   namespace: demo
 spec:
-  version: 4.1.7-v2
+  version: "4.1.7-v3"
   shardTopology:
     configServer:
       replicas: 3
@@ -493,7 +493,7 @@ metadata:
 spec:
   authSecret:
     name: sample-mgo-sh-auth
-  version: 4.1.13
+  version: 4.1.7-v3
   shardTopology:
     configServer:
       replicas: 3
@@ -762,7 +762,7 @@ metadata:
   name: restored-mongodb
   namespace: demo
 spec:
-  version: "4.1.7-v2"
+  version: "4.1.7-v3"
   storageType: Durable
   authSecret:
     name: sample-mgo-sh-auth
