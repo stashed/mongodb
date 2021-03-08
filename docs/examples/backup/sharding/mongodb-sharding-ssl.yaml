@@ -4,7 +4,7 @@ metadata:
   name: sample-mgo-sh-ssl
   namespace: demo
 spec:
-  version: 3.4.17
+  version: "3.4.17-v1"
   shardTopology:
     configServer:
       replicas: 3
