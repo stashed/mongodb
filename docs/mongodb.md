@@ -196,7 +196,7 @@ metadata:
     app.kubernetes.io/instance: sample-mongodb-ssl
     app.kubernetes.io/managed-by: kubedb.com
     app.kubernetes.io/name: mongodb
-    app.kubernetes.io/version: 4.1.13
+    app.kubernetes.io/version: 4.2.3
     app.kubernetes.io/name: mongodbs.kubedb.com
     kubedb.com/name: sample-mongodb-ssl
   name: sample-mongodb-ssl
