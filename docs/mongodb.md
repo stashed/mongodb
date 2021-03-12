@@ -379,6 +379,8 @@ metadata:
   namespace: demo
 spec:
   schedule: "*/5 * * * *"
+#  task: # Uncomment if you are not using KubeDB to deploy your database
+#    name: mongodb-backup-{{< param "info.subproject_version" >}}
   repository:
     name: gcs-repo
   target:
@@ -395,6 +397,7 @@ spec:
 Here,
 
 - `spec.schedule` specifies that we want to backup the database at 5 minutes interval.
+- `spec.task.name` specifies the name of the task crd that specifies the necessary Function and their execution order to backup a MongoDB database.
 - `spec.target.ref` refers to the `AppBinding` crd that was created for `sample-mongodb` database.
 
 Let's create the `BackupConfiguration` crd we have shown above,
@@ -537,6 +540,8 @@ metadata:
   name: sample-mongodb-restore
   namespace: demo
 spec:
+#  task: # Uncomment if you are not using KubeDB to deploy your database
+#    name: mongodb-restore-{{< param "info.subproject_version" >}}
   repository:
     name: gcs-repo
   target:
@@ -549,6 +554,8 @@ spec:
 ```
 
 Here,
+
+- `spec.task.name` specifies the name of the `Task` crd that specifies the Functions and their execution order to restore a MongoDB database.
 - `spec.repository.name` specifies the `Repository` crd that holds the backend information where our backed up data has been stored.
 - `spec.target.ref` refers to the AppBinding crd for the `restored-mongodb` database.
 - `spec.rules` specifies that we are restoring from the latest backup snapshot of the database.
