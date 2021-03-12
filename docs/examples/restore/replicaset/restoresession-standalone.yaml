@@ -3,8 +3,6 @@ kind: RestoreSession
 metadata:
   name: sample-mongodb-restore
   namespace: demo
-  labels:
-    app.kubernetes.io/name: mongodbs.kubedb.com
 spec:
   task:
     name: mongodb-restore-v2021.03.08

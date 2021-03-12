@@ -162,6 +162,12 @@ spec:
       host-0: shard0/sample-mgo-sh-shard0-0.sample-mgo-sh-shard0-gvr.demo.svc:27017,sample-mgo-sh-shard0-1.sample-mgo-sh-shard0-gvr.demo.svc:27017,sample-mgo-sh-shard0-2.sample-mgo-sh-shard0-gvr.demo.svc:27017
       host-1: shard1/sample-mgo-sh-shard1-0.sample-mgo-sh-shard1-gvr.demo.svc:27017,sample-mgo-sh-shard1-1.sample-mgo-sh-shard1-gvr.demo.svc:27017,sample-mgo-sh-shard1-2.sample-mgo-sh-shard1-gvr.demo.svc:27017
       host-2: shard2/sample-mgo-sh-shard2-0.sample-mgo-sh-shard2-gvr.demo.svc:27017,sample-mgo-sh-shard2-1.sample-mgo-sh-shard2-gvr.demo.svc:27017,sample-mgo-sh-shard2-2.sample-mgo-sh-shard2-gvr.demo.svc:27017
+    stash:
+      addon:
+        backupTask:
+          name: mongodb-backup-{{< param "info.subproject_version" >}}
+        restoreTask:
+          name: mongodb-restore-{{< param "info.subproject_version" >}}
   secret:
     name: sample-mgo-sh-auth
   type: kubedb.com/mongodb
@@ -174,6 +180,7 @@ Stash uses the `AppBinding` crd to connect with the target database. It requires
 - `spec.secret` specifies the name of the secret that holds necessary credentials to access the database.
 - `spec.parameters.configServer` specifies the dsn of config server of mongodb sharding. The dsn includes the port no too.
 - `spec.parameters.replicaSets` contains the dsn of each replicaset of sharding. The DSNs are in key-value pair, where the keys are host-0, host-1 etc, and the values are DSN of each replicaset. If there is no sharding but only one replicaset, then ReplicaSets field contains only one key-value pair where the key is host-0 and the value is dsn of that replicaset.
+- `spec.parameters.stash` contains the Stash addon information that will be used to backup and restore this MongoDB.
 - `spec.type` specifies the types of the app that this AppBinding is pointing to. KubeDB generated AppBinding follows the following format: `<app group>/<app resource type>`.
 
 ### AppBinding for SSL
@@ -249,6 +256,12 @@ spec:
       host-0: shard0/sample-mgo-sh-ssl-shard0-0.sample-mgo-sh-ssl-shard0-gvr.demo.svc:27017,sample-mgo-sh-ssl-shard0-1.sample-mgo-sh-ssl-shard0-gvr.demo.svc:27017,sample-mgo-sh-ssl-shard0-2.sample-mgo-sh-ssl-shard0-gvr.demo.svc:27017
       host-1: shard1/sample-mgo-sh-ssl-shard1-0.sample-mgo-sh-ssl-shard1-gvr.demo.svc:27017,sample-mgo-sh-ssl-shard1-1.sample-mgo-sh-ssl-shard1-gvr.demo.svc:27017,sample-mgo-sh-ssl-shard1-2.sample-mgo-sh-ssl-shard1-gvr.demo.svc:27017
       host-2: shard2/sample-mgo-sh-ssl-shard2-0.sample-mgo-sh-ssl-shard2-gvr.demo.svc:27017,sample-mgo-sh-ssl-shard2-1.sample-mgo-sh-ssl-shard2-gvr.demo.svc:27017,sample-mgo-sh-ssl-shard2-2.sample-mgo-sh-ssl-shard2-gvr.demo.svc:27017
+    stash:
+      addon:
+        backupTask:
+          name: mongodb-backup-{{< param "info.subproject_version" >}}
+        restoreTask:
+          name: mongodb-restore-{{< param "info.subproject_version" >}}
   secret:
     name: sample-mgo-sh-ssl-cert
   type: kubedb.com/mongodb
@@ -381,8 +394,6 @@ metadata:
   namespace: demo
 spec:
   schedule: "*/5 * * * *"
-  task:
-    name: mongodb-backup-{{< param "info.subproject_version" >}}
   repository:
     name: gcs-repo-sharding
   target:
@@ -399,7 +410,6 @@ spec:
 Here,
 
 - `spec.schedule` specifies that we want to backup the database at 5 minutes interval.
-- `spec.task.name` specifies the name of the task crd that specifies the necessary Function and their execution order to backup a MongoDB database.
 - `spec.target.ref` refers to the `AppBinding` crd that was created for `sample-mgo-sh` database.
 
 Let's create the `BackupConfiguration` crd we have shown above,
@@ -479,8 +489,7 @@ Notice the `PAUSED` column. Value `true` for this field means that the BackupCon
 
 Now, we have to deploy the restored database similarly as we have deployed the original `sample-mgo-sh` database. However, this time there will be the following differences:
 
-- We have to use the same secret that was used in the original database. We are going to specify it using `spec.databaseSecret` field.
-- We have to specify `spec.init` section to tell KubeDB that we are going to use Stash to initialize this database from backup. KubeDB will keep the database phase to `Initializing` until Stash finishes its initialization.
+- We have to specify `spec.init.waitForInitialRestore` field that tells KubeDB to wait until first restore completes before marking this MongoDB ready to use.
 
 Below is the YAML for `MongoDB` crd we are going deploy to initialize from backup,
 
@@ -491,8 +500,6 @@ metadata:
   name: restored-mgo-sh
   namespace: demo
 spec:
-  authSecret:
-    name: sample-mgo-sh-auth
   version: 4.2.3
   shardTopology:
     configServer:
@@ -517,10 +524,6 @@ spec:
   terminationPolicy: WipeOut
 ```
 
-Here,
-
-- `spec.init.stashRestoreSession.name` specifies the `RestoreSession` crd name that we are going to use to restore this database.
-
 Let's create the above database,
 
 ```console
@@ -528,12 +531,12 @@ $ kubectl apply -f https://github.com/stashed/mongodb/raw/{{< param "info.subpro
 mongodb.kubedb.com/restored-mgo-sh created
 ```
 
-If you check the database status, you will see it is stuck in `Initializing` state.
+If you check the database status, you will see it is stuck in `Provisioning` state.
 
 ```console
 $ kubectl get mg -n demo restored-mgo-sh
 NAME              VERSION        STATUS         AGE
-restored-mgo-sh   4.2.3         Initializing   48m
+restored-mgo-sh   4.2.3         Provisioning   48m
 ```
 
 **Create RestoreSession:**
@@ -560,11 +563,7 @@ kind: RestoreSession
 metadata:
   name: sample-mgo-sh-restore
   namespace: demo
-  labels:
-    app.kubernetes.io/name: mongodbs.kubedb.com
 spec:
-  task:
-    name: mongodb-restore-{{< param "info.subproject_version" >}}
   repository:
     name: gcs-repo-sharding
   target:
@@ -577,14 +576,9 @@ spec:
 ```
 
 Here,
-
-- `metadata.labels` specifies a `app.kubernetes.io/name: mongodbs.kubedb.com` label that is used by KubeDB to watch this `RestoreSession`.
-- `spec.task.name` specifies the name of the `Task` crd that specifies the Functions and their execution order to restore a MongoDB database.
 - `spec.repository.name` specifies the `Repository` crd that holds the backend information where our backed up data has been stored.
 - `spec.target.ref` refers to the AppBinding crd for the `restored-mgo-sh` database.
 - `spec.rules` specifies that we are restoring from the latest backup snapshot of the database.
-
-> **Warning:** Label `app.kubernetes.io/name: mongodbs.kubedb.com` is mandatory if you are using KubeDB to deploy the database. Otherwise, the database will be stuck in `Initializing` state.
 
 Let's create the `RestoreSession` crd we have shown above,
 
@@ -732,6 +726,8 @@ spec:
     prune: true
 ```
 
+This time, we have to provide Stash addon info in `spec.task` section of `BackupConfiguration` object as the `AppBinding` we are creating manually does not have those info.
+
 ```console
 $ kubectl create -f https://github.com/stashed/mongodb/raw/{{< param "info.subproject_version" >}}/docs/examples/backup/sharding/standalone-backup.yaml
 appbinding.appcatalog.appscode.com/sample-mgo-sh-custom created
@@ -764,8 +760,6 @@ metadata:
 spec:
   version: "4.2.3"
   storageType: Durable
-  authSecret:
-    name: sample-mgo-sh-auth
   storage:
     storageClassName: "standard"
     accessModes:
@@ -778,7 +772,7 @@ spec:
   terminationPolicy: WipeOut
 ```
 
-RestoreSession crd object,
+This time, we have to provide `spec.task` section in `RestoreSession` object,
 
 ```yaml
 apiVersion: stash.appscode.com/v1beta1
@@ -786,8 +780,6 @@ kind: RestoreSession
 metadata:
   name: sample-mongodb-restore
   namespace: demo
-  labels:
-    app.kubernetes.io/name: mongodbs.kubedb.com
 spec:
   task:
     name: mongodb-restore-{{< param "info.subproject_version" >}}
@@ -808,7 +800,7 @@ mongodb.kubedb.com/restored-mongodb created
 
 $ kubectl get mg -n demo restored-mongodb
 NAME               VERSION        STATUS         AGE
-restored-mongodb   4.2.3         Initializing   56s
+restored-mongodb   4.2.3         Provisioning   56s
 
 $ kubectl create -f https://github.com/stashed/mongodb/raw/{{< param "info.subproject_version" >}}/docs/examples/restore/sharding/restoresession-standalone.yaml
 restoresession.stash.appscode.com/sample-mongodb-restore created

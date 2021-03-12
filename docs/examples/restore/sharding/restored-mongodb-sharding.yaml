@@ -4,8 +4,6 @@ metadata:
   name: restored-mgo-sh
   namespace: demo
 spec:
-  authSecret:
-    name: sample-mgo-sh-auth
   version: 4.2.3
   shardTopology:
     configServer:

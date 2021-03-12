@@ -142,6 +142,15 @@ spec:
       scheme: mongodb
   secret:
     name: sample-mongodb-auth
+  parameters:
+    apiVersion: config.kubedb.com/v1alpha1
+    kind: MongoConfiguration
+    stash:
+      addon:
+        backupTask:
+          name: mongodb-backup-{{< param "info.subproject_version" >}}
+        restoreTask:
+          name: mongodb-restore-{{< param "info.subproject_version" >}}
   type: kubedb.com/mongodb
   version: "4.2.3"
 ```
@@ -150,6 +159,7 @@ Stash uses the `AppBinding` crd to connect with the target database. It requires
 
 - `spec.clientConfig.service.name` specifies the name of the service that connects to the database.
 - `spec.secret` specifies the name of the secret that holds necessary credentials to access the database.
+- `spec.parameters.stash` contains the Stash Addon information that will be used to backup/restore this MongoDB database.
 - `spec.type` specifies the types of the app that this AppBinding is pointing to. KubeDB generated AppBinding follows the following format: `<app group>/<app resource type>`.
 
 ### AppBinding for SSL
@@ -210,6 +220,15 @@ spec:
       scheme: mongodb
   secret:
     name: sample-mongodb-ssl-cert
+  parameters:
+    apiVersion: config.kubedb.com/v1alpha1
+    kind: MongoConfiguration
+    stash:
+      addon:
+        backupTask:
+          name: mongodb-backup-{{< param "info.subproject_version" >}}
+        restoreTask:
+          name: mongodb-restore-{{< param "info.subproject_version" >}}
   type: kubedb.com/mongodb
   version: "4.2.3"
 ```
@@ -360,8 +379,6 @@ metadata:
   namespace: demo
 spec:
   schedule: "*/5 * * * *"
-  task:
-    name: mongodb-backup-{{< param "info.subproject_version" >}}
   repository:
     name: gcs-repo
   target:
@@ -378,7 +395,6 @@ spec:
 Here,
 
 - `spec.schedule` specifies that we want to backup the database at 5 minutes interval.
-- `spec.task.name` specifies the name of the task crd that specifies the necessary Function and their execution order to backup a MongoDB database.
 - `spec.target.ref` refers to the `AppBinding` crd that was created for `sample-mongodb` database.
 
 Let's create the `BackupConfiguration` crd we have shown above,
@@ -458,8 +474,7 @@ Notice the `PAUSED` column. Value `true` for this field means that the BackupCon
 
 Now, we have to deploy the restored database similarly as we have deployed the original `sample-psotgres` database. However, this time there will be the following differences:
 
-- We have to use the same secret that was used in the original database. We are going to specify it using `spec.authSecret` field.
-- We have to specify `spec.init` section to tell KubeDB that it should wait until Stash complete restoring data for first time.
+- We are going to specify `spec.init.waitForInitialRestore` field that will tell KubeDB to wait for first restore to complete before marking this database ready to use.
 
 Below is the YAML for `MongoDB` crd we are going deploy to initialize from backup,
 
@@ -472,8 +487,6 @@ metadata:
 spec:
   version: "4.2.3"
   storageType: Durable
-  authSecret:
-    name: sample-mongodb-auth
   storage:
     storageClassName: "standard"
     accessModes:
@@ -486,10 +499,6 @@ spec:
   terminationPolicy: WipeOut
 ```
 
-Here,
-
-- `spec.init.waitForInitialRestore` specifies that KubeDB should wait until Stash restores the data for first time.
-
 Let's create the above database,
 
 ```console
@@ -497,12 +506,12 @@ $ kubectl apply -f https://github.com/stashed/mongodb/raw/{{< param "info.subpro
 mongodb.kubedb.com/restored-mongodb created
 ```
 
-If you check the database status, you will see it is stuck in `Initializing` state.
+If you check the database status, you will see it is stuck in `Provisioning` state.
 
 ```console
 $ kubectl get mg -n demo restored-mongodb
 NAME               VERSION        STATUS         AGE
-restored-mongodb   4.2.3         Initializing   17s
+restored-mongodb   4.2.3         Provisioning   17s
 ```
 
 **Create RestoreSession:**
@@ -527,11 +536,7 @@ kind: RestoreSession
 metadata:
   name: sample-mongodb-restore
   namespace: demo
-  labels:
-    app.kubernetes.io/name: mongodbs.kubedb.com
 spec:
-  task:
-    name: mongodb-restore-{{< param "info.subproject_version" >}}
   repository:
     name: gcs-repo
   target:
@@ -544,14 +549,9 @@ spec:
 ```
 
 Here,
-
-- `metadata.labels` specifies a `app.kubernetes.io/name: mongodbs.kubedb.com` label that is used by KubeDB to watch this `RestoreSession`.
-- `spec.task.name` specifies the name of the `Task` crd that specifies the Functions and their execution order to restore a MongoDB database.
 - `spec.repository.name` specifies the `Repository` crd that holds the backend information where our backed up data has been stored.
 - `spec.target.ref` refers to the AppBinding crd for the `restored-mongodb` database.
 - `spec.rules` specifies that we are restoring from the latest backup snapshot of the database.
-
-> **Warning:** Label `app.kubernetes.io/name: mongodbs.kubedb.com` is mandatory if you are using KubeDB to deploy the database. Otherwise, the database will be stuck in `Initializing` state.
 
 Let's create the `RestoreSession` crd we have shown above,
 
