@@ -269,8 +269,6 @@ github.com/go-toolsmith/strparse v1.0.0/go.mod h1:YI2nUKP9YGZnL/L1/DLFBfixrcjslW
 github.com/go-toolsmith/typep v1.0.0/go.mod h1:JSQCQMUPdRlMZFswiq3TGpNp1GMktqkR2Ns5AIQkATU=
 github.com/gobuffalo/flect v0.1.5/go.mod h1:W3K3X9ksuZfir8f/LrfVtWmCDQFfayuylOJ7sz/Fj80=
 github.com/gobuffalo/flect v0.2.0/go.mod h1:W3K3X9ksuZfir8f/LrfVtWmCDQFfayuylOJ7sz/Fj80=
-github.com/gobuffalo/flect v0.2.2 h1:PAVD7sp0KOdfswjAw9BpLCU9hXo7wFSzgpQ+zNeks/A=
-github.com/gobuffalo/flect v0.2.2/go.mod h1:vmkQwuZYhN5Pc4ljYQZzP+1sq+NEkK+lh20jmEmX3jc=
 github.com/gobwas/glob v0.2.3/go.mod h1:d3Ez4x06l9bZtSvzIay5+Yzi0fmZzPgnTbPcKjJAkT8=
 github.com/godbus/dbus v0.0.0-20181101234600-2ff6f7ffd60f/go.mod h1:/YcGZj5zSblfDWMMoOzV4fas9FZnQYTkDnsGvmh2Grw=
 github.com/gogo/protobuf v1.3.1 h1:DqDEcV5aeaTmdFBePNpYsp3FlcVH/2ISVVM9Qf8PSls=
@@ -1168,8 +1166,6 @@ kmodules.xyz/openshift v0.0.0-20200522123204-ce4abf5433c8/go.mod h1:nVhGcoB3Bi7O
 kmodules.xyz/prober v0.0.0-20200521101241-adf06150535c/go.mod h1:XYWZkfQquD09Mn+O7piHS+SEPq9oFV1Wy2WZ9DA+oeA=
 kmodules.xyz/prober v0.0.0-20210218144026-43e923722d81 h1:mi0XHhavbXQqj9q89dNhWaOdGjZWHhpr3ai5gSYMZ44=
 kmodules.xyz/prober v0.0.0-20210218144026-43e923722d81/go.mod h1:2eN8X5Wq7/AAgE5AWMAX8T0lE51HZiYEldG2RQuouX4=
-kmodules.xyz/schema-checker v0.1.0 h1:oRwLhxB4n+sKbTrVVIp85Tk5FqvrBXblHgU0uDPHRbk=
-kmodules.xyz/schema-checker v0.1.0/go.mod h1:36sPujDKvbsBW6V0tUAekZYbYHuA5HRnt+fMisMr7GM=
 kmodules.xyz/webhook-runtime v0.0.0-20200522123600-ca70a7e28ed0/go.mod h1:9hUftUcjvzDSiO5LIbe2U8Naz4tyS9Ndf1LRzsytMzs=
 kubedb.dev/apimachinery v0.14.0-beta.2 h1:Ws+DYzQmESOP7mwaaeXcDjWae9joiG/Xi8yYoSBnLD0=
 kubedb.dev/apimachinery v0.14.0-beta.2/go.mod h1:WQ/oXfTfXNRfz6JvRBIoHwi3Dg4eumKnXu5WXquGF0Y=
