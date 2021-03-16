@@ -8,26 +8,6 @@
 
 MongoDB backup and restore plugin for [Stash by AppsCode](https://stash.run).
 
-## Install
-
-Install MongoDB 4.1.13 backup or restore plugin for Stash as below.
-
-```console
-helm repo add appscode https://charts.appscode.com/stable/
-helm repo update
-helm install stash-mongodb-4.1.13 appscode/stash-mongodb --version=4.1.13 --namespace=kube-system
-```
-
-To install catalog for all supported MongoDB versions, please visit [here](https://github.com/stashed/catalog).
-
-## Uninstall
-
-Uninstall MongoDB 4.1.13 backup or restore plugin for Stash as below.
-
-```console
-helm delete stash-mongodb--4.1.13 --namespace=kube-system
-```
-
 ## Support
 
 To speak with us, please leave a message on [our website](https://appscode.com/contact/).
