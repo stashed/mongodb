@@ -14,9 +14,9 @@
 
 SHELL=/bin/bash -o pipefail
 
-GO_PKG   := go.bytebuilders.dev/license-verifier
+GO_PKG   := go.bytebuilders.dev
 REPO     := $(notdir $(shell pwd))
-BIN      := kubernetes
+BIN      := license-verifier
 COMPRESS ?= no
 
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
@@ -51,7 +51,7 @@ endif
 ### These variables should not need tweaking.
 ###
 
-SRC_PKGS := # directories which hold app source excluding tests (not vendored)
+SRC_PKGS := apis # directories which hold app source excluding tests (not vendored)
 SRC_DIRS := $(SRC_PKGS) *.go # directories which hold app source (not vendored)
 
 DOCKER_PLATFORMS := linux/amd64 linux/arm linux/arm64
@@ -61,10 +61,10 @@ BIN_PLATFORMS    := $(DOCKER_PLATFORMS) windows/amd64 darwin/amd64
 OS   := $(if $(GOOS),$(GOOS),$(shell go env GOOS))
 ARCH := $(if $(GOARCH),$(GOARCH),$(shell go env GOARCH))
 
-BASEIMAGE_PROD   ?= gcr.io/distroless/static
-BASEIMAGE_DBG    ?= debian:stretch
+BASEIMAGE_PROD   ?= gcr.io/distroless/static-debian10
+BASEIMAGE_DBG    ?= debian:buster
 
-GO_VERSION       ?= 1.15
+GO_VERSION       ?= 1.16
 BUILD_IMAGE      ?= appscode/golang-dev:$(GO_VERSION)
 
 OUTBIN = bin/$(OS)_$(ARCH)/$(BIN)
@@ -229,7 +229,7 @@ $(BUILD_DIRS):
 dev: gen fmt push
 
 .PHONY: verify
-verify: verify-modules verify-gen
+verify: verify-gen verify-modules
 
 .PHONY: verify-modules
 verify-modules:
