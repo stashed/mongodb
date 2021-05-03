@@ -13,11 +13,9 @@ require (
 	k8s.io/apimachinery v0.21.0
 	k8s.io/client-go v12.0.0+incompatible
 	k8s.io/kubernetes v1.21.0 // indirect
-	kmodules.xyz/client-go v0.0.0-20210429233600-944c5ec810d6
-	kmodules.xyz/custom-resources v0.0.0-20210427204948-b63e86e6b5f6
-	kmodules.xyz/objectstore-api v0.0.0-20210427073544-4d4b3fd133fe // indirect
-	kmodules.xyz/offshoot-api v0.0.0-20210427074508-992086875c1e
-	kmodules.xyz/prober v0.0.0-20210427091238-7208ea3e0584 // indirect
+	kmodules.xyz/client-go v0.0.0-20210502215034-b73197efff3f
+	kmodules.xyz/custom-resources v0.0.0-20210502220303-115fa584b8d1
+	kmodules.xyz/offshoot-api v0.0.0-20210502215616-234104e66819
 	kubedb.dev/apimachinery v0.14.0-beta.2
 	stash.appscode.dev/apimachinery v0.12.2
 )
@@ -61,6 +59,10 @@ replace github.com/Azure/go-autorest/autorest/validation => github.com/Azure/go-
 replace github.com/Azure/go-autorest/logger => github.com/Azure/go-autorest/logger v0.2.0
 
 replace github.com/Azure/go-autorest/tracing => github.com/Azure/go-autorest/tracing v0.6.0
+
+replace github.com/docker/distribution => github.com/docker/distribution v0.0.0-20191216044856-a8371794149d
+
+replace github.com/docker/docker => github.com/moby/moby v17.12.0-ce-rc1.0.20200618181300-9dc6525e6118+incompatible
 
 replace github.com/go-openapi/analysis => github.com/go-openapi/analysis v0.19.5
 
@@ -120,7 +122,7 @@ replace k8s.io/client-go => k8s.io/client-go v0.21.0
 
 replace k8s.io/component-base => k8s.io/component-base v0.21.0
 
-replace k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20201113171705-d219536bb9fd
+replace k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20210305001622-591a79e4bda7
 
 replace k8s.io/kubernetes => github.com/kmodules/kubernetes v1.22.0-alpha.0.0.20210427080452-22d2e66bae50
 
