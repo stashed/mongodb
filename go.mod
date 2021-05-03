@@ -15,9 +15,10 @@ require (
 	k8s.io/api v0.18.9
 	k8s.io/apimachinery v0.18.9
 	k8s.io/client-go v12.0.0+incompatible
-	kmodules.xyz/client-go v0.0.0-20210218100652-8f345ddfe801
-	kmodules.xyz/custom-resources v0.0.0-20210222100152-7426e3678989
-	kmodules.xyz/offshoot-api v0.0.0-20210218144050-e1d794cb382a
+	k8s.io/kubernetes v1.21.0 // indirect
+	kmodules.xyz/client-go v0.0.0-20210503064222-c8c59295a3a5
+	kmodules.xyz/custom-resources v0.0.0-20210503065135-5267be335cb4
+	kmodules.xyz/offshoot-api v0.0.0-20210503065102-3250bbdedc8f
 	kubedb.dev/apimachinery v0.14.0-beta.2
 	stash.appscode.dev/apimachinery v0.12.3
 )
