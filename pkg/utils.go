@@ -25,9 +25,9 @@ import (
 	stash_cs "stash.appscode.dev/apimachinery/client/clientset/versioned"
 	"stash.appscode.dev/apimachinery/pkg/restic"
 
-	"gomodules.xyz/x/log"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/klog/v2"
 	appcatalog_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 )
 
@@ -65,13 +65,13 @@ type mongoOptions struct {
 }
 
 func waitForDBReady(host string, port, waitTimeout int32) {
-	log.Infoln("Checking database connection")
+	klog.Infoln("Checking database connection")
 	cmd := fmt.Sprintf(`nc "%s" "%d" -w %d`, host, port, waitTimeout)
 	for {
 		if err := exec.Command(cmd).Run(); err != nil {
 			break
 		}
-		log.Infoln("Waiting... database is not ready yet")
+		klog.Infoln("Waiting... database is not ready yet")
 		time.Sleep(5 * time.Second)
 	}
 }
