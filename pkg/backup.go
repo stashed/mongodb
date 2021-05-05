@@ -42,13 +42,13 @@ import (
 	license "go.bytebuilders.dev/license-verifier/kubernetes"
 	"gomodules.xyz/pointer"
 	"gomodules.xyz/x/flags"
-	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/klog/v2"
 	appcatalog "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	appcatalog_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 	v1 "kmodules.xyz/offshoot-api/api/v1"
@@ -109,7 +109,7 @@ func NewCmdBackup() *cobra.Command {
 			go func() {
 				rcvSig := <-sigChan
 				cleanup()
-				log.Errorf("Received signal: %s, exiting\n", rcvSig)
+				klog.Errorf("Received signal: %s, exiting\n", rcvSig)
 				os.Exit(1)
 			}()
 
@@ -254,7 +254,7 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 	parameters := v1alpha1.MongoDBConfiguration{}
 	if appBinding.Spec.Parameters != nil {
 		if err = json.Unmarshal(appBinding.Spec.Parameters.Raw, &parameters); err != nil {
-			log.Errorf("unable to unmarshal appBinding.Spec.Parameters.Raw. Reason: %v", err)
+			klog.Errorf("unable to unmarshal appBinding.Spec.Parameters.Raw. Reason: %v", err)
 		}
 	}
 
@@ -351,7 +351,7 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 	}
 
 	getBackupOpt := func(mongoDSN, hostKey string, isStandalone bool) restic.BackupOptions {
-		log.Infoln("processing backupOptions for ", mongoDSN)
+		klog.Infoln("processing backupOptions for ", mongoDSN)
 		backupOpt := restic.BackupOptions{
 			Host:            hostKey,
 			StdinFileName:   MongoDumpFile,
@@ -454,7 +454,7 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 		// do the task
 		primary, secondary, err := getPrimaryNSecondaryMember(host)
 		if err != nil {
-			log.Errorf("error while getting primary and secondary member of %v. error: %v", host, err)
+			klog.Errorf("error while getting primary and secondary member of %v. error: %v", host, err)
 			return nil, err
 		}
 
@@ -471,7 +471,7 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 			return unlockSecondaryMember(secondary)
 		})
 		if err != nil {
-			log.Errorf("error while locking secondary member %v. error: %v", host, err)
+			klog.Errorf("error while locking secondary member %v. error: %v", host, err)
 			return nil, err
 		}
 
@@ -484,7 +484,7 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 		opt.backupOptions = append(opt.backupOptions, getBackupOpt(appBinding.Spec.ClientConfig.Service.Name, restic.DefaultHost, true))
 	}
 
-	log.Infoln("processing backup.")
+	klog.Infoln("processing backup.")
 
 	resticWrapper, err := restic.NewResticWrapper(opt.setupOptions)
 	if err != nil {
@@ -501,7 +501,7 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 func cleanup() {
 	for _, f := range cleanupFuncs {
 		if err := f(); err != nil {
-			log.Errorln(err)
+			klog.Errorln(err)
 		}
 	}
 }
@@ -517,7 +517,7 @@ func getSSLUser(path string) (string, error) {
 }
 
 func getPrimaryNSecondaryMember(mongoDSN string) (primary, secondary string, err error) {
-	log.Infoln("finding primary and secondary instances of", mongoDSN)
+	klog.Infoln("finding primary and secondary instances of", mongoDSN)
 	v := make(map[string]interface{})
 
 	//stop balancer
@@ -559,7 +559,7 @@ func getPrimaryNSecondaryMember(mongoDSN string) (primary, secondary string, err
 
 // run from mongos instance
 func disabelBalancer(mongosHost string) error {
-	log.Infoln("Disabling balancer of ", mongosHost)
+	klog.Infoln("Disabling balancer of ", mongosHost)
 	v := make(map[string]interface{})
 
 	args := append([]interface{}{
@@ -592,7 +592,7 @@ func disabelBalancer(mongosHost string) error {
 
 func enableBalancer(mongosHost string) error {
 	// run separate shell to dump indices
-	log.Infoln("Enabling balancer of ", mongosHost)
+	klog.Infoln("Enabling balancer of ", mongosHost)
 	v := make(map[string]interface{})
 
 	// enable balancer
@@ -614,9 +614,9 @@ func enableBalancer(mongosHost string) error {
 }
 
 func lockConfigServer(configSVRDSN, secondaryHost string) error {
-	log.Infoln("Attempting to lock configserver", configSVRDSN)
+	klog.Infoln("Attempting to lock configserver", configSVRDSN)
 	if secondaryHost == "" {
-		log.Warningln("locking configserver is skipped. secondary host is empty")
+		klog.Warningln("locking configserver is skipped. secondary host is empty")
 		return nil
 	}
 	v := make(map[string]interface{})
@@ -658,7 +658,7 @@ func lockConfigServer(configSVRDSN, secondaryHost string) error {
 		}
 
 		if int(val) != int(val2) {
-			log.Debugf("BackupDocument counter in secondary is not same. Expected %v, but got %v. Full response: %v", val, val2, v)
+			klog.V(5).Infof("BackupDocument counter in secondary is not same. Expected %v, but got %v. Full response: %v", val, val2, v)
 			time.Sleep(time.Second * 5)
 		}
 	}
@@ -671,9 +671,9 @@ func lockConfigServer(configSVRDSN, secondaryHost string) error {
 }
 
 func lockSecondaryMember(mongohost string) error {
-	log.Infoln("Attempting to lock secondary member", mongohost)
+	klog.Infoln("Attempting to lock secondary member", mongohost)
 	if mongohost == "" {
-		log.Warningln("locking secondary member is skipped. secondary host is empty")
+		klog.Warningln("locking secondary member is skipped. secondary host is empty")
 		return nil
 	}
 	v := make(map[string]interface{})
@@ -697,9 +697,9 @@ func lockSecondaryMember(mongohost string) error {
 }
 
 func unlockSecondaryMember(mongohost string) error {
-	log.Infoln("Attempting to unlock secondary member", mongohost)
+	klog.Infoln("Attempting to unlock secondary member", mongohost)
 	if mongohost == "" {
-		log.Warningln("skipped unlocking secondary member. secondary host is empty")
+		klog.Warningln("skipped unlocking secondary member. secondary host is empty")
 		return nil
 	}
 	v := make(map[string]interface{})
