@@ -35,13 +35,13 @@ import (
 	license "go.bytebuilders.dev/license-verifier/kubernetes"
 	"gomodules.xyz/pointer"
 	"gomodules.xyz/x/flags"
-	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/klog/v2"
 	appcatalog "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	appcatalog_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 	v1 "kmodules.xyz/offshoot-api/api/v1"
@@ -189,7 +189,7 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 	parameters := v1alpha1.MongoDBConfiguration{}
 	if appBinding.Spec.Parameters != nil {
 		if err = json.Unmarshal(appBinding.Spec.Parameters.Raw, &parameters); err != nil {
-			log.Errorf("unable to unmarshal appBinding.Spec.Parameters.Raw. Reason: %v", err)
+			klog.Errorf("unable to unmarshal appBinding.Spec.Parameters.Raw. Reason: %v", err)
 		}
 	}
 
@@ -281,7 +281,7 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 	}
 
 	getDumpOpts := func(mongoDSN, hostKey string, isStandalone bool) restic.DumpOptions {
-		log.Infoln("processing backupOptions for ", mongoDSN)
+		klog.Infoln("processing backupOptions for ", mongoDSN)
 		dumpOpt := restic.DumpOptions{
 			Host:       hostKey,
 			SourceHost: hostKey,
@@ -356,7 +356,7 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 		opt.dumpOptions = append(opt.dumpOptions, getDumpOpts(appBinding.Spec.ClientConfig.Service.Name, restic.DefaultHost, true))
 	}
 
-	log.Infoln("processing restore.")
+	klog.Infoln("processing restore.")
 
 	// wait for DB ready
 	waitForDBReady(appBinding.Spec.ClientConfig.Service.Name, appBinding.Spec.ClientConfig.Service.Port, opt.waitTimeout)
