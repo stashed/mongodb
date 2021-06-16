@@ -20,7 +20,7 @@ require (
 	kmodules.xyz/custom-resources v0.0.0-20210605111625-741fcb992541
 	kmodules.xyz/offshoot-api v0.0.0-20210504040651-7951e351f0f5
 	kubedb.dev/apimachinery v0.18.1-0.20210605201001-29627ec663dc
-	stash.appscode.dev/apimachinery v0.13.1-0.20210605201829-a382bbe2f22a
+	stash.appscode.dev/apimachinery v0.14.0
 )
 
 replace bitbucket.org/ww/goautoneg => gomodules.xyz/goautoneg v0.0.0-20120707110453-a547fc61f48d
