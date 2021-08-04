@@ -35,6 +35,5 @@ LABEL org.opencontainers.image.source https://github.com/stashed/mongodb
 COPY --from=0 /restic /bin/restic
 COPY bin/{ARG_OS}_{ARG_ARCH}/{ARG_BIN} /{ARG_BIN}
 
-USER nobody:nobody
 
 ENTRYPOINT ["/{ARG_BIN}"]
