@@ -1,6 +1,6 @@
 module go.bytebuilders.dev/license-verifier/kubernetes
 
-go 1.15
+go 1.16
 
 require (
 	github.com/gogo/protobuf v1.3.2
@@ -15,7 +15,3 @@ require (
 )
 
 replace go.bytebuilders.dev/license-verifier => ./..
-
-replace cloud.google.com/go => cloud.google.com/go v0.54.0
-
-replace github.com/golang/protobuf => github.com/golang/protobuf v1.4.3
