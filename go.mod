@@ -3,24 +3,25 @@ module stash.appscode.dev/mongodb
 go 1.15
 
 require (
-	cloud.google.com/go v0.58.0 // indirect
+	github.com/json-iterator/go v1.1.11 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.1.3
-	go.bytebuilders.dev/license-verifier/kubernetes v0.9.1
-	gomodules.xyz/flags v0.1.0
+	go.bytebuilders.dev/license-verifier/kubernetes v0.9.3
+	gomodules.xyz/flags v0.1.2
 	gomodules.xyz/go-sh v0.1.0
-	gomodules.xyz/logs v0.0.2
-	gomodules.xyz/pointer v0.0.0-20201105071923-daf60fa55209
-	gomodules.xyz/x v0.0.5
-	k8s.io/api v0.21.0
-	k8s.io/apimachinery v0.21.0
-	k8s.io/client-go v0.21.0
+	gomodules.xyz/logs v0.0.4
+	gomodules.xyz/pointer v0.1.0
+	gomodules.xyz/sets v0.2.0 // indirect
+	gomodules.xyz/x v0.0.7
+	k8s.io/api v0.21.1
+	k8s.io/apimachinery v0.21.1
+	k8s.io/client-go v0.21.1
 	k8s.io/klog/v2 v2.8.0
-	kmodules.xyz/client-go v0.0.0-20210605021217-cabaee7b953e
-	kmodules.xyz/custom-resources v0.0.0-20210605111625-741fcb992541
-	kmodules.xyz/offshoot-api v0.0.0-20210504040651-7951e351f0f5
-	kubedb.dev/apimachinery v0.18.1-0.20210605201001-29627ec663dc
-	stash.appscode.dev/apimachinery v0.14.0
+	kmodules.xyz/client-go v0.0.0-20210827153326-54ead9c6225f
+	kmodules.xyz/custom-resources v0.0.0-20210618003440-c6bb400da153
+	kmodules.xyz/offshoot-api v0.0.0-20210804100837-d0388be3e60d
+	kubedb.dev/apimachinery v0.18.1-0.20210618122709-e98fb31f5dfb
+	stash.appscode.dev/apimachinery v0.15.0
 )
 
 replace bitbucket.org/ww/goautoneg => gomodules.xyz/goautoneg v0.0.0-20120707110453-a547fc61f48d
