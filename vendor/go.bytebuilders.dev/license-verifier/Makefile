@@ -51,7 +51,7 @@ endif
 ### These variables should not need tweaking.
 ###
 
-SRC_PKGS := apis # directories which hold app source excluding tests (not vendored)
+SRC_PKGS := apis info # directories which hold app source excluding tests (not vendored)
 SRC_DIRS := $(SRC_PKGS) *.go # directories which hold app source (not vendored)
 
 DOCKER_PLATFORMS := linux/amd64 linux/arm linux/arm64
@@ -61,7 +61,7 @@ BIN_PLATFORMS    := $(DOCKER_PLATFORMS) windows/amd64 darwin/amd64
 OS   := $(if $(GOOS),$(GOOS),$(shell go env GOOS))
 ARCH := $(if $(GOARCH),$(GOARCH),$(shell go env GOARCH))
 
-BASEIMAGE_PROD   ?= gcr.io/distroless/static-debian10
+BASEIMAGE_PROD   ?= gcr.io/distroless/static:nonroot
 BASEIMAGE_DBG    ?= debian:buster
 
 GO_VERSION       ?= 1.16
