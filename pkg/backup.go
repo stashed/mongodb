@@ -25,6 +25,7 @@ import (
 	"os/exec"
 	"os/signal"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -62,6 +63,8 @@ var (
 	dumpCreds    []interface{}
 	cleanupFuncs []func() error
 )
+
+const KubeDBRoleName = "kubedb-restore"
 
 func checkCommandExists() error {
 	var err error
@@ -414,6 +417,37 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 	// ref: https://docs.mongodb.com/manual/tutorial/backup-sharded-cluster-with-database-dumps/
 
 	if parameters.ConfigServer != "" {
+		// Workaround for issue: https://jira.mongodb.org/browse/TOOLS-2966
+		//
+		//	- Check config.reshardingOperations exists from configServer
+		//	- if exists:
+		//		- check number of documents in config.reshardingOperations collection
+		//		- if no documents found:
+		//			- rename config.reshardingOperations to config.reshardingOperations_temp
+		//			- take backup
+		//			- rename back config.reshardingOperations_temp to config.reshardingOperations
+
+		rename, err := handleReshard(parameters.ConfigServer)
+		if err != nil {
+			return nil, err
+		}
+		defer func() {
+			if rename {
+				err := renameTempReshardCollection(parameters.ConfigServer)
+				if err != nil {
+					klog.Error(err)
+				}
+			}
+		}()
+
+		// Workaround for issue: https://jira.mongodb.org/browse/SERVER-59515
+		// It's already fixed. Should be available in v5.0.4
+		err = createKubedbRole(parameters.ConfigServer)
+		if err != nil {
+			klog.Errorf("error while creating role for %v. error: %v", parameters.ConfigServer, err)
+			return nil, err
+		}
+
 		// sharded cluster. so disable the balancer first. then perform the 'usual' tasks.
 
 		primary, secondary, err := getPrimaryNSecondaryMember(parameters.ConfigServer)
@@ -451,6 +485,13 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 	}
 
 	for key, host := range parameters.ReplicaSets {
+		// Workaround for issue: https://jira.mongodb.org/browse/SERVER-59515
+		// It's already fixed. Should be available in v5.0.4
+		err = createKubedbRole(host)
+		if err != nil {
+			klog.Errorf("error while creating role for %v. error: %v", host, err)
+			return nil, err
+		}
 		// do the task
 		primary, secondary, err := getPrimaryNSecondaryMember(host)
 		if err != nil {
@@ -717,6 +758,129 @@ func unlockSecondaryMember(mongohost string) error {
 
 	if val, ok := v["ok"].(float64); !ok || int(val) != 1 {
 		return fmt.Errorf("unable to lock the secondary host. got response: %v", v)
+	}
+
+	return nil
+}
+
+func isRolesEmpty(mongoDSN string) (bool, error) {
+	v := make([]interface{}, 0)
+	args := append([]interface{}{
+		"kubedb-system",
+		"--host", mongoDSN,
+		"--quiet",
+		"--eval", `JSON.stringify(db.getRoles())`,
+	}, mongoCreds...)
+	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+		return false, err
+	}
+
+	return len(v) == 0, nil
+}
+
+func createKubedbRole(mongoDSN string) error {
+	isEmpty, err := isRolesEmpty(mongoDSN)
+	if err != nil {
+		return err
+	}
+	if !isEmpty {
+		return nil
+	}
+
+	klog.Infoln("creating role " + KubeDBRoleName)
+	v := make(map[string]interface{})
+
+	args := append([]interface{}{
+		"kubedb-system",
+		"--host", mongoDSN,
+		"--quiet",
+		"--eval", `JSON.stringify(db.runCommand({createRole: "` + KubeDBRoleName + `",privileges: [],roles: []}))`,
+	}, mongoCreds...)
+
+	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+		return err
+	}
+
+	if val, ok := v["ok"].(float64); !ok || int(val) != 1 {
+		return fmt.Errorf("unable to create role %v. got response: %v", KubeDBRoleName, v)
+	}
+	time.Sleep(30 * time.Second)
+
+	return nil
+}
+
+func handleReshard(configsvrDSN string) (bool, error) {
+	v := make([]interface{}, 0)
+	args := append([]interface{}{
+		"config",
+		"--host", configsvrDSN,
+		"--quiet",
+		"--eval", `JSON.stringify(db.getCollectionNames())`,
+	}, mongoCreds...)
+	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+		return false, err
+	}
+
+	exists := false
+	for _, name := range v {
+		if name.(string) == "reshardingOperations" {
+			exists = true
+			break
+		}
+	}
+	if !exists {
+		return false, nil
+	}
+
+	args = append([]interface{}{
+		"config",
+		"--host", configsvrDSN,
+		"--quiet",
+		"--eval", `JSON.stringify(db.reshardingOperations.count())`,
+	}, mongoCreds...)
+	out, err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").Output()
+	if err != nil {
+		return false, err
+	}
+
+	count, err := strconv.Atoi(strings.TrimSpace(string(out)))
+	if err != nil {
+		return false, err
+	}
+	if count != 0 {
+		return false, nil
+	}
+
+	res := make(map[string]interface{})
+	args = append([]interface{}{
+		"config",
+		"--host", configsvrDSN,
+		"--quiet",
+		"--eval", `JSON.stringify(db.adminCommand( { renameCollection: "config.reshardingOperations", to: "config.reshardingOperations_temp", dropTarget: true}))`,
+	}, mongoCreds...)
+	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&res); err != nil {
+		return false, err
+	}
+	if val, ok := res["ok"].(float64); !ok || int(val) != 1 {
+		return false, fmt.Errorf("unable to rename collection config.reshardingOperations. got response: %v", res)
+	}
+
+	return true, nil
+}
+
+func renameTempReshardCollection(configsvrDSN string) error {
+	res := make(map[string]interface{})
+	args := append([]interface{}{
+		"config",
+		"--host", configsvrDSN,
+		"--quiet",
+		"--eval", `JSON.stringify(db.adminCommand( { renameCollection: "config.reshardingOperations_temp", to: "config.reshardingOperations" } ))`,
+	}, mongoCreds...)
+	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&res); err != nil {
+		return err
+	}
+	if val, ok := res["ok"].(float64); !ok || int(val) != 1 {
+		return fmt.Errorf("unable to rename collection config.reshardingOperations_temp. got response: %v", res)
 	}
 
 	return nil

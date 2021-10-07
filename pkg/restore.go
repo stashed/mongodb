@@ -34,6 +34,7 @@ import (
 	"github.com/spf13/cobra"
 	license "go.bytebuilders.dev/license-verifier/kubernetes"
 	"gomodules.xyz/flags"
+	"gomodules.xyz/go-sh"
 	"gomodules.xyz/pointer"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -370,5 +371,29 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 	resticWrapper.HideCMD()
 
 	// Run dump
-	return resticWrapper.ParallelDump(opt.dumpOptions, targetRef, opt.maxConcurrency)
+	restoreOutput, err := resticWrapper.ParallelDump(opt.dumpOptions, targetRef, opt.maxConcurrency)
+	if err != nil {
+		return nil, err
+	}
+
+	if parameters.ConfigServer != "" {
+		err = dropTempReshardCollection(parameters.ConfigServer)
+		if err != nil {
+			klog.Errorf("error while deleting temporary reshard collection for %v. error: %v", parameters.ConfigServer, err)
+			return nil, err
+		}
+	}
+
+	return restoreOutput, nil
+}
+
+func dropTempReshardCollection(configsvrDSN string) error {
+	args := append([]interface{}{
+		"config",
+		"--host", configsvrDSN,
+		"--quiet",
+		"--eval", `db.reshardingOperations_temp.drop()`,
+	}, mongoCreds...)
+
+	return sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").Run()
 }
