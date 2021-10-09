@@ -1135,7 +1135,6 @@ k8s.io/utils v0.0.0-20201110183641-67b214c5f920 h1:CbnUZsM497iRC5QMVkHwyl8s2tB3g
 k8s.io/utils v0.0.0-20201110183641-67b214c5f920/go.mod h1:jPW/WVKK9YHAvNhRxK0md/EJ228hCsBRufyofKtW8HA=
 kmodules.xyz/apiversion v0.2.0/go.mod h1:oPX8g8LvlPdPX3Yc5YvCzJHQnw3YF/X4/jdW0b1am80=
 kmodules.xyz/client-go v0.0.0-20210617233340-13d22e91512b/go.mod h1:A6GAK6xP5zBuWK6A/vUkkjKzcuywkms7fIxRf5wblO4=
-kmodules.xyz/client-go v0.0.0-20210719120358-dd0503cf99cf/go.mod h1:E/vGngai00UtVwP8R4PWpPUBF/EZa6Ub9WS5+tVcs4M=
 kmodules.xyz/client-go v0.0.0-20210822203828-5e9cebbf1dfa/go.mod h1:0gkPeALtYjB27OHt4rd6+ZmMgoVTHVLtEJQeU23/gtA=
 kmodules.xyz/client-go v0.0.0-20210928133955-8df5bb467db6 h1:o+SymmN26C8bqh1nLTFjT0UdOtAYrTLbp6v49iRe5MY=
 kmodules.xyz/client-go v0.0.0-20210928133955-8df5bb467db6/go.mod h1:0gkPeALtYjB27OHt4rd6+ZmMgoVTHVLtEJQeU23/gtA=
@@ -1193,5 +1192,5 @@ software.sslmate.com/src/go-pkcs12 v0.0.0-20180114231543-2291e8f0f237/go.mod h1:
 software.sslmate.com/src/go-pkcs12 v0.0.0-20200830195227-52f69702a001/go.mod h1:/xvNRWUqm0+/ZMiF4EX00vrSCMsE4/NHb+Pt3freEeQ=
 sourcegraph.com/sourcegraph/appdash v0.0.0-20190731080439-ebfcffb1b5c0/go.mod h1:hI742Nqp5OhwiqlzhgfbWU4mW4yO10fP+LoT9WOswdU=
 stash.appscode.dev/apimachinery v0.14.1-0.20210618025054-0cae462d7e04/go.mod h1:/Ys7EVp/ved+2xkfhqMbRpaJtI3p/KpCPRLJ6ZgDddA=
-stash.appscode.dev/apimachinery v0.15.0 h1:vpwPKV6LP4ieZ87/2ri3ms4r3ZnE8bES24y8bbLYxqE=
-stash.appscode.dev/apimachinery v0.15.0/go.mod h1:ColOw+Y5IeI3DO5bu1WZWw2AAhinz99K6fKKVLNkd2U=
+stash.appscode.dev/apimachinery v0.16.0 h1:6mvmPatv9nR5Wc+PCt3Cg9R7WRJRqhy2yLu2b/HmXhA=
+stash.appscode.dev/apimachinery v0.16.0/go.mod h1:unpV/YyHVECNrAdFjFg/SetmPeUjfvc2+P8cnGjih/U=
