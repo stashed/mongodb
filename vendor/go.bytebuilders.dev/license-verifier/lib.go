@@ -21,9 +21,9 @@ import (
 	"encoding/pem"
 	"fmt"
 	"strings"
-	"unicode"
 
 	"go.bytebuilders.dev/license-verifier/apis/licenses/v1alpha1"
+	"go.bytebuilders.dev/license-verifier/info"
 
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -165,10 +165,7 @@ func VerifyLicense(opts *Options) (v1alpha1.License, error) {
 		license.Reason = e2.Error()
 		return license, e2
 	}
-	features := strings.FieldsFunc(opts.Features, func(r rune) bool {
-		return unicode.IsSpace(r) || r == ',' || r == ';'
-	})
-	if !sets.NewString(cert.Subject.Organization...).HasAny(features...) {
+	if !sets.NewString(cert.Subject.Organization...).HasAny(info.ParseFeatures(opts.Features)...) {
 		e2 := fmt.Errorf("license was not issued for %s", opts.Features)
 		license.Status = v1alpha1.LicenseExpired
 		license.Reason = e2.Error()
