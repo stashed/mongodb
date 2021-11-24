@@ -5,20 +5,20 @@ go 1.15
 require (
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.1.3
-	go.bytebuilders.dev/license-verifier/kubernetes v0.9.3
-	gomodules.xyz/flags v0.1.2
+	go.bytebuilders.dev/license-verifier/kubernetes v0.9.5
+	gomodules.xyz/flags v0.1.3
 	gomodules.xyz/go-sh v0.1.0
-	gomodules.xyz/logs v0.0.4
+	gomodules.xyz/logs v0.0.6
 	gomodules.xyz/pointer v0.1.0
 	gomodules.xyz/x v0.0.8
 	k8s.io/api v0.21.1
 	k8s.io/apimachinery v0.21.1
 	k8s.io/client-go v0.21.1
 	k8s.io/klog/v2 v2.8.0
-	kmodules.xyz/client-go v0.0.0-20211028132207-0cf6ea46b030
-	kmodules.xyz/custom-resources v0.0.0-20211007080833-72bd9e8cae6e
-	kmodules.xyz/offshoot-api v0.0.0-20210829122105-6f4d481b0c61
-	kubedb.dev/apimachinery v0.18.1-0.20210618122709-e98fb31f5dfb
+	kmodules.xyz/client-go v0.0.0-20211122091731-6c471b24a4ea // indirect
+	kmodules.xyz/custom-resources v0.0.0-20211122142737-3bf3dbd8ac52
+	kmodules.xyz/offshoot-api v0.0.0-20211103060642-3e217667cf41
+	kubedb.dev/apimachinery v0.23.0
 	stash.appscode.dev/apimachinery v0.16.0
 )
 
