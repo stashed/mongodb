@@ -73,7 +73,7 @@ func NewCmdRestore() *cobra.Command {
 			return checkCommandExists()
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			flags.EnsureRequiredFlags(cmd, "appbinding", "provider", "secret-dir")
+			flags.EnsureRequiredFlags(cmd, "appbinding", "provider", "storage-secret-name", "storage-secret-namespace")
 
 			// prepare client
 			config, err := clientcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)
@@ -142,10 +142,13 @@ func NewCmdRestore() *cobra.Command {
 	cmd.Flags().StringVar(&opt.setupOptions.Endpoint, "endpoint", opt.setupOptions.Endpoint, "Endpoint for s3/s3 compatible backend or REST server URL")
 	cmd.Flags().StringVar(&opt.setupOptions.Region, "region", opt.setupOptions.Region, "Region for s3/s3 compatible backend")
 	cmd.Flags().StringVar(&opt.setupOptions.Path, "path", opt.setupOptions.Path, "Directory inside the bucket where backup will be stored")
-	cmd.Flags().StringVar(&opt.setupOptions.SecretDir, "secret-dir", opt.setupOptions.SecretDir, "Directory where storage secret has been mounted")
 	cmd.Flags().StringVar(&opt.setupOptions.ScratchDir, "scratch-dir", opt.setupOptions.ScratchDir, "Temporary directory")
 	cmd.Flags().BoolVar(&opt.setupOptions.EnableCache, "enable-cache", opt.setupOptions.EnableCache, "Specify whether to enable caching for restic")
 	cmd.Flags().Int64Var(&opt.setupOptions.MaxConnections, "max-connections", opt.setupOptions.MaxConnections, "Specify maximum concurrent connections for GCS, Azure and B2 backend")
+
+	cmd.Flags().StringVar(&opt.storageSecret.Name, "storage-secret-name", opt.storageSecret.Name, "Name of the storage secret")
+	cmd.Flags().StringVar(&opt.storageSecret.Namespace, "storage-secret-namespace", opt.storageSecret.Namespace, "Namespace of the storage secret")
+	cmd.Flags().StringVar(&opt.authenticationDatabase, "authentication-database", opt.authenticationDatabase, "Specify the authentication database")
 
 	cmd.Flags().StringVar(&opt.defaultDumpOptions.Host, "hostname", opt.defaultDumpOptions.Host, "Name of the host machine")
 	cmd.Flags().StringVar(&opt.defaultDumpOptions.SourceHost, "source-hostname", opt.defaultDumpOptions.SourceHost, "Name of the host whose data will be restored")
@@ -157,8 +160,13 @@ func NewCmdRestore() *cobra.Command {
 }
 
 func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*restic.RestoreOutput, error) {
-	// apply nice, ionice settings from env
 	var err error
+	opt.setupOptions.StorageSecret, err = opt.kubeClient.CoreV1().Secrets(opt.storageSecret.Namespace).Get(context.TODO(), opt.storageSecret.Name, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	// apply nice, ionice settings from env
 	opt.setupOptions.Nice, err = v1.NiceSettingsFromEnv()
 	if err != nil {
 		return nil, err
@@ -168,19 +176,27 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 		return nil, err
 	}
 
-	// get app binding
 	appBinding, err := opt.catalogClient.AppcatalogV1alpha1().AppBindings(opt.namespace).Get(context.TODO(), opt.appBindingName, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
-	// get secret
+
 	appBindingSecret, err := opt.kubeClient.CoreV1().Secrets(opt.namespace).Get(context.TODO(), appBinding.Spec.Secret.Name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	// transform secret
 	err = appBinding.TransformSecret(opt.kubeClient, appBindingSecret.Data)
+	if err != nil {
+		return nil, err
+	}
+
+	hostname, err := appBinding.Hostname()
+	if err != nil {
+		return nil, err
+	}
+
+	port, err := appBinding.Port()
 	if err != nil {
 		return nil, err
 	}
@@ -267,11 +283,11 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 		adminCreds = []interface{}{
 			"--username", string(appBindingSecret.Data[MongoUserKey]),
 			"--password", string(appBindingSecret.Data[MongoPasswordKey]),
-			"--authenticationDatabase", "admin",
+			"--authenticationDatabase", opt.authenticationDatabase,
 		}
 	}
 
-	getDumpOpts := func(mongoDSN, hostKey string, isStandalone bool) restic.DumpOptions {
+	getDumpOpts := func(mongoDSN, hostKey string, port int32, isStandalone bool) restic.DumpOptions {
 		klog.Infoln("processing backupOptions for ", mongoDSN)
 		dumpOpt := restic.DumpOptions{
 			Host:       hostKey,
@@ -291,7 +307,7 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 
 		userArgs := strings.Fields(opt.mongoArgs)
 		if isStandalone {
-			restoreCmd.Args = append(restoreCmd.Args, "--port="+fmt.Sprint(appBinding.Spec.ClientConfig.Service.Port))
+			restoreCmd.Args = append(restoreCmd.Args, fmt.Sprintf("--port=%d", port))
 		} else {
 			// - port is already added in mongoDSN with replicasetName/host:port format.
 			// - oplog is enabled automatically for replicasets.
@@ -335,24 +351,22 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 	// ref: https://docs.mongodb.com/manual/tutorial/backup-sharded-cluster-with-database-dumps/
 
 	if parameters.ConfigServer != "" {
-		opt.dumpOptions = append(opt.dumpOptions, getDumpOpts(parameters.ConfigServer, MongoConfigSVRHostKey, false))
+		opt.dumpOptions = append(opt.dumpOptions, getDumpOpts(parameters.ConfigServer, MongoConfigSVRHostKey, port, false))
 	}
 
 	for key, host := range parameters.ReplicaSets {
-		opt.dumpOptions = append(opt.dumpOptions, getDumpOpts(host, key, false))
+		opt.dumpOptions = append(opt.dumpOptions, getDumpOpts(host, key, port, false))
 	}
 
 	// if parameters.ReplicaSets is nil, then perform normal backup with clientconfig.Service.Name mongo dsn
 	if parameters.ReplicaSets == nil {
-		opt.dumpOptions = append(opt.dumpOptions, getDumpOpts(appBinding.Spec.ClientConfig.Service.Name, restic.DefaultHost, true))
+		opt.dumpOptions = append(opt.dumpOptions, getDumpOpts(hostname, restic.DefaultHost, port, true))
 	}
 
 	klog.Infoln("processing restore.")
 
-	// wait for DB ready
-	waitForDBReady(appBinding.Spec.ClientConfig.Service.Name, appBinding.Spec.ClientConfig.Service.Port, opt.waitTimeout)
+	waitForDBReady(hostname, port, opt.waitTimeout)
 
-	// init restic wrapper
 	resticWrapper, err := restic.NewResticWrapper(opt.setupOptions)
 	if err != nil {
 		return nil, err
