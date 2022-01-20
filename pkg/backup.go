@@ -104,10 +104,10 @@ func NewCmdBackup() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			defer cleanup()
 
-			flags.EnsureRequiredFlags(cmd, "appbinding", "provider", "secret-dir")
+			flags.EnsureRequiredFlags(cmd, "appbinding", "provider", "storage-secret-name", "storage-secret-namespace")
 
 			// catch sigkill signals and gracefully terminate so that cleanup functions are executed.
-			sigChan := make(chan os.Signal)
+			sigChan := make(chan os.Signal, 1)
 			signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 			go func() {
 				rcvSig := <-sigChan
@@ -183,11 +183,13 @@ func NewCmdBackup() *cobra.Command {
 	cmd.Flags().StringVar(&opt.setupOptions.Endpoint, "endpoint", opt.setupOptions.Endpoint, "Endpoint for s3/s3 compatible backend or REST server URL")
 	cmd.Flags().StringVar(&opt.setupOptions.Region, "region", opt.setupOptions.Region, "Region for s3/s3 compatible backend")
 	cmd.Flags().StringVar(&opt.setupOptions.Path, "path", opt.setupOptions.Path, "Directory inside the bucket where backup will be stored")
-	cmd.Flags().StringVar(&opt.setupOptions.SecretDir, "secret-dir", opt.setupOptions.SecretDir, "Directory where storage secret has been mounted")
 	cmd.Flags().StringVar(&opt.setupOptions.ScratchDir, "scratch-dir", opt.setupOptions.ScratchDir, "Temporary directory")
 	cmd.Flags().BoolVar(&opt.setupOptions.EnableCache, "enable-cache", opt.setupOptions.EnableCache, "Specify whether to enable caching for restic")
 	cmd.Flags().Int64Var(&opt.setupOptions.MaxConnections, "max-connections", opt.setupOptions.MaxConnections, "Specify maximum concurrent connections for GCS, Azure and B2 backend")
 
+	cmd.Flags().StringVar(&opt.storageSecret.Name, "storage-secret-name", opt.storageSecret.Name, "Name of the storage secret")
+	cmd.Flags().StringVar(&opt.storageSecret.Namespace, "storage-secret-namespace", opt.storageSecret.Namespace, "Namespace of the storage secret")
+	cmd.Flags().StringVar(&opt.authenticationDatabase, "authentication-database", "admin", "Specify the authentication database")
 	cmd.Flags().StringVar(&opt.defaultBackupOptions.Host, "hostname", opt.defaultBackupOptions.Host, "Name of the host machine")
 
 	cmd.Flags().Int64Var(&opt.defaultBackupOptions.RetentionPolicy.KeepLast, "retention-keep-last", opt.defaultBackupOptions.RetentionPolicy.KeepLast, "Specify value for retention strategy")
@@ -206,6 +208,12 @@ func NewCmdBackup() *cobra.Command {
 }
 
 func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic.BackupOutput, error) {
+	var err error
+	opt.setupOptions.StorageSecret, err = opt.kubeClient.CoreV1().Secrets(opt.storageSecret.Namespace).Get(context.TODO(), opt.storageSecret.Name, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
 	// if any pre-backup actions has been assigned to it, execute them
 	actionOptions := api_util.ActionOptions{
 		StashClient:       opt.stashClient,
@@ -214,7 +222,7 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 		BackupSessionName: opt.backupSessionName,
 		Namespace:         opt.namespace,
 	}
-	err := api_util.ExecutePreBackupActions(actionOptions)
+	err = api_util.ExecutePreBackupActions(actionOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -233,25 +241,32 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 		return nil, err
 	}
 
-	// get app binding
 	appBinding, err := opt.catalogClient.AppcatalogV1alpha1().AppBindings(opt.namespace).Get(context.TODO(), opt.appBindingName, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
-	// get secret
+
 	appBindingSecret, err := opt.kubeClient.CoreV1().Secrets(opt.namespace).Get(context.TODO(), appBinding.Spec.Secret.Name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	// transform secret
 	err = appBinding.TransformSecret(opt.kubeClient, appBindingSecret.Data)
 	if err != nil {
 		return nil, err
 	}
 
-	// wait for DB ready
-	waitForDBReady(appBinding.Spec.ClientConfig.Service.Name, appBinding.Spec.ClientConfig.Service.Port, opt.waitTimeout)
+	hostname, err := appBinding.Hostname()
+	if err != nil {
+		return nil, err
+	}
+
+	port, err := appBinding.Port()
+	if err != nil {
+		return nil, err
+	}
+
+	waitForDBReady(hostname, port, opt.waitTimeout)
 
 	// unmarshal parameter is the field has value
 	parameters := v1alpha1.MongoDBConfiguration{}
@@ -347,7 +362,7 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 		userAuth := []interface{}{
 			"--username", string(appBindingSecret.Data[MongoUserKey]),
 			"--password", string(appBindingSecret.Data[MongoPasswordKey]),
-			"--authenticationDatabase", "admin",
+			"--authenticationDatabase", opt.authenticationDatabase,
 		}
 		mongoCreds = append(mongoCreds, userAuth...)
 		dumpCreds = append(dumpCreds, userAuth...)
@@ -373,7 +388,7 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 		userArgs := strings.Fields(opt.mongoArgs)
 
 		if isStandalone {
-			backupCmd.Args = append(backupCmd.Args, "--port="+fmt.Sprint(appBinding.Spec.ClientConfig.Service.Port))
+			backupCmd.Args = append(backupCmd.Args, fmt.Sprintf("--port=%d", port))
 		} else {
 			// - port is already added in mongoDSN with replicasetName/host:port format.
 			// - oplog is enabled automatically for replicasets.
@@ -449,17 +464,16 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 		}
 
 		// sharded cluster. so disable the balancer first. then perform the 'usual' tasks.
-
 		primary, secondary, err := getPrimaryNSecondaryMember(parameters.ConfigServer)
 		if err != nil {
 			return nil, err
 		}
 
 		// connect to mongos to disable/enable balancer
-		err = disabelBalancer(appBinding.Spec.ClientConfig.Service.Name)
+		err = disabelBalancer(hostname)
 		cleanupFuncs = append(cleanupFuncs, func() error {
 			// even if error occurs, try to enable the balancer on exiting the program.
-			return enableBalancer(appBinding.Spec.ClientConfig.Service.Name)
+			return enableBalancer(hostname)
 		})
 		if err != nil {
 			return nil, err
@@ -473,14 +487,15 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 		}
 
 		err = lockConfigServer(parameters.ConfigServer, secondary)
+
 		cleanupFuncs = append(cleanupFuncs, func() error {
 			// even if error occurs, try to unlock the server
 			return unlockSecondaryMember(secondary)
 		})
 		if err != nil {
+			klog.Errorf("error while locking config server. error: %v", err)
 			return nil, err
 		}
-
 		opt.backupOptions = append(opt.backupOptions, getBackupOpt(backupHost, MongoConfigSVRHostKey, false))
 	}
 
@@ -522,7 +537,7 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 	// if parameters.ReplicaSets is nil, then the mongodb database doesn't have replicasets or sharded replicasets.
 	// In this case, perform normal backup with clientconfig.Service.Name mongo dsn
 	if parameters.ReplicaSets == nil {
-		opt.backupOptions = append(opt.backupOptions, getBackupOpt(appBinding.Spec.ClientConfig.Service.Name, restic.DefaultHost, true))
+		opt.backupOptions = append(opt.backupOptions, getBackupOpt(hostname, restic.DefaultHost, true))
 	}
 
 	klog.Infoln("processing backup.")
@@ -534,7 +549,6 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 	// hide password, don't print cmd
 	resticWrapper.HideCMD()
 
-	// Run backup
 	return resticWrapper.RunParallelBackup(opt.backupOptions, targetRef, opt.maxConcurrency)
 }
 
@@ -656,12 +670,12 @@ func enableBalancer(mongosHost string) error {
 
 func lockConfigServer(configSVRDSN, secondaryHost string) error {
 	klog.Infoln("Attempting to lock configserver", configSVRDSN)
+
 	if secondaryHost == "" {
 		klog.Warningln("locking configserver is skipped. secondary host is empty")
 		return nil
 	}
 	v := make(map[string]interface{})
-
 	// findAndModify BackupControlDocument. skip single quote inside single quote: https://stackoverflow.com/a/28786747/4628962
 	args := append([]interface{}{
 		"config",
@@ -672,12 +686,10 @@ func lockConfigServer(configSVRDSN, secondaryHost string) error {
 	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
 		return err
 	}
-
 	val, ok := v["counter"].(float64)
 	if !ok || int(val) == 0 {
 		return fmt.Errorf("unable to modify BackupControlDocument. got response: %v", v)
 	}
-
 	val2 := float64(0)
 	timer := 0 // wait approximately 5 minutes.
 	for timer < 60 && (int(val2) == 0 || int(val) != int(val2)) {
@@ -687,9 +699,10 @@ func lockConfigServer(configSVRDSN, secondaryHost string) error {
 			"config",
 			"--host", secondaryHost,
 			"--quiet",
-			"--eval", "rs.slaveOk(); db.BackupControl.find({ '_id' : 'BackupControlDocument' }).readConcern('majority');",
-		}, mongoCreds...)
-		if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+			"--eval", "rs.secondaryOk(); db.BackupControl.find({ '_id' : 'BackupControlDocument' }).readConcern('majority');",
+		}, adminCreds...)
+
+		if err := sh.Command(MongoCMD, args...).UnmarshalJSON(&v); err != nil {
 			return err
 		}
 
@@ -697,7 +710,6 @@ func lockConfigServer(configSVRDSN, secondaryHost string) error {
 		if !ok {
 			return fmt.Errorf("unable to get BackupControlDocument. got response: %v", v)
 		}
-
 		if int(val) != int(val2) {
 			klog.V(5).Infof("BackupDocument counter in secondary is not same. Expected %v, but got %v. Full response: %v", val, val2, v)
 			time.Sleep(time.Second * 5)
@@ -706,7 +718,6 @@ func lockConfigServer(configSVRDSN, secondaryHost string) error {
 	if timer >= 60 {
 		return fmt.Errorf("timeout while waiting for BackupDocument counter in secondary to be same as primary. Expected %v, but got %v. Full response: %v", val, val2, v)
 	}
-
 	// lock secondary
 	return lockSecondaryMember(secondaryHost)
 }
