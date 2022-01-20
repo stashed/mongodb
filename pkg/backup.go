@@ -103,7 +103,7 @@ func NewCmdBackup() *cobra.Command {
 			flags.EnsureRequiredFlags(cmd, "appbinding", "provider", "storage-secret-name", "storage-secret-namespace")
 
 			// catch sigkill signals and gracefully terminate so that cleanup functions are executed.
-			sigChan := make(chan os.Signal)
+			sigChan := make(chan os.Signal, 1)
 			signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 			go func() {
 				rcvSig := <-sigChan
@@ -185,7 +185,7 @@ func NewCmdBackup() *cobra.Command {
 
 	cmd.Flags().StringVar(&opt.storageSecret.Name, "storage-secret-name", opt.storageSecret.Name, "Name of the storage secret")
 	cmd.Flags().StringVar(&opt.storageSecret.Namespace, "storage-secret-namespace", opt.storageSecret.Namespace, "Namespace of the storage secret")
-	cmd.Flags().StringVar(&opt.authenticationDatabase, "authentication-database", opt.authenticationDatabase, "Specify the authentication database")
+	cmd.Flags().StringVar(&opt.authenticationDatabase, "authentication-database", "admin", "Specify the authentication database")
 	cmd.Flags().StringVar(&opt.defaultBackupOptions.Host, "hostname", opt.defaultBackupOptions.Host, "Name of the host machine")
 
 	cmd.Flags().Int64Var(&opt.defaultBackupOptions.RetentionPolicy.KeepLast, "retention-keep-last", opt.defaultBackupOptions.RetentionPolicy.KeepLast, "Specify value for retention strategy")
@@ -354,7 +354,7 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 		}
 	}
 
-	getBackupOpt := func(mongoDSN, hostKey string, port int32, isStandalone bool) restic.BackupOptions {
+	getBackupOpt := func(mongoDSN, hostKey string, isStandalone bool) restic.BackupOptions {
 		klog.Infoln("processing backupOptions for ", mongoDSN)
 		backupOpt := restic.BackupOptions{
 			Host:            hostKey,
@@ -451,7 +451,7 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 			klog.Errorf("error while locking config server. error: %v", err)
 			return nil, err
 		}
-		opt.backupOptions = append(opt.backupOptions, getBackupOpt(backupHost, MongoConfigSVRHostKey, port, false))
+		opt.backupOptions = append(opt.backupOptions, getBackupOpt(backupHost, MongoConfigSVRHostKey, false))
 	}
 
 	for key, host := range parameters.ReplicaSets {
@@ -479,13 +479,13 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 			return nil, err
 		}
 
-		opt.backupOptions = append(opt.backupOptions, getBackupOpt(backupHost, key, port, false))
+		opt.backupOptions = append(opt.backupOptions, getBackupOpt(backupHost, key, false))
 	}
 
 	// if parameters.ReplicaSets is nil, then the mongodb database doesn't have replicasets or sharded replicasets.
 	// In this case, perform normal backup with clientconfig.Service.Name mongo dsn
 	if parameters.ReplicaSets == nil {
-		opt.backupOptions = append(opt.backupOptions, getBackupOpt(hostname, restic.DefaultHost, port, true))
+		opt.backupOptions = append(opt.backupOptions, getBackupOpt(hostname, restic.DefaultHost, true))
 	}
 
 	klog.Infoln("processing backup.")
@@ -618,6 +618,7 @@ func enableBalancer(mongosHost string) error {
 
 func lockConfigServer(configSVRDSN, secondaryHost string) error {
 	klog.Infoln("Attempting to lock configserver", configSVRDSN)
+
 	if secondaryHost == "" {
 		klog.Warningln("locking configserver is skipped. secondary host is empty")
 		return nil

@@ -148,7 +148,7 @@ func NewCmdRestore() *cobra.Command {
 
 	cmd.Flags().StringVar(&opt.storageSecret.Name, "storage-secret-name", opt.storageSecret.Name, "Name of the storage secret")
 	cmd.Flags().StringVar(&opt.storageSecret.Namespace, "storage-secret-namespace", opt.storageSecret.Namespace, "Namespace of the storage secret")
-	cmd.Flags().StringVar(&opt.authenticationDatabase, "authentication-database", opt.authenticationDatabase, "Specify the authentication database")
+	cmd.Flags().StringVar(&opt.authenticationDatabase, "authentication-database", "admin", "Specify the authentication database")
 
 	cmd.Flags().StringVar(&opt.defaultDumpOptions.Host, "hostname", opt.defaultDumpOptions.Host, "Name of the host machine")
 	cmd.Flags().StringVar(&opt.defaultDumpOptions.SourceHost, "source-hostname", opt.defaultDumpOptions.SourceHost, "Name of the host whose data will be restored")
@@ -287,7 +287,7 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 		}
 	}
 
-	getDumpOpts := func(mongoDSN, hostKey string, port int32, isStandalone bool) restic.DumpOptions {
+	getDumpOpts := func(mongoDSN, hostKey string, isStandalone bool) restic.DumpOptions {
 		klog.Infoln("processing backupOptions for ", mongoDSN)
 		dumpOpt := restic.DumpOptions{
 			Host:       hostKey,
@@ -351,16 +351,16 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 	// ref: https://docs.mongodb.com/manual/tutorial/backup-sharded-cluster-with-database-dumps/
 
 	if parameters.ConfigServer != "" {
-		opt.dumpOptions = append(opt.dumpOptions, getDumpOpts(parameters.ConfigServer, MongoConfigSVRHostKey, port, false))
+		opt.dumpOptions = append(opt.dumpOptions, getDumpOpts(parameters.ConfigServer, MongoConfigSVRHostKey, false))
 	}
 
 	for key, host := range parameters.ReplicaSets {
-		opt.dumpOptions = append(opt.dumpOptions, getDumpOpts(host, key, port, false))
+		opt.dumpOptions = append(opt.dumpOptions, getDumpOpts(host, key, false))
 	}
 
 	// if parameters.ReplicaSets is nil, then perform normal backup with clientconfig.Service.Name mongo dsn
 	if parameters.ReplicaSets == nil {
-		opt.dumpOptions = append(opt.dumpOptions, getDumpOpts(hostname, restic.DefaultHost, port, true))
+		opt.dumpOptions = append(opt.dumpOptions, getDumpOpts(hostname, restic.DefaultHost, true))
 	}
 
 	klog.Infoln("processing restore.")
