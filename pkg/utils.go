@@ -28,6 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/klog/v2"
+	kmapi "kmodules.xyz/client-go/api/v1"
 	appcatalog_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 )
 
@@ -48,14 +49,16 @@ type mongoOptions struct {
 	catalogClient appcatalog_cs.Interface
 	stashClient   stash_cs.Interface
 
-	namespace          string
-	backupSessionName  string
-	restoreSessionName string
-	appBindingName     string
-	mongoArgs          string
-	maxConcurrency     int
-	waitTimeout        int32
-	outputDir          string
+	namespace              string
+	backupSessionName      string
+	restoreSessionName     string
+	appBindingName         string
+	mongoArgs              string
+	maxConcurrency         int
+	waitTimeout            int32
+	outputDir              string
+	storageSecret          kmapi.ObjectReference
+	authenticationDatabase string
 
 	setupOptions         restic.SetupOptions
 	backupOptions        []restic.BackupOptions
