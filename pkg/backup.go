@@ -647,7 +647,7 @@ func lockConfigServer(configSVRDSN, secondaryHost string) error {
 			"config",
 			"--host", secondaryHost,
 			"--quiet",
-			"--eval", "rs.secondaryOk(); db.BackupControl.find({ '_id' : 'BackupControlDocument' }).readConcern('majority');",
+			"--eval", "rs.slaveOk(); db.BackupControl.find({ '_id' : 'BackupControlDocument' }).readConcern('majority');",
 		}, adminCreds...)
 
 		if err := sh.Command(MongoCMD, args...).UnmarshalJSON(&v); err != nil {
