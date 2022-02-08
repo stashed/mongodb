@@ -1187,8 +1187,8 @@ kmodules.xyz/constants v0.0.0-20210218100002-2c304bfda278/go.mod h1:DbiFk1bJ1KEO
 kmodules.xyz/crd-schema-fuzz v0.0.0-20210618002152-fae23aef5fb4/go.mod h1:IIkUctlfoptoci0BOrsUf8ya+MOG5uaeh1PE4uzaIbA=
 kmodules.xyz/custom-resources v0.0.0-20211007080833-72bd9e8cae6e/go.mod h1:pGabego8q4oi/2sNjhdtFkgVaVw4AyGv14GO6VtAjTw=
 kmodules.xyz/custom-resources v0.0.0-20220104123914-3c036dd7c1cd/go.mod h1:/XjDeILFV2wBota5kHo21DMvOt08nSAk1vm6buCuwt4=
-kmodules.xyz/custom-resources v0.0.0-20220126201139-be014631db0c h1:SZzZ57uOh6nCIRMmGC1F0vyZr8fTmDm6gQAAh9GY1wY=
-kmodules.xyz/custom-resources v0.0.0-20220126201139-be014631db0c/go.mod h1:/XjDeILFV2wBota5kHo21DMvOt08nSAk1vm6buCuwt4=
+kmodules.xyz/custom-resources v0.0.0-20220208103158-61b298634e43 h1:mwW2DgP7sAMambZe7Met/e9nrBYnzYgM/lupbm7jgGM=
+kmodules.xyz/custom-resources v0.0.0-20220208103158-61b298634e43/go.mod h1:/XjDeILFV2wBota5kHo21DMvOt08nSAk1vm6buCuwt4=
 kmodules.xyz/monitoring-agent-api v0.0.0-20210928135619-38ca075a2dbd/go.mod h1:08pBqfEuy29EjhaMrHB2XFy2iekoFi7AjaXcJS+xAck=
 kmodules.xyz/objectstore-api v0.0.0-20210928135706-fdf68f88ea6e/go.mod h1:Tkcf9uTplnrJ6C8o0zlw2kpgS1SaWAiMO5P2YgLjTo8=
 kmodules.xyz/objectstore-api v0.0.0-20211116180107-8720be0c9bf7/go.mod h1:IICnDdPFOEeGXdaPVHOGYfdwD1cyh/p1I/TWMkyNTIE=
