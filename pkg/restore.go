@@ -287,9 +287,9 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 		dumpCreds = append(dumpCreds, userAuth...)
 
 	} else {
-		userAuth := []interface{}{
-			"--username", string(appBindingSecret.Data[MongoUserKey]),
-			"--password", string(appBindingSecret.Data[MongoPasswordKey]),
+		adminCreds = []interface{}{
+			fmt.Sprintf("--username=%s", appBindingSecret.Data[MongoUserKey]),
+			fmt.Sprintf("--password=%s", appBindingSecret.Data[MongoPasswordKey]),
 			"--authenticationDatabase", opt.authenticationDatabase,
 		}
 		mongoCreds = append(mongoCreds, userAuth...)
