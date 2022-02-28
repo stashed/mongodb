@@ -281,8 +281,8 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 
 	} else {
 		adminCreds = []interface{}{
-			"--username", string(appBindingSecret.Data[MongoUserKey]),
-			"--password", string(appBindingSecret.Data[MongoPasswordKey]),
+			fmt.Sprintf("--username=%s", appBindingSecret.Data[MongoUserKey]),
+			fmt.Sprintf("--password=%s", appBindingSecret.Data[MongoPasswordKey]),
 			"--authenticationDatabase", opt.authenticationDatabase,
 		}
 	}
