@@ -534,7 +534,7 @@ func getPrimaryNSecondaryMember(mongoDSN string) (primary, secondary string, err
 	klog.Infoln("finding primary and secondary instances of", mongoDSN)
 	v := make(map[string]interface{})
 
-	//stop balancer
+	// stop balancer
 	args := append([]interface{}{
 		"config",
 		"--host", mongoDSN,
