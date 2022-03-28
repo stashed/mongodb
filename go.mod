@@ -3,26 +3,43 @@ module stash.appscode.dev/mongodb
 go 1.15
 
 require (
-	github.com/json-iterator/go v1.1.12 // indirect
+	github.com/evanphx/json-patch v4.12.0+incompatible // indirect
+	github.com/go-openapi/jsonpointer v0.19.5 // indirect
+	github.com/go-openapi/jsonreference v0.19.5 // indirect
+	github.com/go-openapi/spec v0.19.8 // indirect
+	github.com/go-openapi/swag v0.19.14 // indirect
+	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
+	github.com/mailru/easyjson v0.7.7 // indirect
+	github.com/onsi/ginkgo v1.16.5 // indirect
+	github.com/onsi/gomega v1.17.0 // indirect
 	github.com/pkg/errors v0.9.1
-	github.com/sergi/go-diff v1.2.0 // indirect
+	github.com/prometheus/common v0.28.0 // indirect
 	github.com/spf13/cobra v1.2.1
 	go.bytebuilders.dev/license-verifier/kubernetes v0.9.7
+	go.uber.org/zap v1.19.1 // indirect
+	golang.org/x/net v0.0.0-20211209124913-491a49abca63 // indirect
+	golang.org/x/oauth2 v0.0.0-20210819190943-2bc19b11175f // indirect
+	golang.org/x/sys v0.0.0-20211029165221-6e7872819dc8 // indirect
+	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b // indirect
 	gomodules.xyz/flags v0.1.3
 	gomodules.xyz/go-sh v0.1.0
 	gomodules.xyz/logs v0.0.6
 	gomodules.xyz/pointer v0.1.0
-	gomodules.xyz/x v0.0.10
+	gomodules.xyz/x v0.0.13
+	google.golang.org/protobuf v1.27.1 // indirect
 	k8s.io/api v0.21.1
 	k8s.io/apimachinery v0.21.1
 	k8s.io/client-go v0.21.1
 	k8s.io/klog/v2 v2.9.0
-	k8s.io/kube-openapi v0.0.0-20210421082810-95288971da7e // indirect
-	kmodules.xyz/client-go v0.0.0-20220203031013-1de48437aaf3
-	kmodules.xyz/custom-resources v0.0.0-20220208103158-61b298634e43
-	kmodules.xyz/objectstore-api v0.0.0-20211207131029-3271069de43e // indirect
-	kmodules.xyz/offshoot-api v0.0.0-20211207130839-cc7187e020cf
+	k8s.io/kube-openapi v0.0.0-20211115234752-e816edb12b65 // indirect
+	k8s.io/utils v0.0.0-20210930125809-cb0fa318a74b // indirect
+	kmodules.xyz/client-go v0.0.0-20220317213815-2a6d5a5784f2
+	kmodules.xyz/custom-resources v0.0.0-20220317220154-7beb809b1f5e
+	kmodules.xyz/objectstore-api v0.0.0-20220317220441-f1d593d0a778 // indirect
+	kmodules.xyz/offshoot-api v0.0.0-20220323112402-3b0fd2ea77d6
 	kubedb.dev/apimachinery v0.23.0
+	sigs.k8s.io/structured-merge-diff/v4 v4.2.0 // indirect
+	sigs.k8s.io/yaml v1.3.0 // indirect
 	stash.appscode.dev/apimachinery v0.17.1-0.20220113052814-7da4b19c88a3
 )
 
