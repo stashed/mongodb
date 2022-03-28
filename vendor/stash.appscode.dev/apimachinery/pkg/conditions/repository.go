@@ -78,8 +78,8 @@ func SetRepositoryFoundConditionToUnknown(i interface{}, err error) error {
 			Status: core.ConditionUnknown,
 			Reason: apis.UnableToCheckRepositoryAvailability,
 			Message: fmt.Sprintf("Failed to check whether the Repository %s/%s exist or not. Reason: %v",
-				in.GetRepoRef().Namespace,
-				in.GetRepoRef().Name,
+				in.Repository.Namespace,
+				in.Repository,
 				err.Error(),
 			),
 		})
@@ -89,8 +89,8 @@ func SetRepositoryFoundConditionToUnknown(i interface{}, err error) error {
 			Status: core.ConditionUnknown,
 			Reason: apis.UnableToCheckRepositoryAvailability,
 			Message: fmt.Sprintf("Failed to check whether the Repository %s/%s exist or not. Reason: %v",
-				in.GetRepoRef().Namespace,
-				in.GetRepoRef().Name,
+				in.Repository.Namespace,
+				in.Repository,
 				err.Error(),
 			),
 		})
@@ -107,8 +107,8 @@ func SetRepositoryFoundConditionToFalse(i interface{}) error {
 			Status: core.ConditionFalse,
 			Reason: apis.RepositoryNotAvailable,
 			Message: fmt.Sprintf("Repository %s/%s does not exist.",
-				in.GetRepoRef().Namespace,
-				in.GetRepoRef().Name,
+				in.Repository.Namespace,
+				in.Repository,
 			),
 		})
 	case invoker.RestoreInvoker:
@@ -117,8 +117,8 @@ func SetRepositoryFoundConditionToFalse(i interface{}) error {
 			Status: core.ConditionFalse,
 			Reason: apis.RepositoryNotAvailable,
 			Message: fmt.Sprintf("Repository %s/%s does not exist.",
-				in.GetRepoRef().Namespace,
-				in.GetRepoRef().Name,
+				in.Repository.Namespace,
+				in.Repository,
 			),
 		})
 	default:
@@ -134,8 +134,8 @@ func SetRepositoryFoundConditionToTrue(i interface{}) error {
 			Status: core.ConditionTrue,
 			Reason: apis.RepositoryAvailable,
 			Message: fmt.Sprintf("Repository %s/%s exist.",
-				in.GetRepoRef().Namespace,
-				in.GetRepoRef().Name,
+				in.Repository.Namespace,
+				in.Repository,
 			),
 		})
 	case invoker.RestoreInvoker:
@@ -144,54 +144,12 @@ func SetRepositoryFoundConditionToTrue(i interface{}) error {
 			Status: core.ConditionTrue,
 			Reason: apis.RepositoryAvailable,
 			Message: fmt.Sprintf("Repository %s/%s exist.",
-				in.GetRepoRef().Namespace,
-				in.GetRepoRef().Name,
+				in.Repository.Namespace,
+				in.Repository,
 			),
 		})
 	default:
 		return fmt.Errorf("unable to set %s condition. Reason: invoker type unknown", apis.RepositoryFound)
-	}
-}
-
-func SetValidationPassedToTrue(i interface{}) error {
-	switch in := i.(type) {
-	case invoker.BackupInvoker:
-		return in.SetCondition(nil, kmapi.Condition{
-			Type:    apis.ValidationPassed,
-			Status:  core.ConditionTrue,
-			Reason:  apis.ResourceValidationPassed,
-			Message: "Successfully validated.",
-		})
-	case invoker.RestoreInvoker:
-		return in.SetCondition(nil, kmapi.Condition{
-			Type:    apis.ValidationPassed,
-			Status:  core.ConditionTrue,
-			Reason:  apis.ResourceValidationPassed,
-			Message: "Successfully validated.",
-		})
-	default:
-		return fmt.Errorf("unable to set %s condition. Reason: invoker type unknown", apis.ValidationPassed)
-	}
-}
-
-func SetValidationPassedToFalse(i interface{}, err error) error {
-	switch in := i.(type) {
-	case invoker.BackupInvoker:
-		return in.SetCondition(nil, kmapi.Condition{
-			Type:    apis.ValidationPassed,
-			Status:  core.ConditionFalse,
-			Reason:  apis.ResourceValidationFailed,
-			Message: err.Error(),
-		})
-	case invoker.RestoreInvoker:
-		return in.SetCondition(nil, kmapi.Condition{
-			Type:    apis.ValidationPassed,
-			Status:  core.ConditionFalse,
-			Reason:  apis.ResourceValidationFailed,
-			Message: err.Error(),
-		})
-	default:
-		return fmt.Errorf("unable to set %s condition. Reason: invoker type unknown", apis.ValidationPassed)
 	}
 }
 
@@ -203,7 +161,7 @@ func SetBackendSecretFoundConditionToUnknown(i interface{}, secretName string, e
 			Status: core.ConditionUnknown,
 			Reason: apis.UnableToCheckBackendSecretAvailability,
 			Message: fmt.Sprintf("Failed to check whether the backend Secret %s/%s exist or not. Reason: %v",
-				in.GetRepoRef().Namespace,
+				in.Repository.Namespace,
 				secretName,
 				err.Error(),
 			),
@@ -214,7 +172,7 @@ func SetBackendSecretFoundConditionToUnknown(i interface{}, secretName string, e
 			Status: core.ConditionUnknown,
 			Reason: apis.UnableToCheckBackendSecretAvailability,
 			Message: fmt.Sprintf("Failed to check whether the backend Secret %s/%s exist or not. Reason: %v",
-				in.GetRepoRef().Namespace,
+				in.Repository.Namespace,
 				secretName,
 				err.Error(),
 			),
@@ -232,7 +190,7 @@ func SetBackendSecretFoundConditionToFalse(i interface{}, secretName string) err
 			Status: core.ConditionFalse,
 			Reason: apis.BackendSecretNotAvailable,
 			Message: fmt.Sprintf("Backend Secret %s/%s does not exist.",
-				in.GetRepoRef().Namespace,
+				in.Repository.Namespace,
 				secretName,
 			),
 		})
@@ -242,7 +200,7 @@ func SetBackendSecretFoundConditionToFalse(i interface{}, secretName string) err
 			Status: core.ConditionFalse,
 			Reason: apis.BackendSecretNotAvailable,
 			Message: fmt.Sprintf("Backend Secret %s/%s does not exist.",
-				in.GetRepoRef().Namespace,
+				in.Repository.Namespace,
 				secretName,
 			),
 		})
@@ -259,7 +217,7 @@ func SetBackendSecretFoundConditionToTrue(i interface{}, secretName string) erro
 			Status: core.ConditionTrue,
 			Reason: apis.BackendSecretAvailable,
 			Message: fmt.Sprintf("Backend Secret %s/%s exist.",
-				in.GetRepoRef().Namespace,
+				in.Repository.Namespace,
 				secretName,
 			),
 		})
@@ -269,7 +227,7 @@ func SetBackendSecretFoundConditionToTrue(i interface{}, secretName string) erro
 			Status: core.ConditionTrue,
 			Reason: apis.BackendSecretAvailable,
 			Message: fmt.Sprintf("Backend Secret %s/%s exist.",
-				in.GetRepoRef().Namespace,
+				in.Repository.Namespace,
 				secretName,
 			),
 		})
