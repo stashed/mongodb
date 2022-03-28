@@ -38,14 +38,14 @@ const (
 
 // BackupOverviewSpec defines the desired state of BackupOverview
 type BackupOverviewSpec struct {
-	Schedule           string       `json:"schedule,omitempty"`
-	Status             BackupStatus `json:"status,omitempty"`
-	LastBackupTime     *metav1.Time `json:"lastBackupTime,omitempty"`
-	UpcomingBackupTime *metav1.Time `json:"upcomingBackupTime,omitempty"`
-	Repository         string       `json:"repository,omitempty"`
-	DataSize           string       `json:"dataSize,omitempty"`
-	NumberOfSnapshots  int64        `json:"numberOfSnapshots,omitempty"`
-	DataIntegrity      bool         `json:"dataIntegrity,omitempty"`
+	Schedule           string       `json:"schedule,omitempty" protobuf:"bytes,1,opt,name=schedule"`
+	Status             BackupStatus `json:"status,omitempty" protobuf:"bytes,2,opt,name=status"`
+	LastBackupTime     *metav1.Time `json:"lastBackupTime,omitempty" protobuf:"bytes,3,opt,name=lastBackupTime"`
+	UpcomingBackupTime *metav1.Time `json:"upcomingBackupTime,omitempty" protobuf:"bytes,4,opt,name=upcomingBackupTime"`
+	Repository         string       `json:"repository,omitempty" protobuf:"bytes,5,opt,name=repository"`
+	DataSize           string       `json:"dataSize,omitempty" protobuf:"bytes,6,opt,name=dataSize"`
+	NumberOfSnapshots  int64        `json:"numberOfSnapshots,omitempty" protobuf:"bytes,7,opt,name=numberOfSnapshots"`
+	DataIntegrity      bool         `json:"dataIntegrity,omitempty" protobuf:"bytes,8,opt,name=dataIntegrity"`
 }
 
 // BackupOverview is the Schema for the BackupOverviews API
@@ -53,10 +53,10 @@ type BackupOverviewSpec struct {
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type BackupOverview struct {
 	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
+	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 
-	Spec   BackupOverviewSpec            `json:"spec,omitempty"`
-	Status api.BackupConfigurationStatus `json:"status,omitempty"`
+	Spec   BackupOverviewSpec            `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
+	Status api.BackupConfigurationStatus `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
 }
 
 // BackupOverviewList contains a list of BackupOverview
@@ -64,8 +64,8 @@ type BackupOverview struct {
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type BackupOverviewList struct {
 	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []BackupOverview `json:"items"`
+	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
+	Items           []BackupOverview `json:"items" protobuf:"bytes,2,rep,name=items"`
 }
 
 func init() {

@@ -94,6 +94,14 @@ type SetupOptions struct {
 	IONice         *ofst.IONiceSettings
 }
 
+type MetricsOptions struct {
+	Enabled        bool
+	PushgatewayURL string
+	MetricFileDir  string
+	Labels         []string
+	JobName        string
+}
+
 func NewResticWrapper(options SetupOptions) (*ResticWrapper, error) {
 	wrapper := &ResticWrapper{
 		sh:     shell.NewSession(),
@@ -119,14 +127,14 @@ func NewResticWrapperFromShell(options SetupOptions, sh *shell.Session) (*Restic
 	return wrapper, nil
 }
 
-func (w *ResticWrapper) configure() error {
-	w.sh.SetDir(w.config.ScratchDir)
-	w.sh.ShowCMD = true
-	w.sh.PipeFail = true
-	w.sh.PipeStdErrors = true
+func (wrapper *ResticWrapper) configure() error {
+	wrapper.sh.SetDir(wrapper.config.ScratchDir)
+	wrapper.sh.ShowCMD = true
+	wrapper.sh.PipeFail = true
+	wrapper.sh.PipeStdErrors = true
 
 	// Setup restic environments
-	return w.setupEnv()
+	return wrapper.setupEnv()
 }
 
 func (w *ResticWrapper) SetEnv(key, value string) {
@@ -142,9 +150,6 @@ func (w *ResticWrapper) GetEnv(key string) string {
 	return ""
 }
 
-func (w *ResticWrapper) GetCaPath() string {
-	return w.config.CacertFile
-}
 func (w *ResticWrapper) DumpEnv(path string, dumpedFile string) error {
 	if err := os.MkdirAll(path, 0755); err != nil {
 		return err
