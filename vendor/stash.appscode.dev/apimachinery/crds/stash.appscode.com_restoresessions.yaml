@@ -3303,7 +3303,6 @@ spec:
                 - Succeeded
                 - Failed
                 - Unknown
-                - Invalid
                 type: string
               sessionDuration:
                 description: SessionDuration specify total time taken to complete
