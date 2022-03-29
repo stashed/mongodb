@@ -30,6 +30,7 @@ import (
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	intstr "k8s.io/apimachinery/pkg/util/intstr"
 	common "k8s.io/kube-openapi/pkg/common"
+	apiv1 "kmodules.xyz/client-go/api/v1"
 )
 
 func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition {
@@ -345,6 +346,8 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"kmodules.xyz/client-go/api/v1.ObjectReference":                                      schema_kmodulesxyz_client_go_api_v1_ObjectReference(ref),
 		"kmodules.xyz/client-go/api/v1.ResourceID":                                           schema_kmodulesxyz_client_go_api_v1_ResourceID(ref),
 		"kmodules.xyz/client-go/api/v1.TLSConfig":                                            schema_kmodulesxyz_client_go_api_v1_TLSConfig(ref),
+		"kmodules.xyz/client-go/api/v1.TimeOfDay":                                            schema_kmodulesxyz_client_go_api_v1_TimeOfDay(ref),
+		"kmodules.xyz/client-go/api/v1.TypedObjectReference":                                 schema_kmodulesxyz_client_go_api_v1_TypedObjectReference(ref),
 		"kmodules.xyz/client-go/api/v1.X509Subject":                                          schema_kmodulesxyz_client_go_api_v1_X509Subject(ref),
 		"kmodules.xyz/client-go/api/v1.stringSetMerger":                                      schema_kmodulesxyz_client_go_api_v1_stringSetMerger(ref),
 		"kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1.AddKeyTransform":             schema_custom_resources_apis_appcatalog_v1alpha1_AddKeyTransform(ref),
@@ -432,7 +435,9 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"stash.appscode.dev/apimachinery/apis/stash/v1beta1.RestoreTargetSpec":               schema_apimachinery_apis_stash_v1beta1_RestoreTargetSpec(ref),
 		"stash.appscode.dev/apimachinery/apis/stash/v1beta1.Rule":                            schema_apimachinery_apis_stash_v1beta1_Rule(ref),
 		"stash.appscode.dev/apimachinery/apis/stash/v1beta1.SnapshotStats":                   schema_apimachinery_apis_stash_v1beta1_SnapshotStats(ref),
+		"stash.appscode.dev/apimachinery/apis/stash/v1beta1.Summary":                         schema_apimachinery_apis_stash_v1beta1_Summary(ref),
 		"stash.appscode.dev/apimachinery/apis/stash/v1beta1.TargetRef":                       schema_apimachinery_apis_stash_v1beta1_TargetRef(ref),
+		"stash.appscode.dev/apimachinery/apis/stash/v1beta1.TargetStatus":                    schema_apimachinery_apis_stash_v1beta1_TargetStatus(ref),
 		"stash.appscode.dev/apimachinery/apis/stash/v1beta1.Task":                            schema_apimachinery_apis_stash_v1beta1_Task(ref),
 		"stash.appscode.dev/apimachinery/apis/stash/v1beta1.TaskList":                        schema_apimachinery_apis_stash_v1beta1_TaskList(ref),
 		"stash.appscode.dev/apimachinery/apis/stash/v1beta1.TaskRef":                         schema_apimachinery_apis_stash_v1beta1_TaskRef(ref),
@@ -16953,6 +16958,59 @@ func schema_kmodulesxyz_client_go_api_v1_TLSConfig(ref common.ReferenceCallback)
 	}
 }
 
+func schema_kmodulesxyz_client_go_api_v1_TimeOfDay(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "TimeOfDay is a wrapper around time.Time which supports correct marshaling to YAML and JSON.  Wrappers are provided for many of the factory methods that the time package offers.",
+				Type:        apiv1.TimeOfDay{}.OpenAPISchemaType(),
+				Format:      apiv1.TimeOfDay{}.OpenAPISchemaFormat(),
+			},
+		},
+	}
+}
+
+func schema_kmodulesxyz_client_go_api_v1_TypedObjectReference(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "TypedObjectReference represents an typed namespaced object.",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"apiGroup": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"namespace": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Namespace of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"name": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names",
+							Default:     "",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+				},
+				Required: []string{"name"},
+			},
+		},
+	}
+}
+
 func schema_kmodulesxyz_client_go_api_v1_X509Subject(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
@@ -17288,6 +17346,12 @@ func schema_custom_resources_apis_appcatalog_v1alpha1_AppBindingSpec(ref common.
 							Ref:         ref("k8s.io/apimachinery/pkg/runtime.RawExtension"),
 						},
 					},
+					"tlsSecret": {
+						SchemaProps: spec.SchemaProps{
+							Description: "TLSSecret is the name of the secret that will hold the client certificate and private key associated with the AppBinding.",
+							Ref:         ref("k8s.io/api/core/v1.LocalObjectReference"),
+						},
+					},
 				},
 				Required: []string{"clientConfig"},
 			},
@@ -17366,6 +17430,13 @@ func schema_custom_resources_apis_appcatalog_v1alpha1_ClientConfig(ref common.Re
 							Description: "CABundle is a PEM encoded CA bundle which will be used to validate the serving certificate of this app.",
 							Type:        []string{"string"},
 							Format:      "byte",
+						},
+					},
+					"serverName": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ServerName is used to verify the hostname on the returned certificates unless InsecureSkipVerify is given. It is also included in the client's handshake to support virtual hosting unless it is an IP address.",
+							Type:        []string{"string"},
+							Format:      "",
 						},
 					},
 				},
@@ -18267,6 +18338,22 @@ func schema_kmodulesxyz_offshoot_api_api_v1_ObjectMeta(ref common.ReferenceCallb
 				Description: "ObjectMeta is metadata that all persisted resources must have, which includes all objects users must create.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
+					"labels": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Map of string keys and values that can be used to organize and categorize (scope and select) objects. May match selectors of replication controllers and services. More info: http://kubernetes.io/docs/user-guide/labels",
+							Type:        []string{"object"},
+							AdditionalProperties: &spec.SchemaOrBool{
+								Allows: true,
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: "",
+										Type:    []string{"string"},
+										Format:  "",
+									},
+								},
+							},
+						},
+					},
 					"annotations": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Annotations is an unstructured key value map stored with a resource that may be set by external tools to store and retrieve arbitrary metadata. They are not queryable and should be preserved when modifying objects. More info: http://kubernetes.io/docs/user-guide/annotations",
@@ -18433,6 +18520,22 @@ func schema_kmodulesxyz_offshoot_api_api_v1_PodRuntimeSettings(ref common.Refere
 			SchemaProps: spec.SchemaProps{
 				Type: []string{"object"},
 				Properties: map[string]spec.Schema{
+					"podAnnotations": {
+						SchemaProps: spec.SchemaProps{
+							Description: "PodAnnotations are the annotations that will be attached with the respective Pod",
+							Type:        []string{"object"},
+							AdditionalProperties: &spec.SchemaOrBool{
+								Allows: true,
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: "",
+										Type:    []string{"string"},
+										Format:  "",
+									},
+								},
+							},
+						},
+					},
 					"nodeSelector": {
 						SchemaProps: spec.SchemaProps{
 							Description: "NodeSelector is a selector which must be true for the pod to fit on a node. Selector which must match a node's labels for the pod to be scheduled on that node. More info: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/",
@@ -18454,6 +18557,22 @@ func schema_kmodulesxyz_offshoot_api_api_v1_PodRuntimeSettings(ref common.Refere
 							Description: "ServiceAccountName is the name of the ServiceAccount to use to run this pod. More info: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/",
 							Type:        []string{"string"},
 							Format:      "",
+						},
+					},
+					"serviceAccountAnnotations": {
+						SchemaProps: spec.SchemaProps{
+							Description: "ServiceAccountAnnotations are the annotations that will be attached with the respective ServiceAccount",
+							Type:        []string{"object"},
+							AdditionalProperties: &spec.SchemaOrBool{
+								Allows: true,
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: "",
+										Type:    []string{"string"},
+										Format:  "",
+									},
+								},
+							},
 						},
 					},
 					"automountServiceAccountToken": {
@@ -19399,6 +19518,13 @@ func schema_apimachinery_apis_stash_v1beta1_BackupBatchStatus(ref common.Referen
 							},
 						},
 					},
+					"phase": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Phase indicates phase of this BackupBatch.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
 				},
 			},
 		},
@@ -19520,10 +19646,18 @@ func schema_apimachinery_apis_stash_v1beta1_BackupBlueprintSpec(ref common.Refer
 							Ref:         ref("stash.appscode.dev/apimachinery/apis/stash/v1alpha1.UsagePolicy"),
 						},
 					},
+					"repoNamespace": {
+						SchemaProps: spec.SchemaProps{
+							Description: "RepoNamespace specifies the namespace where the Repository will be created for the respective target",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
 					"schedule": {
 						SchemaProps: spec.SchemaProps{
-							Type:   []string{"string"},
-							Format: "",
+							Description: "Schedule specifies the default schedule for backup. You can overwrite this schedule for a particular target using 'stash.appscode.com/schedule' annotation.",
+							Type:        []string{"string"},
+							Format:      "",
 						},
 					},
 					"task": {
@@ -19790,6 +19924,13 @@ func schema_apimachinery_apis_stash_v1beta1_BackupConfigurationStatus(ref common
 									},
 								},
 							},
+						},
+					},
+					"phase": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Phase indicates phase of this BackupConfiguration.",
+							Type:        []string{"string"},
+							Format:      "",
 						},
 					},
 				},
@@ -20259,11 +20400,25 @@ func schema_apimachinery_apis_stash_v1beta1_BackupTargetStatus(ref common.Refere
 							},
 						},
 					},
+					"conditions": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Conditions shows condition of different operations/steps of the backup process for this target",
+							Type:        []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: map[string]interface{}{},
+										Ref:     ref("kmodules.xyz/client-go/api/v1.Condition"),
+									},
+								},
+							},
+						},
+					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"stash.appscode.dev/apimachinery/apis/stash/v1beta1.HostBackupStats", "stash.appscode.dev/apimachinery/apis/stash/v1beta1.TargetRef"},
+			"kmodules.xyz/client-go/api/v1.Condition", "stash.appscode.dev/apimachinery/apis/stash/v1beta1.HostBackupStats", "stash.appscode.dev/apimachinery/apis/stash/v1beta1.TargetRef"},
 	}
 }
 
@@ -21579,6 +21734,56 @@ func schema_apimachinery_apis_stash_v1beta1_SnapshotStats(ref common.ReferenceCa
 	}
 }
 
+func schema_apimachinery_apis_stash_v1beta1_Summary(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "Summary summarizes backup/restore session information for a target",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"name": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Name of the respective BackupSession/RestoreSession/RestoreBatch",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"namespace": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Namespace of the respective invoker",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"invoker": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Invoker specifies the information about the invoker which resulted this session",
+							Default:     map[string]interface{}{},
+							Ref:         ref("k8s.io/api/core/v1.TypedLocalObjectReference"),
+						},
+					},
+					"target": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Target specifies the target information that has been backed up /restored in this session",
+							Default:     map[string]interface{}{},
+							Ref:         ref("stash.appscode.dev/apimachinery/apis/stash/v1beta1.TargetRef"),
+						},
+					},
+					"status": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Status specifies the backup/restore status for the respective target",
+							Default:     map[string]interface{}{},
+							Ref:         ref("stash.appscode.dev/apimachinery/apis/stash/v1beta1.TargetStatus"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/api/core/v1.TypedLocalObjectReference", "stash.appscode.dev/apimachinery/apis/stash/v1beta1.TargetRef", "stash.appscode.dev/apimachinery/apis/stash/v1beta1.TargetStatus"},
+	}
+}
+
 func schema_apimachinery_apis_stash_v1beta1_TargetRef(ref common.ReferenceCallback) common.OpenAPIDefinition {
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
@@ -21601,6 +21806,39 @@ func schema_apimachinery_apis_stash_v1beta1_TargetRef(ref common.ReferenceCallba
 						SchemaProps: spec.SchemaProps{
 							Type:   []string{"string"},
 							Format: "",
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func schema_apimachinery_apis_stash_v1beta1_TargetStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"phase": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Phase represent the backup/restore phase of the target",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"duration": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Duration represent the amount of time it took to complete the backup for this target.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"error": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Error specifies the respective error message in case of backup/restore failure",
+							Type:        []string{"string"},
+							Format:      "",
 						},
 					},
 				},
