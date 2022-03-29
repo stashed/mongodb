@@ -25,6 +25,9 @@ spec:
     - jsonPath: .spec.paused
       name: Paused
       type: boolean
+    - jsonPath: .status.phase
+      name: Phase
+      type: string
     - jsonPath: .metadata.creationTimestamp
       name: Age
       type: date
@@ -2901,6 +2904,12 @@ spec:
                                 must match a node''s labels for the pod to be scheduled
                                 on that node. More info: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/'
                               type: object
+                            podAnnotations:
+                              additionalProperties:
+                                type: string
+                              description: PodAnnotations are the annotations that
+                                will be attached with the respective Pod
+                              type: object
                             priority:
                               description: The priority value. Various system components
                                 use this field to find the priority of the pod. When
@@ -3114,6 +3123,12 @@ spec:
                                         precedence.
                                       type: string
                                   type: object
+                              type: object
+                            serviceAccountAnnotations:
+                              additionalProperties:
+                                type: string
+                              description: ServiceAccountAnnotations are the annotations
+                                that will be attached with the respective ServiceAccount
                               type: object
                             serviceAccountName:
                               description: 'ServiceAccountName is the name of the
@@ -5134,6 +5149,12 @@ spec:
                           a node''s labels for the pod to be scheduled on that node.
                           More info: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/'
                         type: object
+                      podAnnotations:
+                        additionalProperties:
+                          type: string
+                        description: PodAnnotations are the annotations that will
+                          be attached with the respective Pod
+                        type: object
                       priority:
                         description: The priority value. Various system components
                           use this field to find the priority of the pod. When Priority
@@ -5341,6 +5362,12 @@ spec:
                                 type: string
                             type: object
                         type: object
+                      serviceAccountAnnotations:
+                        additionalProperties:
+                          type: string
+                        description: ServiceAccountAnnotations are the annotations
+                          that will be attached with the respective ServiceAccount
+                        type: object
                       serviceAccountName:
                         description: 'ServiceAccountName is the name of the ServiceAccount
                           to use to run this pod. More info: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/'
@@ -5520,6 +5547,13 @@ spec:
                   which is updated on mutation by the API Server.
                 format: int64
                 type: integer
+              phase:
+                description: Phase indicates phase of this BackupBatch.
+                enum:
+                - Invalid
+                - Ready
+                - NotReady
+                type: string
             type: object
         type: object
     served: true
