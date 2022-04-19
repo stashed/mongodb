@@ -101,6 +101,7 @@ func NewCmdRestore() *cobra.Command {
 				APIVersion: appcatalog.SchemeGroupVersion.String(),
 				Kind:       appcatalog.ResourceKindApp,
 				Name:       opt.appBindingName,
+				Namespace:  opt.appBindingNamespace,
 			}
 			var restoreOutput *restic.RestoreOutput
 			restoreOutput, err = opt.restoreMongoDB(targetRef)
@@ -134,6 +135,7 @@ func NewCmdRestore() *cobra.Command {
 	cmd.Flags().StringVar(&kubeconfigPath, "kubeconfig", kubeconfigPath, "Path to kubeconfig file with authorization information (the master location is set by the master flag).")
 	cmd.Flags().StringVar(&opt.namespace, "namespace", "default", "Namespace of Backup/Restore Session")
 	cmd.Flags().StringVar(&opt.appBindingName, "appbinding", opt.appBindingName, "Name of the app binding")
+	cmd.Flags().StringVar(&opt.appBindingNamespace, "appbinding-namespace", opt.appBindingNamespace, "Namespace of the app binding")
 	cmd.Flags().StringVar(&opt.restoreSessionName, "restoresession", opt.restoreSessionName, "Name of the respective RestoreSession object")
 	cmd.Flags().IntVar(&opt.maxConcurrency, "max-concurrency", 3, "maximum concurrent backup process to run to take backup from each replicasets")
 
@@ -176,7 +178,7 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 		return nil, err
 	}
 
-	appBinding, err := opt.catalogClient.AppcatalogV1alpha1().AppBindings(opt.namespace).Get(context.TODO(), opt.appBindingName, metav1.GetOptions{})
+	appBinding, err := opt.catalogClient.AppcatalogV1alpha1().AppBindings(opt.appBindingNamespace).Get(context.TODO(), opt.appBindingName, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
