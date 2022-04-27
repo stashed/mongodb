@@ -53,6 +53,7 @@ type mongoOptions struct {
 	backupSessionName      string
 	restoreSessionName     string
 	appBindingName         string
+	appBindingNamespace    string
 	mongoArgs              string
 	maxConcurrency         int
 	waitTimeout            int32
