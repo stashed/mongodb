@@ -19,7 +19,7 @@ require (
 	kmodules.xyz/custom-resources v0.0.0-20220422215041-237eae1d7ddd
 	kmodules.xyz/offshoot-api v0.0.0-20220420055916-fefb02c26514
 	kubedb.dev/apimachinery v0.23.0
-	stash.appscode.dev/apimachinery v0.19.1-0.20220425033401-c840c081133c
+	stash.appscode.dev/apimachinery v0.20.0
 )
 
 require (
