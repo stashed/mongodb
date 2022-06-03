@@ -40,6 +40,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
+	restclient "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog/v2"
 	appcatalog "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
@@ -80,10 +81,6 @@ func NewCmdRestore() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			err = license.CheckLicenseEndpoint(config, licenseApiService, SupportedProducts)
-			if err != nil {
-				return err
-			}
 			opt.stashClient, err = stash_cs.NewForConfig(config)
 			if err != nil {
 				return err
@@ -104,7 +101,7 @@ func NewCmdRestore() *cobra.Command {
 				Namespace:  opt.appBindingNamespace,
 			}
 			var restoreOutput *restic.RestoreOutput
-			restoreOutput, err = opt.restoreMongoDB(targetRef)
+			restoreOutput, err = opt.restoreMongoDB(targetRef, config)
 			if err != nil {
 				restoreOutput = &restic.RestoreOutput{
 					RestoreTargetStatus: api_v1beta1.RestoreMemberStatus{
@@ -161,8 +158,13 @@ func NewCmdRestore() *cobra.Command {
 	return cmd
 }
 
-func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*restic.RestoreOutput, error) {
+func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef, config *restclient.Config) (*restic.RestoreOutput, error) {
 	var err error
+	err = license.CheckLicenseEndpoint(config, licenseApiService, SupportedProducts)
+	if err != nil {
+		return nil, err
+	}
+
 	opt.setupOptions.StorageSecret, err = opt.kubeClient.CoreV1().Secrets(opt.storageSecret.Namespace).Get(context.TODO(), opt.storageSecret.Name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err

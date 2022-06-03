@@ -47,6 +47,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
+	restclient "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog/v2"
 	appcatalog "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
@@ -117,10 +118,6 @@ func NewCmdBackup() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			err = license.CheckLicenseEndpoint(config, licenseApiService, SupportedProducts)
-			if err != nil {
-				return err
-			}
 			opt.kubeClient, err = kubernetes.NewForConfig(config)
 			if err != nil {
 				return err
@@ -141,7 +138,7 @@ func NewCmdBackup() *cobra.Command {
 				Namespace:  opt.appBindingNamespace,
 			}
 			var backupOutput *restic.BackupOutput
-			backupOutput, err = opt.backupMongoDB(targetRef)
+			backupOutput, err = opt.backupMongoDB(targetRef, config)
 			if err != nil {
 				backupOutput = &restic.BackupOutput{
 					BackupTargetStatus: api_v1beta1.BackupTargetStatus{
@@ -205,8 +202,13 @@ func NewCmdBackup() *cobra.Command {
 	return cmd
 }
 
-func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic.BackupOutput, error) {
+func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef, config *restclient.Config) (*restic.BackupOutput, error) {
 	var err error
+	err = license.CheckLicenseEndpoint(config, licenseApiService, SupportedProducts)
+	if err != nil {
+		return nil, err
+	}
+
 	opt.setupOptions.StorageSecret, err = opt.kubeClient.CoreV1().Secrets(opt.storageSecret.Namespace).Get(context.TODO(), opt.storageSecret.Name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
