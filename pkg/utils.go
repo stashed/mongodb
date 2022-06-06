@@ -27,6 +27,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
+	restclient "k8s.io/client-go/rest"
 	"k8s.io/klog/v2"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	appcatalog_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
@@ -66,6 +67,7 @@ type mongoOptions struct {
 	defaultBackupOptions restic.BackupOptions
 	dumpOptions          []restic.DumpOptions
 	defaultDumpOptions   restic.DumpOptions
+	config               *restclient.Config
 }
 
 func waitForDBReady(host string, port, waitTimeout int32) {
