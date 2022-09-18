@@ -20,7 +20,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -247,7 +246,7 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 	}
 
 	if appBinding.Spec.ClientConfig.CABundle != nil {
-		if err := ioutil.WriteFile(filepath.Join(opt.setupOptions.ScratchDir, MongoTLSCertFileName), appBinding.Spec.ClientConfig.CABundle, os.ModePerm); err != nil {
+		if err := os.WriteFile(filepath.Join(opt.setupOptions.ScratchDir, MongoTLSCertFileName), appBinding.Spec.ClientConfig.CABundle, os.ModePerm); err != nil {
 			return nil, errors.Wrap(err, "failed to write key for CA certificate")
 		}
 		mongoCreds = []interface{}{
@@ -277,7 +276,7 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 			pemBytes = append(crt[:], []byte("\n")...)
 			pemBytes = append(pemBytes, key...)
 		}
-		if err := ioutil.WriteFile(filepath.Join(opt.setupOptions.ScratchDir, MongoClientPemFileName), pemBytes, os.ModePerm); err != nil {
+		if err := os.WriteFile(filepath.Join(opt.setupOptions.ScratchDir, MongoClientPemFileName), pemBytes, os.ModePerm); err != nil {
 			return nil, errors.Wrap(err, "failed to write client certificate")
 		}
 		user, err := getSSLUser(filepath.Join(opt.setupOptions.ScratchDir, MongoClientPemFileName))
