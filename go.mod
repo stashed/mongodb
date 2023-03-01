@@ -19,7 +19,7 @@ require (
 	kmodules.xyz/custom-resources v0.25.0
 	kmodules.xyz/offshoot-api v0.25.0
 	kubedb.dev/apimachinery v0.28.4-0.20220918021210-a0b96812228b
-	stash.appscode.dev/apimachinery v0.25.0
+	stash.appscode.dev/apimachinery v0.26.0
 )
 
 require (
@@ -64,11 +64,11 @@ require (
 	go.bytebuilders.dev/license-proxyserver v0.0.2-0.20220917052300-e49b09065bec // indirect
 	go.bytebuilders.dev/license-verifier v0.12.0 // indirect
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // indirect
-	golang.org/x/net v0.4.1-0.20221210045730-e1ec361d0b39 // indirect
+	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20220822191816-0ebed06d0094 // indirect
-	golang.org/x/sys v0.3.0 // indirect
-	golang.org/x/term v0.3.0 // indirect
-	golang.org/x/text v0.5.0 // indirect
+	golang.org/x/sys v0.5.0 // indirect
+	golang.org/x/term v0.5.0 // indirect
+	golang.org/x/text v0.7.0 // indirect
 	golang.org/x/time v0.0.0-20220722155302-e5dcc9cfc0b9 // indirect
 	gomodules.xyz/clock v0.0.0-20200817085942-06523dba733f // indirect
 	gomodules.xyz/jsonpatch/v2 v2.2.0 // indirect
