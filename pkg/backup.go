@@ -56,21 +56,24 @@ import (
 )
 
 var (
-	MongoCMD     = "/usr/bin/mongo"
+	MongoshCMD   = "/usr/bin/mongosh"
 	OpenSSLCMD   = "/usr/bin/openssl"
 	mongoCreds   []interface{}
 	dumpCreds    []interface{}
 	cleanupFuncs []func() error
 )
 
-const KubeDBRoleName = "kubedb-restore"
+const (
+	StashRoleName = "stash-backup"
+	StashUserName = "stash-backup"
+)
 
 func checkCommandExists() error {
 	var err error
-	if MongoCMD, err = exec.LookPath("mongo"); err != nil {
+	if MongoshCMD, err = exec.LookPath(MongoshCMD); err != nil {
 		return fmt.Errorf("unable to look for mongo command. reason: %v", err)
 	}
-	if OpenSSLCMD, err = exec.LookPath("openssl"); err != nil {
+	if OpenSSLCMD, err = exec.LookPath(OpenSSLCMD); err != nil {
 		return fmt.Errorf("unable to look for openssl command. reason: %v", err)
 	}
 	return nil
@@ -250,14 +253,22 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 		return nil, err
 	}
 
-	appBindingSecret, err := opt.kubeClient.CoreV1().Secrets(opt.appBindingNamespace).Get(context.TODO(), appBinding.Spec.Secret.Name, metav1.GetOptions{})
+	authSecret, err := opt.kubeClient.CoreV1().Secrets(opt.appBindingNamespace).Get(context.TODO(), appBinding.Spec.Secret.Name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	err = appBinding.TransformSecret(opt.kubeClient, appBindingSecret.Data)
+	err = appBinding.TransformSecret(opt.kubeClient, authSecret.Data)
 	if err != nil {
 		return nil, err
+	}
+
+	var tlsSecret *core.Secret
+	if appBinding.Spec.TLSSecret != nil {
+		tlsSecret, err = opt.kubeClient.CoreV1().Secrets(opt.appBindingNamespace).Get(context.TODO(), appBinding.Spec.TLSSecret.Name, metav1.GetOptions{})
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	hostname, err := appBinding.Hostname()
@@ -317,6 +328,10 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 	}
 
 	if appBinding.Spec.ClientConfig.CABundle != nil {
+		if tlsSecret == nil {
+			return nil, errors.Wrap(err, "spec.tlsSecret needs to be set in appbinding for TLS secured database.")
+		}
+
 		if err := os.WriteFile(filepath.Join(opt.setupOptions.ScratchDir, MongoTLSCertFileName), appBinding.Spec.ClientConfig.CABundle, os.ModePerm); err != nil {
 			return nil, err
 		}
@@ -334,13 +349,14 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 		// get certificate secret to get client certificate
 		var pemBytes []byte
 		var ok bool
-		pemBytes, ok = appBindingSecret.Data[MongoClientPemFileName]
+		pemBytes, ok = tlsSecret.Data[MongoClientPemFileName]
 		if !ok {
-			crt, ok := appBindingSecret.Data[core.TLSCertKey]
+			crt, ok := tlsSecret.Data[core.TLSCertKey]
 			if !ok {
+				fmt.Println("here.........................")
 				return nil, errors.Wrap(err, "unable to retrieve tls.crt from secret.")
 			}
-			key, ok := appBindingSecret.Data[core.TLSPrivateKeyKey]
+			key, ok := tlsSecret.Data[core.TLSPrivateKeyKey]
 			if !ok {
 				return nil, errors.Wrap(err, "unable to retrieve tls.key from secret.")
 			}
@@ -360,16 +376,32 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 			"--authenticationDatabase", "$external",
 		}
 		mongoCreds = append(mongoCreds, userAuth...)
-		dumpCreds = append(dumpCreds, userAuth...)
+		username := StashUserName
+		if parameters.ConfigServer == "" {
+			username = string(authSecret.Data[MongoUserKey])
+		}
+		dumpCreds = append(dumpCreds, []interface{}{
+			fmt.Sprintf("--username=%s", username),
+			fmt.Sprintf("--password=%s", authSecret.Data[MongoPasswordKey]),
+			"--authenticationDatabase", opt.authenticationDatabase,
+		}...)
 
 	} else {
 		userAuth := []interface{}{
-			fmt.Sprintf("--username=%s", appBindingSecret.Data[MongoUserKey]),
-			fmt.Sprintf("--password=%s", appBindingSecret.Data[MongoPasswordKey]),
+			fmt.Sprintf("--username=%s", authSecret.Data[MongoUserKey]),
+			fmt.Sprintf("--password=%s", authSecret.Data[MongoPasswordKey]),
 			"--authenticationDatabase", opt.authenticationDatabase,
 		}
 		mongoCreds = append(mongoCreds, userAuth...)
-		dumpCreds = append(dumpCreds, userAuth...)
+		username := StashUserName
+		if parameters.ConfigServer == "" {
+			username = string(authSecret.Data[MongoUserKey])
+		}
+		dumpCreds = append(dumpCreds, []interface{}{
+			fmt.Sprintf("--username=%s", username),
+			fmt.Sprintf("--password=%s", authSecret.Data[MongoPasswordKey]),
+			"--authenticationDatabase", opt.authenticationDatabase,
+		}...)
 	}
 
 	getBackupOpt := func(mongoDSN, hostKey string, isStandalone bool) restic.BackupOptions {
@@ -459,11 +491,11 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 			}
 		}()
 
-		// Workaround for issue: https://jira.mongodb.org/browse/SERVER-59515
-		// It's already fixed. Should be available in v5.0.4
-		err = createKubedbRole(parameters.ConfigServer)
+		// We need to create a role and user and backup using that user. This should be removed if the issue is fixed.
+		// Issue ref: https://jira.mongodb.org/browse/TOOLS-3203?jql=project%20%3D%20TOOLS%20AND%20component%20%3D%20mongodump
+		err = createStashRoleAndUser(parameters.ConfigServer, string(authSecret.Data[MongoPasswordKey]))
 		if err != nil {
-			klog.Errorf("error while creating role for %v. error: %v", parameters.ConfigServer, err)
+			klog.Errorf("error while creating user for %v. error: %v", parameters.ConfigServer, err)
 			return nil, err
 		}
 
@@ -504,13 +536,17 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 	}
 
 	for key, host := range parameters.ReplicaSets {
-		// Workaround for issue: https://jira.mongodb.org/browse/SERVER-59515
-		// It's already fixed. Should be available in v5.0.4
-		err = createKubedbRole(host)
-		if err != nil {
-			klog.Errorf("error while creating role for %v. error: %v", host, err)
-			return nil, err
+		if parameters.ConfigServer != "" {
+			// We need to create a role and user and backup using that user for shard.
+			// These role and user should be removed if the issue is fixed.
+			// Issue ref: https://jira.mongodb.org/browse/TOOLS-3203?jql=project%20%3D%20TOOLS%20AND%20component%20%3D%20mongodump
+			err = createStashRoleAndUser(host, string(authSecret.Data[MongoPasswordKey]))
+			if err != nil {
+				klog.Errorf("error while creating user for %v. error: %v", host, err)
+				return nil, err
+			}
 		}
+
 		// do the task
 		primary, secondary, err := getPrimaryNSecondaryMember(host)
 		if err != nil {
@@ -587,7 +623,7 @@ func getPrimaryNSecondaryMember(mongoDSN string) (primary, secondary string, err
 		"--eval", "JSON.stringify(rs.isMaster())",
 	}, mongoCreds...)
 	// even --quiet doesn't skip replicaset PrimaryConnection log. so take tha last line. issue tracker: https://jira.mongodb.org/browse/SERVER-27159
-	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+	if err := sh.Command(MongoshCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
 		return "", "", err
 	}
 
@@ -628,7 +664,7 @@ func disabelBalancer(mongosHost string) error {
 		"--eval", "JSON.stringify(sh.stopBalancer())",
 	}, mongoCreds...)
 	// disable balancer
-	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+	if err := sh.Command(MongoshCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
 		return err
 	}
 
@@ -641,9 +677,9 @@ func disabelBalancer(mongosHost string) error {
 		"config",
 		"--host", mongosHost,
 		"--quiet",
-		"--eval", "while(sh.isBalancerRunning()){ print('waiting for balancer to stop...'); sleep(1000);}",
+		"--eval", "while(sh.isBalancerRunning().mode != 'off'){ print('waiting for balancer to stop...'); sleep(1000);}",
 	}, mongoCreds...)
-	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").Run(); err != nil {
+	if err := sh.Command(MongoshCMD, args...).Command("/usr/bin/tail", "-1").Run(); err != nil {
 		return err
 	}
 	return nil
@@ -661,7 +697,7 @@ func enableBalancer(mongosHost string) error {
 		"--quiet",
 		"--eval", "JSON.stringify(sh.setBalancerState(true))",
 	}, mongoCreds...)
-	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+	if err := sh.Command(MongoshCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
 		return err
 	}
 
@@ -685,9 +721,9 @@ func lockConfigServer(configSVRDSN, secondaryHost string) error {
 		"config",
 		"--host", configSVRDSN,
 		"--quiet",
-		"--eval", "db.BackupControl.findAndModify({query: { _id: 'BackupControlDocument' }, update: { $inc: { counter : 1 } }, new: true, upsert: true, writeConcern: { w: 'majority', wtimeout: 15000 }});",
+		"--eval", "JSON.stringify(db.BackupControl.findAndModify({query: { _id: 'BackupControlDocument' }, update: { $inc: { counter : 1 } }, new: true, upsert: true, writeConcern: { w: 'majority', wtimeout: 15000 }}));",
 	}, mongoCreds...)
-	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+	if err := sh.Command(MongoshCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
 		return err
 	}
 	val, ok := v["counter"].(float64)
@@ -696,6 +732,7 @@ func lockConfigServer(configSVRDSN, secondaryHost string) error {
 	}
 	val2 := float64(0)
 	timer := 0 // wait approximately 5 minutes.
+	v2 := make([]map[string]interface{}, 0)
 	for timer < 60 && (int(val2) == 0 || int(val) != int(val2)) {
 		timer++
 		// find backupDocument from secondary configServer
@@ -703,16 +740,17 @@ func lockConfigServer(configSVRDSN, secondaryHost string) error {
 			"config",
 			"--host", secondaryHost,
 			"--quiet",
-			"--eval", "rs.secondaryOk(); db.BackupControl.find({ '_id' : 'BackupControlDocument' }).readConcern('majority');",
+			"--eval", "rs.secondaryOk(); JSON.stringify(db.BackupControl.find({ '_id' : 'BackupControlDocument' }).readConcern('majority').toArray());",
 		}, mongoCreds...)
 
-		if err := sh.Command(MongoCMD, args...).UnmarshalJSON(&v); err != nil {
+		if err := sh.Command(MongoshCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v2); err != nil {
 			return err
 		}
-
-		val2, ok = v["counter"].(float64)
-		if !ok {
-			return fmt.Errorf("unable to get BackupControlDocument. got response: %v", v)
+		if len(v2) > 0 {
+			val2, ok = v2[0]["counter"].(float64)
+			if !ok {
+				return fmt.Errorf("unable to get BackupControlDocument. got response: %v", v)
+			}
 		}
 		if int(val) != int(val2) {
 			klog.V(5).Infof("BackupDocument counter in secondary is not same. Expected %v, but got %v. Full response: %v", val, val2, v)
@@ -741,7 +779,7 @@ func lockSecondaryMember(mongohost string) error {
 		"--quiet",
 		"--eval", "JSON.stringify(db.fsyncLock())",
 	}, mongoCreds...)
-	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+	if err := sh.Command(MongoshCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
 		return err
 	}
 
@@ -767,7 +805,7 @@ func unlockSecondaryMember(mongohost string) error {
 		"--quiet",
 		"--eval", "JSON.stringify(db.fsyncUnlock())",
 	}, mongoCreds...)
-	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+	if err := sh.Command(MongoshCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
 		return err
 	}
 
@@ -778,49 +816,104 @@ func unlockSecondaryMember(mongohost string) error {
 	return nil
 }
 
-func isRolesEmpty(mongoDSN string) (bool, error) {
-	v := make([]interface{}, 0)
+func checkRoleExists(mongoDSN string) (bool, error) {
+	v := make(map[string]interface{})
 	args := append([]interface{}{
-		"kubedb-system",
+		"admin",
 		"--host", mongoDSN,
 		"--quiet",
-		"--eval", `JSON.stringify(db.getRoles())`,
+		"--eval", `JSON.stringify(db.getRole("` + StashRoleName + `"))`,
 	}, mongoCreds...)
-	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+	if err := sh.Command(MongoshCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
 		return false, err
 	}
 
-	return len(v) == 0, nil
+	if val, ok := v["role"].(string); ok && string(val) == StashRoleName {
+		return true, nil
+	}
+
+	return false, nil
 }
 
-func createKubedbRole(mongoDSN string) error {
-	isEmpty, err := isRolesEmpty(mongoDSN)
+func checkUserExists(mongoDSN string) (bool, error) {
+	v := make(map[string]interface{})
+	args := append([]interface{}{
+		"admin",
+		"--host", mongoDSN,
+		"--quiet",
+		"--eval", `JSON.stringify(db.getUser("` + StashUserName + `"))`,
+	}, mongoCreds...)
+	if err := sh.Command(MongoshCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+		return false, err
+	}
+
+	if val, ok := v["user"].(string); ok && string(val) == StashUserName {
+		return true, nil
+	}
+
+	return false, nil
+}
+
+func createStashRoleAndUser(mongoDSN string, pass string) error {
+	err := createStashBackupRole(mongoDSN)
 	if err != nil {
 		return err
 	}
-	if !isEmpty {
-		return nil
-	}
 
-	klog.Infoln("creating role " + KubeDBRoleName)
-	v := make(map[string]interface{})
+	return createStashBackupUser(mongoDSN, pass)
+}
 
-	args := append([]interface{}{
-		"kubedb-system",
-		"--host", mongoDSN,
-		"--quiet",
-		"--eval", `JSON.stringify(db.runCommand({createRole: "` + KubeDBRoleName + `",privileges: [],roles: []}))`,
-	}, mongoCreds...)
-
-	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+func createStashBackupRole(mongoDSN string) error {
+	exists, err := checkRoleExists(mongoDSN)
+	if err != nil {
 		return err
 	}
+	if !exists {
+		klog.Infoln("creating role " + StashRoleName)
+		v := make(map[string]interface{})
 
-	if val, ok := v["ok"].(float64); !ok || int(val) != 1 {
-		return fmt.Errorf("unable to create role %v. got response: %v", KubeDBRoleName, v)
+		args := append([]interface{}{
+			"admin",
+			"--host", mongoDSN,
+			"--quiet",
+			"--eval", `JSON.stringify(db.runCommand({createRole: "` + StashRoleName + `",privileges:[{resource:{db:"config",collection:"system.preimages"},actions:["find"]},{resource:{db:"config",collection:"system.sharding_ddl_coordinators"},actions:["find"]},{resource:{db:"config",collection:"system.*"},actions:["find"]}],roles: []}))`,
+		}, mongoCreds...)
+
+		if err := sh.Command(MongoshCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+			return err
+		}
+
+		if val, ok := v["ok"].(float64); !ok || int(val) != 1 {
+			return fmt.Errorf("unable to create role %v. got response: %v", StashRoleName, v)
+		}
 	}
-	time.Sleep(30 * time.Second)
 
+	return nil
+}
+
+func createStashBackupUser(mongoDSN string, pass string) error {
+	exists, err := checkUserExists(mongoDSN)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		klog.Infoln("creating user " + StashUserName)
+		v := make(map[string]interface{})
+
+		args := append([]interface{}{
+			"admin",
+			"--host", mongoDSN,
+			"--quiet",
+			"--eval", `JSON.stringify(db.runCommand({createUser: "` + StashUserName + `" ,pwd: "` + pass + `", roles:[{role:"backup", db:"admin"}, {role: "` + StashRoleName + `",db:"admin"}]}))`,
+		}, mongoCreds...)
+		if err := sh.Command(MongoshCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+			return err
+		}
+
+		if val, ok := v["ok"].(float64); !ok || int(val) != 1 {
+			return fmt.Errorf("unable to create user %v. got response: %v", StashUserName, v)
+		}
+	}
 	return nil
 }
 
@@ -832,7 +925,7 @@ func handleReshard(configsvrDSN string) (bool, error) {
 		"--quiet",
 		"--eval", `JSON.stringify(db.getCollectionNames())`,
 	}, mongoCreds...)
-	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+	if err := sh.Command(MongoshCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
 		return false, err
 	}
 
@@ -853,7 +946,7 @@ func handleReshard(configsvrDSN string) (bool, error) {
 		"--quiet",
 		"--eval", `JSON.stringify(db.reshardingOperations.count())`,
 	}, mongoCreds...)
-	out, err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").Output()
+	out, err := sh.Command(MongoshCMD, args...).Command("/usr/bin/tail", "-1").Output()
 	if err != nil {
 		return false, err
 	}
@@ -873,7 +966,7 @@ func handleReshard(configsvrDSN string) (bool, error) {
 		"--quiet",
 		"--eval", `JSON.stringify(db.adminCommand( { renameCollection: "config.reshardingOperations", to: "config.reshardingOperations_temp", dropTarget: true}))`,
 	}, mongoCreds...)
-	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&res); err != nil {
+	if err := sh.Command(MongoshCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&res); err != nil {
 		return false, err
 	}
 	if val, ok := res["ok"].(float64); !ok || int(val) != 1 {
@@ -891,7 +984,7 @@ func renameTempReshardCollection(configsvrDSN string) error {
 		"--quiet",
 		"--eval", `JSON.stringify(db.adminCommand( { renameCollection: "config.reshardingOperations_temp", to: "config.reshardingOperations" } ))`,
 	}, mongoCreds...)
-	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&res); err != nil {
+	if err := sh.Command(MongoshCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&res); err != nil {
 		return err
 	}
 	if val, ok := res["ok"].(float64); !ok || int(val) != 1 {

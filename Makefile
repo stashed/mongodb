@@ -58,8 +58,8 @@ BIN_PLATFORMS    := $(DOCKER_PLATFORMS)
 OS   := $(if $(GOOS),$(GOOS),$(shell go env GOOS))
 ARCH := $(if $(GOARCH),$(GOARCH),$(shell go env GOARCH))
 
-BASEIMAGE_PROD   ?= mongo:5.0.3
-BASEIMAGE_DBG    ?= mongo:5.0.3
+BASEIMAGE_PROD   ?= mongo:6.0.5
+BASEIMAGE_DBG    ?= mongo:6.0.5
 
 IMAGE            := $(REGISTRY)/$(BIN)
 VERSION_PROD     := $(VERSION)
