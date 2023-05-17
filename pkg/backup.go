@@ -63,7 +63,10 @@ var (
 	cleanupFuncs []func() error
 )
 
-const KubeDBRoleName = "kubedb-restore"
+const (
+	StashRoleName = "stash-backup"
+	StashUserName = "stash-backup"
+)
 
 func checkCommandExists() error {
 	var err error
@@ -360,7 +363,15 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 			"--authenticationDatabase", "$external",
 		}
 		mongoCreds = append(mongoCreds, userAuth...)
-		dumpCreds = append(dumpCreds, userAuth...)
+		username := StashUserName
+		if parameters.ConfigServer == "" {
+			username = string(appBindingSecret.Data[MongoUserKey])
+		}
+		dumpCreds = append(dumpCreds, []interface{}{
+			fmt.Sprintf("--username=%s", username),
+			fmt.Sprintf("--password=%s", appBindingSecret.Data[MongoPasswordKey]),
+			"--authenticationDatabase", opt.authenticationDatabase,
+		}...)
 
 	} else {
 		userAuth := []interface{}{
@@ -369,7 +380,15 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 			"--authenticationDatabase", opt.authenticationDatabase,
 		}
 		mongoCreds = append(mongoCreds, userAuth...)
-		dumpCreds = append(dumpCreds, userAuth...)
+		username := StashUserName
+		if parameters.ConfigServer == "" {
+			username = string(appBindingSecret.Data[MongoUserKey])
+		}
+		dumpCreds = append(dumpCreds, []interface{}{
+			fmt.Sprintf("--username=%s", username),
+			fmt.Sprintf("--password=%s", appBindingSecret.Data[MongoPasswordKey]),
+			"--authenticationDatabase", opt.authenticationDatabase,
+		}...)
 	}
 
 	getBackupOpt := func(mongoDSN, hostKey string, isStandalone bool) restic.BackupOptions {
@@ -459,11 +478,11 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 			}
 		}()
 
-		// Workaround for issue: https://jira.mongodb.org/browse/SERVER-59515
-		// It's already fixed. Should be available in v5.0.4
-		err = createKubedbRole(parameters.ConfigServer)
+		// We need to create a role and user and backup using that user. This should be removed if the issue is fixed.
+		// Issue ref: https://jira.mongodb.org/browse/TOOLS-3203?jql=project%20%3D%20TOOLS%20AND%20component%20%3D%20mongodump
+		err = createStashRoleAndUser(parameters.ConfigServer, string(appBindingSecret.Data[MongoPasswordKey]))
 		if err != nil {
-			klog.Errorf("error while creating role for %v. error: %v", parameters.ConfigServer, err)
+			klog.Errorf("error while creating user for %v. error: %v", parameters.ConfigServer, err)
 			return nil, err
 		}
 
@@ -504,12 +523,15 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 	}
 
 	for key, host := range parameters.ReplicaSets {
-		// Workaround for issue: https://jira.mongodb.org/browse/SERVER-59515
-		// It's already fixed. Should be available in v5.0.4
-		err = createKubedbRole(host)
-		if err != nil {
-			klog.Errorf("error while creating role for %v. error: %v", host, err)
-			return nil, err
+		if parameters.ConfigServer != "" {
+			// We need to create a role and user and backup using that user for shard.
+			// These role and user should be removed if the issue is fixed.
+			// Issue ref: https://jira.mongodb.org/browse/TOOLS-3203?jql=project%20%3D%20TOOLS%20AND%20component%20%3D%20mongodump
+			err = createStashRoleAndUser(host, string(appBindingSecret.Data[MongoPasswordKey]))
+			if err != nil {
+				klog.Errorf("error while creating user for %v. error: %v", host, err)
+				return nil, err
+			}
 		}
 		// do the task
 		primary, secondary, err := getPrimaryNSecondaryMember(host)
@@ -778,49 +800,104 @@ func unlockSecondaryMember(mongohost string) error {
 	return nil
 }
 
-func isRolesEmpty(mongoDSN string) (bool, error) {
-	v := make([]interface{}, 0)
+func checkRoleExists(mongoDSN string) (bool, error) {
+	v := make(map[string]interface{})
 	args := append([]interface{}{
-		"kubedb-system",
+		"admin",
 		"--host", mongoDSN,
 		"--quiet",
-		"--eval", `JSON.stringify(db.getRoles())`,
+		"--eval", `JSON.stringify(db.getRole("` + StashRoleName + `"))`,
 	}, mongoCreds...)
 	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
 		return false, err
 	}
 
-	return len(v) == 0, nil
+	if val, ok := v["role"].(string); ok && string(val) == StashRoleName {
+		return true, nil
+	}
+
+	return false, nil
 }
 
-func createKubedbRole(mongoDSN string) error {
-	isEmpty, err := isRolesEmpty(mongoDSN)
+func checkUserExists(mongoDSN string) (bool, error) {
+	v := make(map[string]interface{})
+	args := append([]interface{}{
+		"admin",
+		"--host", mongoDSN,
+		"--quiet",
+		"--eval", `JSON.stringify(db.getUser("` + StashUserName + `"))`,
+	}, mongoCreds...)
+	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+		return false, err
+	}
+
+	if val, ok := v["user"].(string); ok && string(val) == StashUserName {
+		return true, nil
+	}
+
+	return false, nil
+}
+
+func createStashRoleAndUser(mongoDSN string, pass string) error {
+	err := createStashBackupRole(mongoDSN)
 	if err != nil {
 		return err
 	}
-	if !isEmpty {
-		return nil
-	}
 
-	klog.Infoln("creating role " + KubeDBRoleName)
-	v := make(map[string]interface{})
+	return createStashBackupUser(mongoDSN, pass)
+}
 
-	args := append([]interface{}{
-		"kubedb-system",
-		"--host", mongoDSN,
-		"--quiet",
-		"--eval", `JSON.stringify(db.runCommand({createRole: "` + KubeDBRoleName + `",privileges: [],roles: []}))`,
-	}, mongoCreds...)
-
-	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+func createStashBackupRole(mongoDSN string) error {
+	exists, err := checkRoleExists(mongoDSN)
+	if err != nil {
 		return err
 	}
+	if !exists {
+		klog.Infoln("creating role " + StashRoleName)
+		v := make(map[string]interface{})
 
-	if val, ok := v["ok"].(float64); !ok || int(val) != 1 {
-		return fmt.Errorf("unable to create role %v. got response: %v", KubeDBRoleName, v)
+		args := append([]interface{}{
+			"admin",
+			"--host", mongoDSN,
+			"--quiet",
+			"--eval", `JSON.stringify(db.runCommand({createRole: "` + StashRoleName + `",privileges:[{resource:{db:"config",collection:"system.preimages"},actions:["find"]},{resource:{db:"config",collection:"system.sharding_ddl_coordinators"},actions:["find"]},{resource:{db:"config",collection:"system.*"},actions:["find"]}],roles: []}))`,
+		}, mongoCreds...)
+
+		if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+			return err
+		}
+
+		if val, ok := v["ok"].(float64); !ok || int(val) != 1 {
+			return fmt.Errorf("unable to create role %v. got response: %v", StashRoleName, v)
+		}
 	}
-	time.Sleep(30 * time.Second)
 
+	return nil
+}
+
+func createStashBackupUser(mongoDSN string, pass string) error {
+	exists, err := checkUserExists(mongoDSN)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		klog.Infoln("creating user " + StashUserName)
+		v := make(map[string]interface{})
+
+		args := append([]interface{}{
+			"admin",
+			"--host", mongoDSN,
+			"--quiet",
+			"--eval", `JSON.stringify(db.runCommand({createUser: "` + StashUserName + `" ,pwd: "` + pass + `", roles:[{role:"backup", db:"admin"}, {role: "` + StashRoleName + `",db:"admin"}]}))`,
+		}, mongoCreds...)
+		if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+			return err
+		}
+
+		if val, ok := v["ok"].(float64); !ok || int(val) != 1 {
+			return fmt.Errorf("unable to create user %v. got response: %v", StashUserName, v)
+		}
+	}
 	return nil
 }
 
