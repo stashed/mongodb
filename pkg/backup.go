@@ -293,7 +293,7 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 	opt.totalHosts = 1
 	// For sharded MongoDB, parameter.ConfigServer will not be empty
 	if parameters.ConfigServer != "" {
-		opt.totalHosts = len(parameters.ReplicaSets) + 1
+		opt.totalHosts = len(parameters.ReplicaSets) + 1 // for each shard there will be one key in parameters.ReplicaSet
 		backupSession, err := opt.stashClient.StashV1beta1().BackupSessions(opt.namespace).Get(context.TODO(), opt.backupSessionName, metav1.GetOptions{})
 		if err != nil {
 			return nil, err
@@ -305,7 +305,7 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 					opt.stashClient.StashV1beta1(),
 					backupSession.ObjectMeta,
 					func(status *api_v1beta1.BackupSessionStatus) (types.UID, *api_v1beta1.BackupSessionStatus) {
-						status.Targets[i].TotalHosts = pointer.Int32P(int32(opt.totalHosts)) // for each shard there will be one key in parameters.ReplicaSet
+						status.Targets[i].TotalHosts = pointer.Int32P(int32(opt.totalHosts))
 						return backupSession.UID, status
 					},
 					metav1.UpdateOptions{},
