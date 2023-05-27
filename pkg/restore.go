@@ -396,5 +396,5 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 	resticWrapper.HideCMD()
 
 	// Run dump
-	return resticWrapper.ParallelDump(opt.dumpOptions, targetRef, opt.maxConcurrency)
+	return resticWrapper.ParallelDump(opt.dumpOptions, targetRef, opt.maxConcurrency), nil
 }

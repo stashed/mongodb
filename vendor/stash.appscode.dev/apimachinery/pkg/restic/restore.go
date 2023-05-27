@@ -152,17 +152,14 @@ func (w *ResticWrapper) Dump(dumpOptions DumpOptions, targetRef api_v1beta1.Targ
 
 // ParallelDump run DumpOnce for multiple hosts concurrently using go routine.
 // You can control maximum number of parallel restore process using maxConcurrency parameter.
-func (w *ResticWrapper) ParallelDump(dumpOptions []DumpOptions, targetRef api_v1beta1.TargetRef, maxConcurrency int) (*RestoreOutput, error) {
+func (w *ResticWrapper) ParallelDump(dumpOptions []DumpOptions, targetRef api_v1beta1.TargetRef, maxConcurrency int) *RestoreOutput {
 	// WaitGroup to wait until all go routine finish
 	wg := sync.WaitGroup{}
 	// concurrencyLimiter channel is used to limit maximum number simultaneous go routine
 	concurrencyLimiter := make(chan bool, maxConcurrency)
 	defer close(concurrencyLimiter)
 
-	var (
-		restoreErrs []error
-		mu          sync.Mutex
-	)
+	var mu sync.Mutex
 
 	restoreOutput := &RestoreOutput{
 		RestoreTargetStatus: api_v1beta1.RestoreMemberStatus{
@@ -195,31 +192,32 @@ func (w *ResticWrapper) ParallelDump(dumpOptions []DumpOptions, targetRef api_v1
 				opt.SourceHost = opt.Host
 			}
 
-			// run restore
-			_, err := nw.DumpOnce(opt)
-			if err != nil {
-				mu.Lock()
-				restoreErrs = append(restoreErrs, err)
-				mu.Unlock()
-				return
-			}
 			hostStats := api_v1beta1.HostRestoreStats{
 				Hostname: opt.Host,
 			}
+			// run restore
+			_, err := nw.DumpOnce(opt)
 			hostStats.Duration = time.Since(startTime).String()
-			hostStats.Phase = api_v1beta1.HostRestoreSucceeded
+			if err != nil {
+				hostStats.Phase = api_v1beta1.HostRestoreFailed
+				hostStats.Error = err.Error()
+				// add hostStats to restoreOutput
+				mu.Lock()
+				restoreOutput.upsertHostRestoreStats(hostStats)
+				mu.Unlock()
+				return
+			}
 
-			// add hostStats to restoreOutput
+			hostStats.Phase = api_v1beta1.HostRestoreSucceeded
 			mu.Lock()
 			restoreOutput.upsertHostRestoreStats(hostStats)
 			mu.Unlock()
 		}(dumpOptions[i], time.Now())
 	}
-
 	// wait for all the go routines to complete
 	wg.Wait()
 
-	return restoreOutput, errors.NewAggregate(restoreErrs)
+	return restoreOutput
 }
 
 func (w *ResticWrapper) runRestore(restoreOptions RestoreOptions) error {
