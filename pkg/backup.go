@@ -536,11 +536,12 @@ func cleanup() {
 func (opt *mongoOptions) getHostBackupStats(err error) []api_v1beta1.HostBackupStats {
 	var backupStats []api_v1beta1.HostBackupStats
 
+	errMsg := fmt.Sprintf("failed to start backup: %s", err.Error())
 	for _, backupOpt := range opt.backupOptions {
 		backupStats = append(backupStats, api_v1beta1.HostBackupStats{
 			Hostname: backupOpt.Host,
 			Phase:    api_v1beta1.HostBackupFailed,
-			Error:    "backup couldn't start",
+			Error:    errMsg,
 		})
 	}
 
@@ -550,13 +551,11 @@ func (opt *mongoOptions) getHostBackupStats(err error) []api_v1beta1.HostBackupS
 			backupStats = append(backupStats, api_v1beta1.HostBackupStats{
 				Hostname: fmt.Sprintf("unknown-%s", strconv.Itoa(i)),
 				Phase:    api_v1beta1.HostBackupFailed,
-				Error:    "backup couldn't start",
+				Error:    errMsg,
 			})
 		}
 	}
 
-	// set the actual error message
-	backupStats[0].Error = err.Error()
 	return backupStats
 }
 
