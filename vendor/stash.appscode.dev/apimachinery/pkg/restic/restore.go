@@ -201,14 +201,10 @@ func (w *ResticWrapper) ParallelDump(dumpOptions []DumpOptions, targetRef api_v1
 			if err != nil {
 				hostStats.Phase = api_v1beta1.HostRestoreFailed
 				hostStats.Error = err.Error()
-				// add hostStats to restoreOutput
-				mu.Lock()
-				restoreOutput.upsertHostRestoreStats(hostStats)
-				mu.Unlock()
-				return
+			} else {
+				hostStats.Phase = api_v1beta1.HostRestoreSucceeded
 			}
-
-			hostStats.Phase = api_v1beta1.HostRestoreSucceeded
+			// add hostStats to restoreOutput. use lock to avoid racing condition.
 			mu.Lock()
 			restoreOutput.upsertHostRestoreStats(hostStats)
 			mu.Unlock()

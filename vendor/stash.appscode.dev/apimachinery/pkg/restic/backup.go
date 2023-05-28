@@ -94,17 +94,14 @@ func (w *ResticWrapper) RunParallelBackup(backupOptions []BackupOptions, targetR
 			if err != nil {
 				hostStats.Phase = api_v1beta1.HostBackupFailed
 				hostStats.Error = err.Error()
-				// add hostStats to backupOutput. use lock to avoid racing condition.
-				mu.Lock()
-				backupOutput.upsertHostBackupStats(hostStats)
-				mu.Unlock()
-				return
+			} else {
+				hostStats.Phase = api_v1beta1.HostBackupSucceeded
 			}
-
-			hostStats.Phase = api_v1beta1.HostBackupSucceeded
+			// add hostStats to backupOutput. use lock to avoid racing condition.
 			mu.Lock()
 			backupOutput.upsertHostBackupStats(hostStats)
 			mu.Unlock()
+
 		}(backupOptions[i], time.Now())
 	}
 
