@@ -185,14 +185,22 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 		return nil, err
 	}
 
-	appBindingSecret, err := opt.kubeClient.CoreV1().Secrets(opt.appBindingNamespace).Get(context.TODO(), appBinding.Spec.Secret.Name, metav1.GetOptions{})
+	authSecret, err := opt.kubeClient.CoreV1().Secrets(opt.appBindingNamespace).Get(context.TODO(), appBinding.Spec.Secret.Name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	err = appBinding.TransformSecret(opt.kubeClient, appBindingSecret.Data)
+	err = appBinding.TransformSecret(opt.kubeClient, authSecret.Data)
 	if err != nil {
 		return nil, err
+	}
+
+	var tlsSecret *core.Secret
+	if appBinding.Spec.TLSSecret != nil {
+		tlsSecret, err = opt.kubeClient.CoreV1().Secrets(opt.appBindingNamespace).Get(context.TODO(), appBinding.Spec.TLSSecret.Name, metav1.GetOptions{})
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	hostname, err := appBinding.Hostname()
@@ -248,21 +256,27 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 		if err := os.WriteFile(filepath.Join(opt.setupOptions.ScratchDir, MongoTLSCertFileName), appBinding.Spec.ClientConfig.CABundle, os.ModePerm); err != nil {
 			return nil, errors.Wrap(err, "failed to write key for CA certificate")
 		}
-		adminCreds = []interface{}{
+		mongoCreds = []interface{}{
+			"--tls",
+			"--tlsCAFile", filepath.Join(opt.setupOptions.ScratchDir, MongoTLSCertFileName),
+			"--tlsCertificateKeyFile", filepath.Join(opt.setupOptions.ScratchDir, MongoClientPemFileName),
+		}
+		dumpCreds = []interface{}{
 			"--ssl",
 			"--sslCAFile", filepath.Join(opt.setupOptions.ScratchDir, MongoTLSCertFileName),
+			"--sslPEMKeyFile", filepath.Join(opt.setupOptions.ScratchDir, MongoClientPemFileName),
 		}
 
 		// get certificate secret to get client certificate
 		var pemBytes []byte
 		var ok bool
-		pemBytes, ok = appBindingSecret.Data[MongoClientPemFileName]
+		pemBytes, ok = tlsSecret.Data[MongoClientPemFileName]
 		if !ok {
-			crt, ok := appBindingSecret.Data[core.TLSCertKey]
+			crt, ok := tlsSecret.Data[core.TLSCertKey]
 			if !ok {
 				return nil, errors.Wrap(err, "unable to retrieve tls.crt from secret.")
 			}
-			key, ok := appBindingSecret.Data[core.TLSPrivateKeyKey]
+			key, ok := tlsSecret.Data[core.TLSPrivateKeyKey]
 			if !ok {
 				return nil, errors.Wrap(err, "unable to retrieve tls.key from secret.")
 			}
@@ -276,19 +290,22 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 		if err != nil {
 			return nil, errors.Wrap(err, "unable to get user from ssl.")
 		}
-		adminCreds = append(adminCreds, []interface{}{
-			"--sslPEMKeyFile", filepath.Join(opt.setupOptions.ScratchDir, MongoClientPemFileName),
+		userAuth := []interface{}{
 			"-u", user,
 			"--authenticationMechanism", "MONGODB-X509",
 			"--authenticationDatabase", "$external",
-		}...)
+		}
+		mongoCreds = append(mongoCreds, userAuth...)
+		dumpCreds = append(dumpCreds, userAuth...)
 
 	} else {
-		adminCreds = []interface{}{
-			fmt.Sprintf("--username=%s", appBindingSecret.Data[MongoUserKey]),
-			fmt.Sprintf("--password=%s", appBindingSecret.Data[MongoPasswordKey]),
+		userAuth := []interface{}{
+			fmt.Sprintf("--username=%s", authSecret.Data[MongoUserKey]),
+			fmt.Sprintf("--password=%s", authSecret.Data[MongoPasswordKey]),
 			"--authenticationDatabase", opt.authenticationDatabase,
 		}
+		mongoCreds = append(mongoCreds, userAuth...)
+		dumpCreds = append(dumpCreds, userAuth...)
 	}
 
 	getDumpOpts := func(mongoDSN, hostKey string, isStandalone bool) restic.DumpOptions {
@@ -306,7 +323,7 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 			Args: append([]interface{}{
 				"--host", mongoDSN,
 				"--archive",
-			}, adminCreds...),
+			}, dumpCreds...),
 		}
 
 		userArgs := strings.Fields(opt.mongoArgs)
