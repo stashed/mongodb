@@ -56,7 +56,7 @@ import (
 )
 
 var (
-	MongoshCMD   = "/usr/bin/mongosh"
+	MongoCMD     = "/usr/bin/mongosh"
 	OpenSSLCMD   = "/usr/bin/openssl"
 	mongoCreds   []interface{}
 	dumpCreds    []interface{}
@@ -70,7 +70,7 @@ const (
 
 func checkCommandExists() error {
 	var err error
-	if MongoshCMD, err = exec.LookPath(MongoshCMD); err != nil {
+	if MongoCMD, err = exec.LookPath(MongoCMD); err != nil {
 		return fmt.Errorf("unable to look for mongo command. reason: %v", err)
 	}
 	if OpenSSLCMD, err = exec.LookPath(OpenSSLCMD); err != nil {
@@ -607,7 +607,7 @@ func getPrimaryNSecondaryMember(mongoDSN string) (primary, secondary string, err
 		"--eval", "JSON.stringify(rs.isMaster())",
 	}, mongoCreds...)
 	// even --quiet doesn't skip replicaset PrimaryConnection log. so take tha last line. issue tracker: https://jira.mongodb.org/browse/SERVER-27159
-	if err := sh.Command(MongoshCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
 		return "", "", err
 	}
 
@@ -727,7 +727,7 @@ func lockConfigServer(configSVRDSN, secondaryHost string) error {
 			"--eval", "rs.secondaryOk(); db.BackupControl.find({ '_id' : 'BackupControlDocument' }).readConcern('majority');",
 		}, mongoCreds...)
 
-		if err := sh.Command(MongoshCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v2); err != nil {
+		if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v2); err != nil {
 			return err
 		}
 		if len(v2) > 0 {
@@ -808,7 +808,7 @@ func checkRoleExists(mongoDSN string) (bool, error) {
 		"--quiet",
 		"--eval", `JSON.stringify(db.getRole("` + StashRoleName + `"))`,
 	}, mongoCreds...)
-	if err := sh.Command(MongoshCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
 		return false, err
 	}
 
@@ -827,7 +827,7 @@ func checkUserExists(mongoDSN string) (bool, error) {
 		"--quiet",
 		"--eval", `JSON.stringify(db.getUser("` + StashUserName + `"))`,
 	}, mongoCreds...)
-	if err := sh.Command(MongoshCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
 		return false, err
 	}
 
@@ -863,7 +863,7 @@ func createStashBackupRole(mongoDSN string) error {
 			"--eval", `JSON.stringify(db.runCommand({createRole: "` + StashRoleName + `",privileges:[{resource:{db:"config",collection:"system.preimages"},actions:["find"]},{resource:{db:"config",collection:"system.sharding_ddl_coordinators"},actions:["find"]},{resource:{db:"config",collection:"system.*"},actions:["find"]}],roles: []}))`,
 		}, mongoCreds...)
 
-		if err := sh.Command(MongoshCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+		if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
 			return err
 		}
 
@@ -890,7 +890,7 @@ func createStashBackupUser(mongoDSN string, pass string) error {
 			"--quiet",
 			"--eval", `JSON.stringify(db.runCommand({createUser: "` + StashUserName + `" ,pwd: "` + pass + `", roles:[{role:"backup", db:"admin"}, {role: "` + StashRoleName + `",db:"admin"}]}))`,
 		}, mongoCreds...)
-		if err := sh.Command(MongoshCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+		if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
 			return err
 		}
 
@@ -909,7 +909,7 @@ func handleReshard(configsvrDSN string) (bool, error) {
 		"--quiet",
 		"--eval", `JSON.stringify(db.getCollectionNames())`,
 	}, mongoCreds...)
-	if err := sh.Command(MongoshCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
 		return false, err
 	}
 
@@ -930,7 +930,7 @@ func handleReshard(configsvrDSN string) (bool, error) {
 		"--quiet",
 		"--eval", `JSON.stringify(db.reshardingOperations.count())`,
 	}, mongoCreds...)
-	out, err := sh.Command(MongoshCMD, args...).Command("/usr/bin/tail", "-1").Output()
+	out, err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").Output()
 	if err != nil {
 		return false, err
 	}
@@ -950,7 +950,7 @@ func handleReshard(configsvrDSN string) (bool, error) {
 		"--quiet",
 		"--eval", `JSON.stringify(db.adminCommand( { renameCollection: "config.reshardingOperations", to: "config.reshardingOperations_temp", dropTarget: true}))`,
 	}, mongoCreds...)
-	if err := sh.Command(MongoshCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&res); err != nil {
+	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&res); err != nil {
 		return false, err
 	}
 	if val, ok := res["ok"].(float64); !ok || int(val) != 1 {
@@ -968,7 +968,7 @@ func renameTempReshardCollection(configsvrDSN string) error {
 		"--quiet",
 		"--eval", `JSON.stringify(db.adminCommand( { renameCollection: "config.reshardingOperations_temp", to: "config.reshardingOperations" } ))`,
 	}, mongoCreds...)
-	if err := sh.Command(MongoshCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&res); err != nil {
+	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&res); err != nil {
 		return err
 	}
 	if val, ok := res["ok"].(float64); !ok || int(val) != 1 {
