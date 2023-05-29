@@ -68,6 +68,7 @@ type mongoOptions struct {
 	dumpOptions          []restic.DumpOptions
 	defaultDumpOptions   restic.DumpOptions
 	config               *restclient.Config
+	totalHosts           int
 }
 
 func waitForDBReady(host string, port, waitTimeout int32) {
