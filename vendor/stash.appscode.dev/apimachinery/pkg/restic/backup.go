@@ -24,6 +24,7 @@ import (
 	api_v1beta1 "stash.appscode.dev/apimachinery/apis/stash/v1beta1"
 
 	"gomodules.xyz/pointer"
+	"k8s.io/apimachinery/pkg/util/errors"
 )
 
 // RunBackup takes backup, cleanup old snapshots, check repository integrity etc.
@@ -54,14 +55,17 @@ func (w *ResticWrapper) RunBackup(backupOption BackupOptions, targetRef api_v1be
 
 // RunParallelBackup runs multiple backup in parallel.
 // Host must be different for each backup.
-func (w *ResticWrapper) RunParallelBackup(backupOptions []BackupOptions, targetRef api_v1beta1.TargetRef, maxConcurrency int) *BackupOutput {
+func (w *ResticWrapper) RunParallelBackup(backupOptions []BackupOptions, targetRef api_v1beta1.TargetRef, maxConcurrency int) (*BackupOutput, error) {
 	// WaitGroup to wait until all go routine finishes
 	wg := sync.WaitGroup{}
 	// concurrencyLimiter channel is used to limit maximum number simultaneous go routine
 	concurrencyLimiter := make(chan bool, maxConcurrency)
 	defer close(concurrencyLimiter)
 
-	var mu sync.Mutex // use lock to avoid racing condition
+	var (
+		backupErrs []error
+		mu         sync.Mutex // use lock to avoid racing condition
+	)
 
 	backupOutput := &BackupOutput{
 		BackupTargetStatus: api_v1beta1.BackupTargetStatus{
@@ -94,6 +98,9 @@ func (w *ResticWrapper) RunParallelBackup(backupOptions []BackupOptions, targetR
 			if err != nil {
 				hostStats.Phase = api_v1beta1.HostBackupFailed
 				hostStats.Error = err.Error()
+				mu.Lock()
+				backupErrs = append(backupErrs, err)
+				mu.Unlock()
 			} else {
 				hostStats.Phase = api_v1beta1.HostBackupSucceeded
 			}
@@ -101,14 +108,13 @@ func (w *ResticWrapper) RunParallelBackup(backupOptions []BackupOptions, targetR
 			mu.Lock()
 			backupOutput.upsertHostBackupStats(hostStats)
 			mu.Unlock()
-
 		}(backupOptions[i], time.Now())
 	}
 
 	// wait for all the go routines to complete
 	wg.Wait()
 
-	return backupOutput
+	return backupOutput, errors.NewAggregate(backupErrs)
 }
 
 func (w *ResticWrapper) runBackup(backupOption BackupOptions) (api_v1beta1.HostBackupStats, error) {

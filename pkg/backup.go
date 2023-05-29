@@ -521,7 +521,12 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 	// hide password, don't print cmd
 	resticWrapper.HideCMD()
 
-	return resticWrapper.RunParallelBackup(opt.backupOptions, targetRef, opt.maxConcurrency), nil
+	out, err := resticWrapper.RunParallelBackup(opt.backupOptions, targetRef, opt.maxConcurrency)
+	if err != nil {
+		klog.Warningln("backup failed!", err.Error())
+	}
+	// error not returned, error is encoded into output
+	return out, nil
 }
 
 // cleanup usually unlocks the locked servers

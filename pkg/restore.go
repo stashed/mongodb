@@ -393,7 +393,12 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 	resticWrapper.HideCMD()
 
 	// Run dump
-	return resticWrapper.ParallelDump(opt.dumpOptions, targetRef, opt.maxConcurrency), nil
+	out, err := resticWrapper.ParallelDump(opt.dumpOptions, targetRef, opt.maxConcurrency)
+	if err != nil {
+		klog.Warningln("restore failed!", err.Error())
+	}
+	// error not returned, error is encoded into output
+	return out, nil
 }
 
 func (opt *mongoOptions) getHostRestoreStats(err error) []api_v1beta1.HostRestoreStats {
