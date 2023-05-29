@@ -476,7 +476,7 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 
 		// We need to create a role and user and backup using that user. This should be removed if the issue is fixed.
 		// Issue ref: https://jira.mongodb.org/browse/TOOLS-3203?jql=project%20%3D%20TOOLS%20AND%20component%20%3D%20mongodump
-		err = createStashRoleAndUser(parameters.ConfigServer, string(appBindingSecret.Data[MongoPasswordKey]))
+		err = createStashRoleAndUser(parameters.ConfigServer, string(authSecret.Data[MongoPasswordKey]))
 		if err != nil {
 			klog.Errorf("error while creating user for %v. error: %v", parameters.ConfigServer, err)
 			return nil, err
@@ -523,7 +523,7 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 			// We need to create a role and user and backup using that user for shard.
 			// These role and user should be removed if the issue is fixed.
 			// Issue ref: https://jira.mongodb.org/browse/TOOLS-3203?jql=project%20%3D%20TOOLS%20AND%20component%20%3D%20mongodump
-			err = createStashRoleAndUser(host, string(appBindingSecret.Data[MongoPasswordKey]))
+			err = createStashRoleAndUser(host, string(authSecret.Data[MongoPasswordKey]))
 			if err != nil {
 				klog.Errorf("error while creating user for %v. error: %v", host, err)
 				return nil, err
