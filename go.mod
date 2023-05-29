@@ -16,10 +16,10 @@ require (
 	k8s.io/client-go v0.25.3
 	k8s.io/klog/v2 v2.80.1
 	kmodules.xyz/client-go v0.25.23
-	kmodules.xyz/custom-resources v0.25.1
-	kmodules.xyz/offshoot-api v0.25.3
+	kmodules.xyz/custom-resources v0.25.2
+	kmodules.xyz/offshoot-api v0.25.4
 	kubedb.dev/apimachinery v0.33.1
-	stash.appscode.dev/apimachinery v0.29.1-0.20230529131221-1e979c48da10
+	stash.appscode.dev/apimachinery v0.30.0
 )
 
 require (
@@ -31,6 +31,7 @@ require (
 	github.com/Azure/go-autorest/logger v0.2.1 // indirect
 	github.com/Azure/go-autorest/tracing v0.6.0 // indirect
 	github.com/Masterminds/semver/v3 v3.2.1 // indirect
+	github.com/PuerkitoBio/purell v1.2.0 // indirect
 	github.com/armon/circbuf v0.0.0-20190214190532-5111143e8da2 // indirect
 	github.com/codegangsta/inject v0.0.0-20150114235600-33e0aa1cb7c0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -62,7 +63,7 @@ require (
 	github.com/yudai/gojsondiff v1.0.0 // indirect
 	github.com/yudai/golcs v0.0.0-20170316035057-ecda9a501e82 // indirect
 	go.bytebuilders.dev/license-proxyserver v0.0.3 // indirect
-	go.bytebuilders.dev/license-verifier v0.12.1 // indirect
+	go.bytebuilders.dev/license-verifier v0.13.0 // indirect
 	golang.org/x/crypto v0.9.0 // indirect
 	golang.org/x/net v0.10.0 // indirect
 	golang.org/x/oauth2 v0.5.0 // indirect
@@ -86,7 +87,7 @@ require (
 	k8s.io/kube-openapi v0.0.0-20221012153701-172d655c2280 // indirect
 	k8s.io/utils v0.0.0-20221012122500-cfd413dd9e85 // indirect
 	kmodules.xyz/apiversion v0.2.0 // indirect
-	kmodules.xyz/objectstore-api v0.25.1-0.20221104003322-f0289b5b6ca2 // indirect
+	kmodules.xyz/objectstore-api v0.25.1 // indirect
 	kmodules.xyz/prober v0.25.0 // indirect
 	sigs.k8s.io/controller-runtime v0.13.1 // indirect
 	sigs.k8s.io/json v0.0.0-20220713155537-f223a00ba0e2 // indirect
