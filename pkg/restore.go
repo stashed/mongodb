@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	api_v1beta1 "stash.appscode.dev/apimachinery/apis/stash/v1beta1"
@@ -105,14 +106,8 @@ func NewCmdRestore() *cobra.Command {
 			if err != nil {
 				restoreOutput = &restic.RestoreOutput{
 					RestoreTargetStatus: api_v1beta1.RestoreMemberStatus{
-						Ref: targetRef,
-						Stats: []api_v1beta1.HostRestoreStats{
-							{
-								Hostname: opt.defaultDumpOptions.Host,
-								Phase:    api_v1beta1.HostRestoreFailed,
-								Error:    err.Error(),
-							},
-						},
+						Ref:   targetRef,
+						Stats: opt.getHostRestoreStats(err),
 					},
 				}
 			}
@@ -231,8 +226,10 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 	// So, for stand-alone MongoDB and MongoDB ReplicaSet, we don't have to do anything.
 	// We only need to update totalHosts field for sharded MongoDB
 
+	opt.totalHosts = 1
 	// For sharded MongoDB, parameter.ConfigServer will not be empty
 	if parameters.ConfigServer != "" {
+		opt.totalHosts = len(parameters.ReplicaSets) + 1 // for each shard there will be one key in parameters.ReplicaSet
 		restoreSession, err := opt.stashClient.StashV1beta1().RestoreSessions(opt.namespace).Get(context.TODO(), opt.restoreSessionName, metav1.GetOptions{})
 		if err != nil {
 			return nil, err
@@ -242,7 +239,7 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 			opt.stashClient.StashV1beta1(),
 			restoreSession.ObjectMeta,
 			func(status *api_v1beta1.RestoreSessionStatus) (types.UID, *api_v1beta1.RestoreSessionStatus) {
-				status.TotalHosts = pointer.Int32P(int32(len(parameters.ReplicaSets) + 1)) // for each shard there will be one key in parameters.ReplicaSet
+				status.TotalHosts = pointer.Int32P(int32(opt.totalHosts))
 				return restoreSession.UID, status
 			},
 			metav1.UpdateOptions{},
@@ -396,5 +393,36 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 	resticWrapper.HideCMD()
 
 	// Run dump
-	return resticWrapper.ParallelDump(opt.dumpOptions, targetRef, opt.maxConcurrency)
+	out, err := resticWrapper.ParallelDump(opt.dumpOptions, targetRef, opt.maxConcurrency)
+	if err != nil {
+		klog.Warningln("restore failed!", err.Error())
+	}
+	// error not returned, error is encoded into output
+	return out, nil
+}
+
+func (opt *mongoOptions) getHostRestoreStats(err error) []api_v1beta1.HostRestoreStats {
+	var restoreStats []api_v1beta1.HostRestoreStats
+
+	errMsg := fmt.Sprintf("failed to start data restoration: %s", err.Error())
+	for _, dumpOpt := range opt.dumpOptions {
+		restoreStats = append(restoreStats, api_v1beta1.HostRestoreStats{
+			Hostname: dumpOpt.Host,
+			Phase:    api_v1beta1.HostRestoreFailed,
+			Error:    errMsg,
+		})
+	}
+
+	if opt.totalHosts > len(restoreStats) {
+		rem := opt.totalHosts - len(restoreStats)
+		for i := 0; i < rem; i++ {
+			restoreStats = append(restoreStats, api_v1beta1.HostRestoreStats{
+				Hostname: fmt.Sprintf("unknown-%s", strconv.Itoa(i)),
+				Phase:    api_v1beta1.HostRestoreFailed,
+				Error:    errMsg,
+			})
+		}
+	}
+
+	return restoreStats
 }
