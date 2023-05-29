@@ -376,15 +376,7 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 			"--authenticationDatabase", "$external",
 		}
 		mongoCreds = append(mongoCreds, userAuth...)
-		username := StashUserName
-		if parameters.ConfigServer == "" {
-			username = string(authSecret.Data[MongoUserKey])
-		}
-		dumpCreds = append(dumpCreds, []interface{}{
-			fmt.Sprintf("--username=%s", username),
-			fmt.Sprintf("--password=%s", authSecret.Data[MongoPasswordKey]),
-			"--authenticationDatabase", opt.authenticationDatabase,
-		}...)
+		dumpCreds = append(dumpCreds, userAuth...)
 
 	} else {
 		userAuth := []interface{}{
@@ -393,15 +385,7 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 			"--authenticationDatabase", opt.authenticationDatabase,
 		}
 		mongoCreds = append(mongoCreds, userAuth...)
-		username := StashUserName
-		if parameters.ConfigServer == "" {
-			username = string(authSecret.Data[MongoUserKey])
-		}
-		dumpCreds = append(dumpCreds, []interface{}{
-			fmt.Sprintf("--username=%s", username),
-			fmt.Sprintf("--password=%s", authSecret.Data[MongoPasswordKey]),
-			"--authenticationDatabase", opt.authenticationDatabase,
-		}...)
+		dumpCreds = append(dumpCreds, userAuth...)
 	}
 
 	getBackupOpt := func(mongoDSN, hostKey string, isStandalone bool) restic.BackupOptions {
@@ -664,7 +648,7 @@ func disabelBalancer(mongosHost string) error {
 		"--eval", "JSON.stringify(sh.stopBalancer())",
 	}, mongoCreds...)
 	// disable balancer
-	if err := sh.Command(MongoshCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
 		return err
 	}
 
@@ -677,9 +661,9 @@ func disabelBalancer(mongosHost string) error {
 		"config",
 		"--host", mongosHost,
 		"--quiet",
-		"--eval", "while(sh.isBalancerRunning().mode != 'off'){ print('waiting for balancer to stop...'); sleep(1000);}",
+		"--eval", "while(sh.isBalancerRunning()){ print('waiting for balancer to stop...'); sleep(1000);}",
 	}, mongoCreds...)
-	if err := sh.Command(MongoshCMD, args...).Command("/usr/bin/tail", "-1").Run(); err != nil {
+	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").Run(); err != nil {
 		return err
 	}
 	return nil
@@ -697,7 +681,7 @@ func enableBalancer(mongosHost string) error {
 		"--quiet",
 		"--eval", "JSON.stringify(sh.setBalancerState(true))",
 	}, mongoCreds...)
-	if err := sh.Command(MongoshCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
 		return err
 	}
 
@@ -721,9 +705,9 @@ func lockConfigServer(configSVRDSN, secondaryHost string) error {
 		"config",
 		"--host", configSVRDSN,
 		"--quiet",
-		"--eval", "JSON.stringify(db.BackupControl.findAndModify({query: { _id: 'BackupControlDocument' }, update: { $inc: { counter : 1 } }, new: true, upsert: true, writeConcern: { w: 'majority', wtimeout: 15000 }}));",
+		"--eval", "db.BackupControl.findAndModify({query: { _id: 'BackupControlDocument' }, update: { $inc: { counter : 1 } }, new: true, upsert: true, writeConcern: { w: 'majority', wtimeout: 15000 }});",
 	}, mongoCreds...)
-	if err := sh.Command(MongoshCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
 		return err
 	}
 	val, ok := v["counter"].(float64)
@@ -740,7 +724,7 @@ func lockConfigServer(configSVRDSN, secondaryHost string) error {
 			"config",
 			"--host", secondaryHost,
 			"--quiet",
-			"--eval", "rs.secondaryOk(); JSON.stringify(db.BackupControl.find({ '_id' : 'BackupControlDocument' }).readConcern('majority').toArray());",
+			"--eval", "rs.secondaryOk(); db.BackupControl.find({ '_id' : 'BackupControlDocument' }).readConcern('majority');",
 		}, mongoCreds...)
 
 		if err := sh.Command(MongoshCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v2); err != nil {
@@ -779,7 +763,7 @@ func lockSecondaryMember(mongohost string) error {
 		"--quiet",
 		"--eval", "JSON.stringify(db.fsyncLock())",
 	}, mongoCreds...)
-	if err := sh.Command(MongoshCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
 		return err
 	}
 
@@ -805,7 +789,7 @@ func unlockSecondaryMember(mongohost string) error {
 		"--quiet",
 		"--eval", "JSON.stringify(db.fsyncUnlock())",
 	}, mongoCreds...)
-	if err := sh.Command(MongoshCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
 		return err
 	}
 
