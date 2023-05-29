@@ -57,7 +57,8 @@ import (
 var (
 	MongoCMD     = "/usr/bin/mongo"
 	OpenSSLCMD   = "/usr/bin/openssl"
-	adminCreds   []interface{}
+	mongoCreds   []interface{}
+	dumpCreds    []interface{}
 	cleanupFuncs []func() error
 )
 
@@ -246,14 +247,22 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 		return nil, err
 	}
 
-	appBindingSecret, err := opt.kubeClient.CoreV1().Secrets(opt.appBindingNamespace).Get(context.TODO(), appBinding.Spec.Secret.Name, metav1.GetOptions{})
+	authSecret, err := opt.kubeClient.CoreV1().Secrets(opt.appBindingNamespace).Get(context.TODO(), appBinding.Spec.Secret.Name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	err = appBinding.TransformSecret(opt.kubeClient, appBindingSecret.Data)
+	err = appBinding.TransformSecret(opt.kubeClient, authSecret.Data)
 	if err != nil {
 		return nil, err
+	}
+
+	var tlsSecret *core.Secret
+	if appBinding.Spec.TLSSecret != nil {
+		tlsSecret, err = opt.kubeClient.CoreV1().Secrets(opt.appBindingNamespace).Get(context.TODO(), appBinding.Spec.TLSSecret.Name, metav1.GetOptions{})
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	hostname, err := appBinding.Hostname()
@@ -313,24 +322,34 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 	}
 
 	if appBinding.Spec.ClientConfig.CABundle != nil {
+		if tlsSecret == nil {
+			return nil, errors.Wrap(err, "spec.tlsSecret needs to be set in appbinding for TLS secured database.")
+		}
+
 		if err := os.WriteFile(filepath.Join(opt.setupOptions.ScratchDir, MongoTLSCertFileName), appBinding.Spec.ClientConfig.CABundle, os.ModePerm); err != nil {
 			return nil, err
 		}
-		adminCreds = []interface{}{
+		mongoCreds = []interface{}{
+			"--tls",
+			"--tlsCAFile", filepath.Join(opt.setupOptions.ScratchDir, MongoTLSCertFileName),
+			"--tlsCertificateKeyFile", filepath.Join(opt.setupOptions.ScratchDir, MongoClientPemFileName),
+		}
+		dumpCreds = []interface{}{
 			"--ssl",
 			"--sslCAFile", filepath.Join(opt.setupOptions.ScratchDir, MongoTLSCertFileName),
+			"--sslPEMKeyFile", filepath.Join(opt.setupOptions.ScratchDir, MongoClientPemFileName),
 		}
 
 		// get certificate secret to get client certificate
 		var pemBytes []byte
 		var ok bool
-		pemBytes, ok = appBindingSecret.Data[MongoClientPemFileName]
+		pemBytes, ok = tlsSecret.Data[MongoClientPemFileName]
 		if !ok {
-			crt, ok := appBindingSecret.Data[core.TLSCertKey]
+			crt, ok := tlsSecret.Data[core.TLSCertKey]
 			if !ok {
 				return nil, errors.Wrap(err, "unable to retrieve tls.crt from secret.")
 			}
-			key, ok := appBindingSecret.Data[core.TLSPrivateKeyKey]
+			key, ok := tlsSecret.Data[core.TLSPrivateKeyKey]
 			if !ok {
 				return nil, errors.Wrap(err, "unable to retrieve tls.key from secret.")
 			}
@@ -344,18 +363,22 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 		if err != nil {
 			return nil, errors.Wrap(err, "unable to get user from ssl.")
 		}
-		adminCreds = append(adminCreds, []interface{}{
-			"--sslPEMKeyFile", filepath.Join(opt.setupOptions.ScratchDir, MongoClientPemFileName),
+		userAuth := []interface{}{
 			"-u", user,
 			"--authenticationMechanism", "MONGODB-X509",
 			"--authenticationDatabase", "$external",
-		}...)
+		}
+		mongoCreds = append(mongoCreds, userAuth...)
+		dumpCreds = append(dumpCreds, userAuth...)
+
 	} else {
-		adminCreds = []interface{}{
-			fmt.Sprintf("--username=%s", appBindingSecret.Data[MongoUserKey]),
-			fmt.Sprintf("--password=%s", appBindingSecret.Data[MongoPasswordKey]),
+		userAuth := []interface{}{
+			fmt.Sprintf("--username=%s", authSecret.Data[MongoUserKey]),
+			fmt.Sprintf("--password=%s", authSecret.Data[MongoPasswordKey]),
 			"--authenticationDatabase", opt.authenticationDatabase,
 		}
+		mongoCreds = append(mongoCreds, userAuth...)
+		dumpCreds = append(dumpCreds, userAuth...)
 	}
 
 	getBackupOpt := func(mongoDSN, hostKey string, isStandalone bool) restic.BackupOptions {
@@ -373,7 +396,7 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 			Args: append([]interface{}{
 				"--host", mongoDSN,
 				"--archive",
-			}, adminCreds...),
+			}, dumpCreds...),
 		}
 		userArgs := strings.Fields(opt.mongoArgs)
 
@@ -533,7 +556,7 @@ func getPrimaryNSecondaryMember(mongoDSN string) (primary, secondary string, err
 		"--host", mongoDSN,
 		"--quiet",
 		"--eval", "JSON.stringify(rs.isMaster())",
-	}, adminCreds...)
+	}, mongoCreds...)
 	// even --quiet doesn't skip replicaset PrimaryConnection log. so take tha last line. issue tracker: https://jira.mongodb.org/browse/SERVER-27159
 	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
 		return "", "", err
@@ -574,9 +597,9 @@ func disabelBalancer(mongosHost string) error {
 		"--host", mongosHost,
 		"--quiet",
 		"--eval", "JSON.stringify(sh.stopBalancer())",
-	}, adminCreds...)
+	}, mongoCreds...)
 	// disable balancer
-	if err := sh.Command(MongoCMD, args...).UnmarshalJSON(&v); err != nil {
+	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
 		return err
 	}
 
@@ -590,8 +613,8 @@ func disabelBalancer(mongosHost string) error {
 		"--host", mongosHost,
 		"--quiet",
 		"--eval", "while(sh.isBalancerRunning()){ print('waiting for balancer to stop...'); sleep(1000);}",
-	}, adminCreds...)
-	if err := sh.Command(MongoCMD, args...).Run(); err != nil {
+	}, mongoCreds...)
+	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").Run(); err != nil {
 		return err
 	}
 	return nil
@@ -608,8 +631,8 @@ func enableBalancer(mongosHost string) error {
 		"--host", mongosHost,
 		"--quiet",
 		"--eval", "JSON.stringify(sh.setBalancerState(true))",
-	}, adminCreds...)
-	if err := sh.Command(MongoCMD, args...).UnmarshalJSON(&v); err != nil {
+	}, mongoCreds...)
+	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
 		return err
 	}
 
@@ -634,8 +657,8 @@ func lockConfigServer(configSVRDSN, secondaryHost string) error {
 		"--host", configSVRDSN,
 		"--quiet",
 		"--eval", "db.BackupControl.findAndModify({query: { _id: 'BackupControlDocument' }, update: { $inc: { counter : 1 } }, new: true, upsert: true, writeConcern: { w: 'majority', wtimeout: 15000 }});",
-	}, adminCreds...)
-	if err := sh.Command(MongoCMD, args...).Command("tail", "-1").UnmarshalJSON(&v); err != nil {
+	}, mongoCreds...)
+	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
 		return err
 	}
 	val, ok := v["counter"].(float64)
@@ -651,8 +674,8 @@ func lockConfigServer(configSVRDSN, secondaryHost string) error {
 			"config",
 			"--host", secondaryHost,
 			"--quiet",
-			"--eval", "rs.slaveOk(); db.BackupControl.find({ '_id' : 'BackupControlDocument' }).readConcern('majority');",
-		}, adminCreds...)
+			"--eval", "rs.secondaryOk(); db.BackupControl.find({ '_id' : 'BackupControlDocument' }).readConcern('majority');",
+		}, mongoCreds...)
 
 		if err := sh.Command(MongoCMD, args...).UnmarshalJSON(&v); err != nil {
 			return err
@@ -688,8 +711,8 @@ func lockSecondaryMember(mongohost string) error {
 		"--host", mongohost,
 		"--quiet",
 		"--eval", "JSON.stringify(db.fsyncLock())",
-	}, adminCreds...)
-	if err := sh.Command(MongoCMD, args...).UnmarshalJSON(&v); err != nil {
+	}, mongoCreds...)
+	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
 		return err
 	}
 
@@ -714,8 +737,8 @@ func unlockSecondaryMember(mongohost string) error {
 		"--host", mongohost,
 		"--quiet",
 		"--eval", "JSON.stringify(db.fsyncUnlock())",
-	}, adminCreds...)
-	if err := sh.Command(MongoCMD, args...).UnmarshalJSON(&v); err != nil {
+	}, mongoCreds...)
+	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
 		return err
 	}
 
