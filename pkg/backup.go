@@ -149,14 +149,8 @@ func NewCmdBackup() *cobra.Command {
 			if err != nil {
 				backupOutput = &restic.BackupOutput{
 					BackupTargetStatus: api_v1beta1.BackupTargetStatus{
-						Ref: targetRef,
-						Stats: []api_v1beta1.HostBackupStats{
-							{
-								Hostname: opt.defaultBackupOptions.Host,
-								Phase:    api_v1beta1.HostBackupFailed,
-								Error:    err.Error(),
-							},
-						},
+						Ref:   targetRef,
+						Stats: opt.getHostBackupStats(err),
 					},
 				}
 			}
@@ -301,8 +295,10 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 	// So, for stand-alone MongoDB and MongoDB ReplicaSet, we don't have to do anything.
 	// We only need to update totalHosts field for sharded MongoDB
 
+	opt.totalHosts = 1
 	// For sharded MongoDB, parameter.ConfigServer will not be empty
 	if parameters.ConfigServer != "" {
+		opt.totalHosts = len(parameters.ReplicaSets) + 1 // for each shard there will be one key in parameters.ReplicaSet
 		backupSession, err := opt.stashClient.StashV1beta1().BackupSessions(opt.namespace).Get(context.TODO(), opt.backupSessionName, metav1.GetOptions{})
 		if err != nil {
 			return nil, err
@@ -314,7 +310,7 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 					opt.stashClient.StashV1beta1(),
 					backupSession.ObjectMeta,
 					func(status *api_v1beta1.BackupSessionStatus) (types.UID, *api_v1beta1.BackupSessionStatus) {
-						status.Targets[i].TotalHosts = pointer.Int32P(int32(len(parameters.ReplicaSets) + 1)) // for each shard there will be one key in parameters.ReplicaSet
+						status.Targets[i].TotalHosts = pointer.Int32P(int32(opt.totalHosts))
 						return backupSession.UID, status
 					},
 					metav1.UpdateOptions{},
@@ -573,7 +569,12 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 	// hide password, don't print cmd
 	resticWrapper.HideCMD()
 
-	return resticWrapper.RunParallelBackup(opt.backupOptions, targetRef, opt.maxConcurrency)
+	out, err := resticWrapper.RunParallelBackup(opt.backupOptions, targetRef, opt.maxConcurrency)
+	if err != nil {
+		klog.Warningln("backup failed!", err.Error())
+	}
+	// error not returned, error is encoded into output
+	return out, nil
 }
 
 // cleanup usually unlocks the locked servers
@@ -583,6 +584,32 @@ func cleanup() {
 			klog.Errorln(err)
 		}
 	}
+}
+
+func (opt *mongoOptions) getHostBackupStats(err error) []api_v1beta1.HostBackupStats {
+	var backupStats []api_v1beta1.HostBackupStats
+
+	errMsg := fmt.Sprintf("failed to start backup: %s", err.Error())
+	for _, backupOpt := range opt.backupOptions {
+		backupStats = append(backupStats, api_v1beta1.HostBackupStats{
+			Hostname: backupOpt.Host,
+			Phase:    api_v1beta1.HostBackupFailed,
+			Error:    errMsg,
+		})
+	}
+
+	if opt.totalHosts > len(backupStats) {
+		rem := opt.totalHosts - len(backupStats)
+		for i := 0; i < rem; i++ {
+			backupStats = append(backupStats, api_v1beta1.HostBackupStats{
+				Hostname: fmt.Sprintf("unknown-%s", strconv.Itoa(i)),
+				Phase:    api_v1beta1.HostBackupFailed,
+				Error:    errMsg,
+			})
+		}
+	}
+
+	return backupStats
 }
 
 func getSSLUser(path string) (string, error) {
