@@ -421,5 +421,5 @@ func dropTempReshardCollection(configsvrDSN string) error {
 		"--eval", `db.reshardingOperations_temp.drop()`,
 	}, mongoCreds...)
 
-	return sh.Command(MongoshCMD, args...).Command("/usr/bin/tail", "-1").Run()
+	return sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").Run()
 }
