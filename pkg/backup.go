@@ -247,14 +247,22 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 		return nil, err
 	}
 
-	appBindingSecret, err := opt.kubeClient.CoreV1().Secrets(opt.appBindingNamespace).Get(context.TODO(), appBinding.Spec.Secret.Name, metav1.GetOptions{})
+	authSecret, err := opt.kubeClient.CoreV1().Secrets(opt.appBindingNamespace).Get(context.TODO(), appBinding.Spec.Secret.Name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	err = appBinding.TransformSecret(opt.kubeClient, appBindingSecret.Data)
+	err = appBinding.TransformSecret(opt.kubeClient, authSecret.Data)
 	if err != nil {
 		return nil, err
+	}
+
+	var tlsSecret *core.Secret
+	if appBinding.Spec.TLSSecret != nil {
+		tlsSecret, err = opt.kubeClient.CoreV1().Secrets(opt.appBindingNamespace).Get(context.TODO(), appBinding.Spec.TLSSecret.Name, metav1.GetOptions{})
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	hostname, err := appBinding.Hostname()
@@ -314,13 +322,17 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 	}
 
 	if appBinding.Spec.ClientConfig.CABundle != nil {
+		if tlsSecret == nil {
+			return nil, errors.Wrap(err, "spec.tlsSecret needs to be set in appbinding for TLS secured database.")
+		}
+
 		if err := os.WriteFile(filepath.Join(opt.setupOptions.ScratchDir, MongoTLSCertFileName), appBinding.Spec.ClientConfig.CABundle, os.ModePerm); err != nil {
 			return nil, err
 		}
 		mongoCreds = []interface{}{
 			"--tls",
 			"--tlsCAFile", filepath.Join(opt.setupOptions.ScratchDir, MongoTLSCertFileName),
-			"--tlsPEMKeyFile", filepath.Join(opt.setupOptions.ScratchDir, MongoClientPemFileName),
+			"--tlsCertificateKeyFile", filepath.Join(opt.setupOptions.ScratchDir, MongoClientPemFileName),
 		}
 		dumpCreds = []interface{}{
 			"--ssl",
@@ -331,13 +343,13 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 		// get certificate secret to get client certificate
 		var pemBytes []byte
 		var ok bool
-		pemBytes, ok = appBindingSecret.Data[MongoClientPemFileName]
+		pemBytes, ok = tlsSecret.Data[MongoClientPemFileName]
 		if !ok {
-			crt, ok := appBindingSecret.Data[core.TLSCertKey]
+			crt, ok := tlsSecret.Data[core.TLSCertKey]
 			if !ok {
 				return nil, errors.Wrap(err, "unable to retrieve tls.crt from secret.")
 			}
-			key, ok := appBindingSecret.Data[core.TLSPrivateKeyKey]
+			key, ok := tlsSecret.Data[core.TLSPrivateKeyKey]
 			if !ok {
 				return nil, errors.Wrap(err, "unable to retrieve tls.key from secret.")
 			}
@@ -361,8 +373,8 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 
 	} else {
 		userAuth := []interface{}{
-			fmt.Sprintf("--username=%s", appBindingSecret.Data[MongoUserKey]),
-			fmt.Sprintf("--password=%s", appBindingSecret.Data[MongoPasswordKey]),
+			fmt.Sprintf("--username=%s", authSecret.Data[MongoUserKey]),
+			fmt.Sprintf("--password=%s", authSecret.Data[MongoPasswordKey]),
 			"--authenticationDatabase", opt.authenticationDatabase,
 		}
 		mongoCreds = append(mongoCreds, userAuth...)
@@ -662,7 +674,7 @@ func lockConfigServer(configSVRDSN, secondaryHost string) error {
 			"config",
 			"--host", secondaryHost,
 			"--quiet",
-			"--eval", "rs.slaveOk(); db.BackupControl.find({ '_id' : 'BackupControlDocument' }).readConcern('majority');",
+			"--eval", "rs.secondaryOk(); db.BackupControl.find({ '_id' : 'BackupControlDocument' }).readConcern('majority');",
 		}, mongoCreds...)
 
 		if err := sh.Command(MongoCMD, args...).UnmarshalJSON(&v); err != nil {
