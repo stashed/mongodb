@@ -23,6 +23,9 @@ github.com/Azure/go-autorest/tracing
 # github.com/Masterminds/semver/v3 v3.2.1
 ## explicit; go 1.18
 github.com/Masterminds/semver/v3
+# github.com/PuerkitoBio/purell v1.2.0
+## explicit; go 1.19
+github.com/PuerkitoBio/purell
 # github.com/armon/circbuf v0.0.0-20190214190532-5111143e8da2
 ## explicit
 github.com/armon/circbuf
@@ -145,7 +148,7 @@ go.bytebuilders.dev/license-proxyserver/apis/proxyserver/v1alpha1
 go.bytebuilders.dev/license-proxyserver/client/clientset/versioned
 go.bytebuilders.dev/license-proxyserver/client/clientset/versioned/scheme
 go.bytebuilders.dev/license-proxyserver/client/clientset/versioned/typed/proxyserver/v1alpha1
-# go.bytebuilders.dev/license-verifier v0.12.1
+# go.bytebuilders.dev/license-verifier v0.13.0
 ## explicit; go 1.18
 go.bytebuilders.dev/license-verifier
 go.bytebuilders.dev/license-verifier/apis/licenses
@@ -189,6 +192,7 @@ golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
+golang.org/x/text/width
 # golang.org/x/time v0.3.0
 ## explicit
 golang.org/x/time/rate
@@ -622,7 +626,7 @@ kmodules.xyz/client-go/discovery
 kmodules.xyz/client-go/dynamic
 kmodules.xyz/client-go/meta
 kmodules.xyz/client-go/tools/clusterid
-# kmodules.xyz/custom-resources v0.25.1
+# kmodules.xyz/custom-resources v0.25.2
 ## explicit; go 1.18
 kmodules.xyz/custom-resources/apis/appcatalog
 kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1
@@ -636,10 +640,10 @@ kmodules.xyz/custom-resources/client/clientset/versioned/typed/appcatalog/v1alph
 kmodules.xyz/custom-resources/client/clientset/versioned/typed/auditor/v1alpha1
 kmodules.xyz/custom-resources/client/clientset/versioned/typed/metrics/v1alpha1
 kmodules.xyz/custom-resources/crds
-# kmodules.xyz/objectstore-api v0.25.1-0.20221104003322-f0289b5b6ca2
+# kmodules.xyz/objectstore-api v0.25.1
 ## explicit; go 1.18
 kmodules.xyz/objectstore-api/api/v1
-# kmodules.xyz/offshoot-api v0.25.3
+# kmodules.xyz/offshoot-api v0.25.4
 ## explicit; go 1.18
 kmodules.xyz/offshoot-api/api/v1
 # kmodules.xyz/prober v0.25.0
@@ -669,7 +673,7 @@ sigs.k8s.io/structured-merge-diff/v4/value
 # sigs.k8s.io/yaml v1.3.0
 ## explicit; go 1.12
 sigs.k8s.io/yaml
-# stash.appscode.dev/apimachinery v0.29.1-0.20230529131221-1e979c48da10
+# stash.appscode.dev/apimachinery v0.30.0
 ## explicit; go 1.18
 stash.appscode.dev/apimachinery/apis
 stash.appscode.dev/apimachinery/apis/repositories
