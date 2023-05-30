@@ -371,7 +371,15 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 			"--authenticationDatabase", "$external",
 		}
 		mongoCreds = append(mongoCreds, userAuth...)
-		dumpCreds = append(dumpCreds, userAuth...)
+		username := StashUserName
+		if parameters.ConfigServer == "" {
+			username = string(authSecret.Data[MongoUserKey])
+		}
+		dumpCreds = append(dumpCreds, []interface{}{
+			fmt.Sprintf("--username=%s", username),
+			fmt.Sprintf("--password=%s", authSecret.Data[MongoPasswordKey]),
+			"--authenticationDatabase", opt.authenticationDatabase,
+		}...)
 
 	} else {
 		userAuth := []interface{}{
@@ -380,7 +388,15 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 			"--authenticationDatabase", opt.authenticationDatabase,
 		}
 		mongoCreds = append(mongoCreds, userAuth...)
-		dumpCreds = append(dumpCreds, userAuth...)
+		username := StashUserName
+		if parameters.ConfigServer == "" {
+			username = string(authSecret.Data[MongoUserKey])
+		}
+		dumpCreds = append(dumpCreds, []interface{}{
+			fmt.Sprintf("--username=%s", username),
+			fmt.Sprintf("--password=%s", authSecret.Data[MongoPasswordKey]),
+			"--authenticationDatabase", opt.authenticationDatabase,
+		}...)
 	}
 
 	getBackupOpt := func(mongoDSN, hostKey string, isStandalone bool) restic.BackupOptions {
