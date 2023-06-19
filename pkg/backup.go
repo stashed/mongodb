@@ -79,6 +79,7 @@ func NewCmdBackup() *cobra.Command {
 		masterURL      string
 		kubeconfigPath string
 		opt            = mongoOptions{
+			totalHosts:  1,
 			waitTimeout: 300,
 			setupOptions: restic.SetupOptions{
 				ScratchDir:  restic.DefaultScratchDir,
@@ -289,8 +290,6 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 	// 3. For sharded MongoDB, totalHosts=(number of shard + 1) // extra 1 for config server
 	// So, for stand-alone MongoDB and MongoDB ReplicaSet, we don't have to do anything.
 	// We only need to update totalHosts field for sharded MongoDB
-
-	opt.totalHosts = 1
 	// For sharded MongoDB, parameter.ConfigServer will not be empty
 	if parameters.ConfigServer != "" {
 		opt.totalHosts = len(parameters.ReplicaSets) + 1 // for each shard there will be one key in parameters.ReplicaSet
