@@ -17,6 +17,7 @@ limitations under the License.
 package pkg
 
 import (
+	"crypto/rand"
 	"fmt"
 	"os/exec"
 	"strings"
@@ -93,4 +94,19 @@ func containsArg(args []string, checklist sets.String) bool {
 		}
 	}
 	return false
+}
+
+var chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-"
+
+func genPassword(length int) (string, error) {
+	ll := len(chars)
+	b := make([]byte, length)
+	_, err := rand.Read(b) // generates len(b) random bytes
+	if err != nil {
+		return "", err
+	}
+	for i := 0; i < length; i++ {
+		b[i] = chars[int(b[i])%ll]
+	}
+	return string(b), nil
 }
