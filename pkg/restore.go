@@ -34,6 +34,7 @@ import (
 	"github.com/spf13/cobra"
 	license "go.bytebuilders.dev/license-verifier/kubernetes"
 	"gomodules.xyz/flags"
+	"gomodules.xyz/go-sh"
 	"gomodules.xyz/pointer"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -47,6 +48,8 @@ import (
 	v1 "kmodules.xyz/offshoot-api/api/v1"
 	"kubedb.dev/apimachinery/apis/config/v1alpha1"
 )
+
+var cleanupRestoreFuncs []func() error
 
 func NewCmdRestore() *cobra.Command {
 	var (
@@ -73,6 +76,7 @@ func NewCmdRestore() *cobra.Command {
 			return checkCommandExists()
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+			defer cleanupRestore()
 			flags.EnsureRequiredFlags(cmd, "appbinding", "provider", "storage-secret-name", "storage-secret-namespace")
 
 			// prepare client
@@ -151,6 +155,14 @@ func NewCmdRestore() *cobra.Command {
 	cmd.Flags().StringVar(&opt.outputDir, "output-dir", opt.outputDir, "Directory where output.json file will be written (keep empty if you don't need to write output in file)")
 
 	return cmd
+}
+
+func cleanupRestore() {
+	for _, f := range cleanupRestoreFuncs {
+		if err := f(); err != nil {
+			klog.Errorln(err)
+		}
+	}
 }
 
 func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*restic.RestoreOutput, error) {
@@ -293,7 +305,6 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 			"--authenticationDatabase", "$external",
 		}
 		mongoCreds = append(mongoCreds, userAuth...)
-		dumpCreds = append(dumpCreds, userAuth...)
 
 	} else {
 		userAuth := []interface{}{
@@ -302,7 +313,11 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 			"--authenticationDatabase", opt.authenticationDatabase,
 		}
 		mongoCreds = append(mongoCreds, userAuth...)
-		dumpCreds = append(dumpCreds, userAuth...)
+	}
+
+	err = opt.workOnSuperUser(parameters, hostname)
+	if err != nil {
+		return nil, err
 	}
 
 	getDumpOpts := func(mongoDSN, hostKey string, isStandalone bool) restic.DumpOptions {
@@ -392,6 +407,8 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 	// hide password, don't print cmd
 	resticWrapper.HideCMD()
 
+	klog.Infof("==> %+v \n %+v \n", opt.dumpOptions, targetRef)
+
 	// Run dump
 	out, err := resticWrapper.ParallelDump(opt.dumpOptions, targetRef, opt.maxConcurrency)
 	if err != nil {
@@ -399,6 +416,141 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 	}
 	// error not returned, error is encoded into output
 	return out, nil
+}
+
+const (
+	SuperRoleName = "interalUseOnlyOplogRestore"
+	SuperUserName = "superoplogger"
+)
+
+func (opt *mongoOptions) workOnSuperUser(parameters v1alpha1.MongoDBConfiguration, hostNameForStandalone string) error {
+	pass, err := genPassword(12)
+	if err != nil {
+		return err
+	}
+
+	if parameters.ConfigServer != "" {
+		dsn := parameters.ConfigServer
+		err := createSuperRoleAndUser(dsn, pass)
+		if err != nil {
+			return err
+		}
+	}
+	for key := range parameters.ReplicaSets {
+		dsn := parameters.ReplicaSets[key]
+		err := createSuperRoleAndUser(dsn, pass)
+		if err != nil {
+			return err
+		}
+	}
+
+	if parameters.ReplicaSets == nil {
+		err := createSuperRoleAndUser(hostNameForStandalone, pass)
+		if err != nil {
+			return err
+		}
+	}
+
+	superUserAuth := []interface{}{
+		fmt.Sprintf("--username=%s", SuperUserName),
+		fmt.Sprintf("--password=%s", pass),
+		"--authenticationDatabase", opt.authenticationDatabase,
+	}
+	dumpCreds = append(dumpCreds, superUserAuth...)
+	return nil
+}
+
+func createSuperRoleAndUser(mongoDSN, pass string) error {
+	klog.Infof("creating SuperRole & User for %s \n", mongoDSN)
+	err := createSuperRole(mongoDSN)
+	if err != nil {
+		return err
+	}
+
+	err = createSuperUser(mongoDSN, pass)
+	cleanupRestoreFuncs = append(cleanupRestoreFuncs, func() error {
+		return deleteSuperUser(mongoDSN)
+	})
+	return err
+}
+
+func createSuperRole(mongoDSN string) error {
+	exists, err := checkRoleExists(mongoDSN, SuperRoleName)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		klog.Infoln("creating role " + SuperRoleName)
+		v := make(map[string]interface{})
+
+		args := append([]interface{}{
+			"admin",
+			"--host", mongoDSN,
+			"--quiet",
+			"--eval", `JSON.stringify(db.runCommand({createRole: "` + SuperRoleName + `",privileges:[{resource:{anyResource:true},actions:["anyAction"]}],roles: []}))`,
+		}, mongoCreds...)
+
+		if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+			return err
+		}
+
+		if val, ok := v["ok"].(float64); !ok || int(val) != 1 {
+			return fmt.Errorf("unable to create role %v. got response: %v", SuperRoleName, v)
+		}
+	}
+	return nil
+}
+
+func createSuperUser(mongoDSN, pass string) error {
+	exists, err := checkUserExists(mongoDSN, SuperUserName)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		klog.Infoln("creating user " + SuperUserName)
+		v := make(map[string]interface{})
+
+		args := append([]interface{}{
+			"admin",
+			"--host", mongoDSN,
+			"--quiet",
+			"--eval", `JSON.stringify(db.runCommand({createUser: "` + SuperUserName + `" ,pwd: "` + pass + `", roles:[{role:"root", db:"admin"},"__system","interalUseOnlyOplogRestore","backup"]}))`,
+		}, mongoCreds...)
+		if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+			return err
+		}
+
+		if val, ok := v["ok"].(float64); !ok || int(val) != 1 {
+			return fmt.Errorf("unable to create user %v. got response: %v", SuperUserName, v)
+		}
+	}
+	return nil
+}
+
+func deleteSuperUser(mongoDSN string) error {
+	exists, err := checkUserExists(mongoDSN, SuperUserName)
+	if err != nil {
+		return err
+	}
+	if exists {
+		klog.Infoln("deleting user " + SuperUserName)
+		v := make(map[string]interface{})
+
+		args := append([]interface{}{
+			"admin",
+			"--host", mongoDSN,
+			"--quiet",
+			"--eval", `JSON.stringify(db.runCommand({dropUser: "` + SuperUserName + `"}))`,
+		}, mongoCreds...)
+		if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+			return err
+		}
+
+		if val, ok := v["ok"].(float64); !ok || int(val) != 1 {
+			return fmt.Errorf("unable to delete user %v. got response: %v", SuperUserName, v)
+		}
+	}
+	return nil
 }
 
 func (opt *mongoOptions) getHostRestoreStats(err error) []api_v1beta1.HostRestoreStats {

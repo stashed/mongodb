@@ -539,6 +539,13 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 				klog.Errorf("error while creating user for %v. error: %v", host, err)
 				return nil, err
 			}
+		} else {
+			// We need to create a dummy role while backup to resolve `BSON field '_mergeAuthzCollections.tempRolesCollection' is missing but a required field` issue.
+			// https://jira.mongodb.org/browse/TOOLS-2946?focusedCommentId=4022387&page=com.atlassian.jira.plugin.system.issuetabpanels%3Acomment-tabpanel#comment-4022387
+			err = createStashBackupRole(host)
+			if err != nil {
+				return nil, err
+			}
 		}
 		// do the task
 		primary, secondary, err := getPrimaryNSecondaryMember(host)
@@ -570,6 +577,12 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 	// if parameters.ReplicaSets is nil, then the mongodb database doesn't have replicasets or sharded replicasets.
 	// In this case, perform normal backup with clientconfig.Service.Name mongo dsn
 	if parameters.ReplicaSets == nil {
+		// We need to create a dummy role while backup to resolve `BSON field '_mergeAuthzCollections.tempRolesCollection' is missing but a required field` issue.
+		// https://jira.mongodb.org/browse/TOOLS-2946?focusedCommentId=4022387&page=com.atlassian.jira.plugin.system.issuetabpanels%3Acomment-tabpanel#comment-4022387
+		err = createStashBackupRole(hostname)
+		if err != nil {
+			return nil, err
+		}
 		opt.backupOptions = append(opt.backupOptions, getBackupOpt(hostname, restic.DefaultHost, true))
 	}
 
@@ -838,38 +851,38 @@ func unlockSecondaryMember(mongohost string) error {
 	return nil
 }
 
-func checkRoleExists(mongoDSN string) (bool, error) {
+func checkRoleExists(mongoDSN string, roleName string) (bool, error) {
 	v := make(map[string]interface{})
 	args := append([]interface{}{
 		"admin",
 		"--host", mongoDSN,
 		"--quiet",
-		"--eval", `JSON.stringify(db.getRole("` + StashRoleName + `"))`,
+		"--eval", `JSON.stringify(db.getRole("` + roleName + `"))`,
 	}, mongoCreds...)
 	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
 		return false, err
 	}
 
-	if val, ok := v["role"].(string); ok && string(val) == StashRoleName {
+	if val, ok := v["role"].(string); ok && val == roleName {
 		return true, nil
 	}
 
 	return false, nil
 }
 
-func checkUserExists(mongoDSN string) (bool, error) {
+func checkUserExists(mongoDSN string, userName string) (bool, error) {
 	v := make(map[string]interface{})
 	args := append([]interface{}{
 		"admin",
 		"--host", mongoDSN,
 		"--quiet",
-		"--eval", `JSON.stringify(db.getUser("` + StashUserName + `"))`,
+		"--eval", `JSON.stringify(db.getUser("` + userName + `"))`,
 	}, mongoCreds...)
 	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
 		return false, err
 	}
 
-	if val, ok := v["user"].(string); ok && string(val) == StashUserName {
+	if val, ok := v["user"].(string); ok && val == userName {
 		return true, nil
 	}
 
@@ -886,7 +899,7 @@ func createStashRoleAndUser(mongoDSN string, pass string) error {
 }
 
 func createStashBackupRole(mongoDSN string) error {
-	exists, err := checkRoleExists(mongoDSN)
+	exists, err := checkRoleExists(mongoDSN, StashRoleName)
 	if err != nil {
 		return err
 	}
@@ -914,7 +927,7 @@ func createStashBackupRole(mongoDSN string) error {
 }
 
 func createStashBackupUser(mongoDSN string, pass string) error {
-	exists, err := checkUserExists(mongoDSN)
+	exists, err := checkUserExists(mongoDSN, StashUserName)
 	if err != nil {
 		return err
 	}
