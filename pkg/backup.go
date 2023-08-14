@@ -84,7 +84,6 @@ func NewCmdBackup() *cobra.Command {
 		masterURL      string
 		kubeconfigPath string
 		opt            = mongoOptions{
-			totalHosts:  1,
 			waitTimeout: 300,
 			setupOptions: restic.SetupOptions{
 				ScratchDir:  restic.DefaultScratchDir,
@@ -150,8 +149,14 @@ func NewCmdBackup() *cobra.Command {
 			if err != nil {
 				backupOutput = &restic.BackupOutput{
 					BackupTargetStatus: api_v1beta1.BackupTargetStatus{
-						Ref:   targetRef,
-						Stats: opt.getHostBackupStats(err),
+						Ref: targetRef,
+						Stats: []api_v1beta1.HostBackupStats{
+							{
+								Hostname: opt.defaultBackupOptions.Host,
+								Phase:    api_v1beta1.HostBackupFailed,
+								Error:    err.Error(),
+							},
+						},
 					},
 				}
 			}
@@ -295,9 +300,9 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 	// 3. For sharded MongoDB, totalHosts=(number of shard + 1) // extra 1 for config server
 	// So, for stand-alone MongoDB and MongoDB ReplicaSet, we don't have to do anything.
 	// We only need to update totalHosts field for sharded MongoDB
+
 	// For sharded MongoDB, parameter.ConfigServer will not be empty
 	if parameters.ConfigServer != "" {
-		opt.totalHosts = len(parameters.ReplicaSets) + 1 // for each shard there will be one key in parameters.ReplicaSet
 		backupSession, err := opt.stashClient.StashV1beta1().BackupSessions(opt.namespace).Get(context.TODO(), opt.backupSessionName, metav1.GetOptions{})
 		if err != nil {
 			return nil, err
@@ -309,7 +314,7 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 					opt.stashClient.StashV1beta1(),
 					backupSession.ObjectMeta,
 					func(status *api_v1beta1.BackupSessionStatus) (types.UID, *api_v1beta1.BackupSessionStatus) {
-						status.Targets[i].TotalHosts = pointer.Int32P(int32(opt.totalHosts))
+						status.Targets[i].TotalHosts = pointer.Int32P(int32(len(parameters.ReplicaSets) + 1)) // for each shard there will be one key in parameters.ReplicaSet
 						return backupSession.UID, status
 					},
 					metav1.UpdateOptions{},
@@ -371,7 +376,15 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 			"--authenticationDatabase", "$external",
 		}
 		mongoCreds = append(mongoCreds, userAuth...)
-		dumpCreds = append(dumpCreds, userAuth...)
+		username := StashUserName
+		if parameters.ConfigServer == "" {
+			username = string(authSecret.Data[MongoUserKey])
+		}
+		dumpCreds = append(dumpCreds, []interface{}{
+			fmt.Sprintf("--username=%s", username),
+			fmt.Sprintf("--password=%s", authSecret.Data[MongoPasswordKey]),
+			"--authenticationDatabase", opt.authenticationDatabase,
+		}...)
 
 	} else {
 		userAuth := []interface{}{
@@ -380,7 +393,15 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 			"--authenticationDatabase", opt.authenticationDatabase,
 		}
 		mongoCreds = append(mongoCreds, userAuth...)
-		dumpCreds = append(dumpCreds, userAuth...)
+		username := StashUserName
+		if parameters.ConfigServer == "" {
+			username = string(authSecret.Data[MongoUserKey])
+		}
+		dumpCreds = append(dumpCreds, []interface{}{
+			fmt.Sprintf("--username=%s", username),
+			fmt.Sprintf("--password=%s", authSecret.Data[MongoPasswordKey]),
+			"--authenticationDatabase", opt.authenticationDatabase,
+		}...)
 	}
 
 	getBackupOpt := func(mongoDSN, hostKey string, isStandalone bool) restic.BackupOptions {
@@ -568,12 +589,7 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 	// hide password, don't print cmd
 	resticWrapper.HideCMD()
 
-	out, err := resticWrapper.RunParallelBackup(opt.backupOptions, targetRef, opt.maxConcurrency)
-	if err != nil {
-		klog.Warningln("backup failed!", err.Error())
-	}
-	// error not returned, error is encoded into output
-	return out, nil
+	return resticWrapper.RunParallelBackup(opt.backupOptions, targetRef, opt.maxConcurrency)
 }
 
 // cleanup usually unlocks the locked servers
@@ -583,32 +599,6 @@ func cleanup() {
 			klog.Errorln(err)
 		}
 	}
-}
-
-func (opt *mongoOptions) getHostBackupStats(err error) []api_v1beta1.HostBackupStats {
-	var backupStats []api_v1beta1.HostBackupStats
-
-	errMsg := fmt.Sprintf("failed to start backup: %s", err.Error())
-	for _, backupOpt := range opt.backupOptions {
-		backupStats = append(backupStats, api_v1beta1.HostBackupStats{
-			Hostname: backupOpt.Host,
-			Phase:    api_v1beta1.HostBackupFailed,
-			Error:    errMsg,
-		})
-	}
-
-	if opt.totalHosts > len(backupStats) {
-		rem := opt.totalHosts - len(backupStats)
-		for i := 0; i < rem; i++ {
-			backupStats = append(backupStats, api_v1beta1.HostBackupStats{
-				Hostname: fmt.Sprintf("unknown-%s", strconv.Itoa(i)),
-				Phase:    api_v1beta1.HostBackupFailed,
-				Error:    errMsg,
-			})
-		}
-	}
-
-	return backupStats
 }
 
 func getSSLUser(path string) (string, error) {
@@ -687,7 +677,7 @@ func disabelBalancer(mongosHost string) error {
 		"config",
 		"--host", mongosHost,
 		"--quiet",
-		"--eval", "while(sh.isBalancerRunning()){ print('waiting for balancer to stop...'); sleep(1000);}",
+		"--eval", "while(sh.isBalancerRunning().mode != 'off'){ print('waiting for balancer to stop...'); sleep(1000);}",
 	}, mongoCreds...)
 	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").Run(); err != nil {
 		return err
@@ -731,7 +721,7 @@ func lockConfigServer(configSVRDSN, secondaryHost string) error {
 		"config",
 		"--host", configSVRDSN,
 		"--quiet",
-		"--eval", "db.BackupControl.findAndModify({query: { _id: 'BackupControlDocument' }, update: { $inc: { counter : 1 } }, new: true, upsert: true, writeConcern: { w: 'majority', wtimeout: 15000 }});",
+		"--eval", "JSON.stringify(db.BackupControl.findAndModify({query: { _id: 'BackupControlDocument' }, update: { $inc: { counter : 1 } }, new: true, upsert: true, writeConcern: { w: 'majority', wtimeout: 15000 }}));",
 	}, mongoCreds...)
 	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
 		return err
@@ -750,7 +740,7 @@ func lockConfigServer(configSVRDSN, secondaryHost string) error {
 			"config",
 			"--host", secondaryHost,
 			"--quiet",
-			"--eval", "rs.secondaryOk(); db.BackupControl.find({ '_id' : 'BackupControlDocument' }).readConcern('majority');",
+			"--eval", "rs.secondaryOk(); JSON.stringify(db.BackupControl.find({ '_id' : 'BackupControlDocument' }).readConcern('majority').toArray());",
 		}, mongoCreds...)
 
 		if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v2); err != nil {
