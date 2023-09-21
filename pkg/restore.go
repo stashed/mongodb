@@ -35,6 +35,7 @@ import (
 	license "go.bytebuilders.dev/license-verifier/kubernetes"
 	"gomodules.xyz/flags"
 	"gomodules.xyz/pointer"
+	go_str "gomodules.xyz/x/strings"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -226,14 +227,14 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 	// So, for stand-alone MongoDB and MongoDB ReplicaSet, we don't have to do anything.
 	// We only need to update totalHosts field for sharded MongoDB
 
+	restoreSession, err := opt.stashClient.StashV1beta1().RestoreSessions(opt.namespace).Get(context.TODO(), opt.restoreSessionName, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
 	opt.totalHosts = 1
 	// For sharded MongoDB, parameter.ConfigServer will not be empty
 	if parameters.ConfigServer != "" {
 		opt.totalHosts = len(parameters.ReplicaSets) + 1 // for each shard there will be one key in parameters.ReplicaSet
-		restoreSession, err := opt.stashClient.StashV1beta1().RestoreSessions(opt.namespace).Get(context.TODO(), opt.restoreSessionName, metav1.GetOptions{})
-		if err != nil {
-			return nil, err
-		}
 		_, err = stash_cs_util.UpdateRestoreSessionStatus(
 			context.TODO(),
 			opt.stashClient.StashV1beta1(),
@@ -311,9 +312,8 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 			Host:       hostKey,
 			SourceHost: hostKey,
 			FileName:   opt.defaultDumpOptions.FileName,
-			Snapshot:   opt.defaultDumpOptions.Snapshot,
+			Snapshot:   opt.getSnapshotForHost(hostKey, restoreSession.Spec.Target.Rules),
 		}
-
 		// setup pipe command
 		restoreCmd := restic.Command{
 			Name: MongoRestoreCMD,
@@ -425,4 +425,20 @@ func (opt *mongoOptions) getHostRestoreStats(err error) []api_v1beta1.HostRestor
 	}
 
 	return restoreStats
+}
+
+func (opt *mongoOptions) getSnapshotForHost(hostname string, rules []api_v1beta1.Rule) string {
+	var hostSnapshot string
+	for _, rule := range rules {
+		if len(rule.TargetHosts) == 0 || go_str.Contains(rule.TargetHosts, hostname) {
+			hostSnapshot = rule.Snapshots[0]
+			// if rule has empty targetHost then check further rules to see if any other rule with non-empty targetHost matches
+			if len(rule.TargetHosts) == 0 {
+				continue
+			} else {
+				return hostSnapshot
+			}
+		}
+	}
+	return hostSnapshot
 }
