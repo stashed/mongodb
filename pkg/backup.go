@@ -722,6 +722,12 @@ func lockConfigServer(configSVRDSN, secondaryHost string) error {
 		return err
 	}
 
+	s := fmt.Sprintf(`/bin/echo '%s' | /usr/bin/tail -1`, strings.TrimSuffix(string(output), "\n"))
+	output, err = sh.Command("/bin/sh", "-c", s).Output()
+	if err != nil {
+		klog.Errorf("Error while running tail in findAndModify to lock configServer : %s ; output : %s \n", err.Error(), output)
+		return err
+	}
 	err = json.Unmarshal(output, &v)
 	if err != nil {
 		klog.Errorf("Unmarshal error while running findAndModify to lock configServer : %s \n", err.Error())
