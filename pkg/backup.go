@@ -464,8 +464,17 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 			backupHost = secondary
 		}
 
-		err = lockConfigServer(parameters.ConfigServer, secondary)
+		// Check if secondary is already locked before locking it.
+		// If yes, unlock it and sync with primary
+		if err := checkIfSecondaryLockedAndSync(secondary); err != nil {
+			return nil, err
+		}
 
+		if err := setupConfigServer(parameters.ConfigServer, secondary); err != nil {
+			return nil, err
+		}
+
+		err = lockSecondaryMember(secondary)
 		cleanupFuncs = append(cleanupFuncs, func() error {
 			// even if error occurs, try to unlock the server
 			return unlockSecondaryMember(secondary)
@@ -490,6 +499,12 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 		backupHost := primary
 		if secondary != "" {
 			backupHost = secondary
+		}
+
+		// Check if secondary is already locked before locking it.
+		// If yes, unlock it and sync with primary
+		if err := checkIfSecondaryLockedAndSync(secondary); err != nil {
+			return nil, err
 		}
 
 		err = lockSecondaryMember(secondary)
@@ -700,8 +715,8 @@ func enableBalancer(mongosHost string) error {
 	return nil
 }
 
-func lockConfigServer(configSVRDSN, secondaryHost string) error {
-	klog.Infoln("Attempting to lock configserver", configSVRDSN)
+func setupConfigServer(configSVRDSN, secondaryHost string) error {
+	klog.Infoln("Attempting to setup configserver", configSVRDSN)
 
 	if secondaryHost == "" {
 		klog.Warningln("locking configserver is skipped. secondary host is empty")
@@ -718,13 +733,13 @@ func lockConfigServer(configSVRDSN, secondaryHost string) error {
 
 	output, err := sh.Command(MongoCMD, args...).Output()
 	if err != nil {
-		klog.Errorf("Error while running findAndModify to lock configServer : %s ; output : %s \n", err.Error(), output)
+		klog.Errorf("Error while running findAndModify to setup configServer : %s ; output : %s \n", err.Error(), output)
 		return err
 	}
 
 	err = json.Unmarshal(output, &v)
 	if err != nil {
-		klog.Errorf("Unmarshal error while running findAndModify to lock configServer : %s \n", err.Error())
+		klog.Errorf("Unmarshal error while running findAndModify to setup configServer : %s \n", err.Error())
 		return err
 	}
 	val, ok := v["counter"].(float64)
@@ -752,25 +767,56 @@ func lockConfigServer(configSVRDSN, secondaryHost string) error {
 			return fmt.Errorf("unable to get BackupControlDocument. got response: %v", v)
 		}
 		if int(val) != int(val2) {
-			klog.V(5).Infof("BackupDocument counter in secondary is not same. Expected %v, but got %v. Full response: %v", val, val2, v)
+			klog.V(5).Infof("BackupDocument counter in secondary %v is not same. Expected %v, but got %v. Full response: %v", secondaryHost, val, val2, v)
 			time.Sleep(time.Second * 5)
 		}
 	}
 	if timer >= 60 {
-		return fmt.Errorf("timeout while waiting for BackupDocument counter in secondary to be same as primary. Expected %v, but got %v. Full response: %v", val, val2, v)
+		return fmt.Errorf("timeout while waiting for BackupDocument counter in secondary %v to be same as primary. Expected %v, but got %v. Full response: %v", secondaryHost, val, val2, v)
 	}
-	// lock secondary
-	return lockSecondaryMember(secondaryHost)
+
+	return nil
 }
 
 func lockSecondaryMember(mongohost string) error {
 	klog.Infoln("Attempting to lock secondary member", mongohost)
+
 	if mongohost == "" {
 		klog.Warningln("locking secondary member is skipped. secondary host is empty")
 		return nil
 	}
 
-	// Check if it is already locked
+	// lock file
+	v := make(map[string]interface{})
+	args := append([]interface{}{
+		"config",
+		"--host", mongohost,
+		"--quiet",
+		"--eval", "JSON.stringify(db.fsyncLock())",
+	}, mongoCreds...)
+
+	output, err := sh.Command(MongoCMD, args...).Output()
+	if err != nil {
+		klog.Errorf("Error while running fsyncLock on secondary : %s ; output : %s \n", err.Error(), output)
+		return err
+	}
+
+	err = json.Unmarshal(output, &v)
+	if err != nil {
+		klog.Errorf("Unmarshal error while running fsyncLock on secondary : %s \n", err.Error())
+		return err
+	}
+
+	if val, ok := v["ok"].(float64); !ok || int(val) != 1 {
+		return fmt.Errorf("unable to lock the secondary host. got response: %v", v)
+	}
+	klog.Infof("secondary %s locked.", mongohost)
+	return nil
+}
+
+func checkIfSecondaryLockedAndSync(mongohost string) error {
+	klog.Infoln("Checking if secondary %s is already locked.", mongohost)
+
 	x := make(map[string]interface{})
 	args := append([]interface{}{
 		"config",
@@ -790,8 +836,8 @@ func lockSecondaryMember(mongohost string) error {
 	}
 
 	val, ok := x["fsyncLock"].(bool)
-	if ok && bool(val) == true {
-		// Already locked
+	if ok && val {
+		klog.Infoln("Found fsyncLock true while locking")
 		err := unlockSecondaryMember(mongohost)
 		if err != nil {
 			return err
@@ -799,101 +845,77 @@ func lockSecondaryMember(mongohost string) error {
 		if err := waitForSecondarySync(mongohost); err != nil {
 			return err
 		}
-	} else if !ok {
-		return fmt.Errorf("unable to get fsyncLock of secondary using db.currentOp(). got response: %v", x)
 	}
-
-	// lock file
-	v := make(map[string]interface{})
-	args = append([]interface{}{
-		"config",
-		"--host", mongohost,
-		"--quiet",
-		"--eval", "JSON.stringify(db.fsyncLock())",
-	}, mongoCreds...)
-
-	output, err = sh.Command(MongoCMD, args...).Output()
-	if err != nil {
-		klog.Errorf("Error while running fsyncLock on secondary : %s ; output : %s \n", err.Error(), output)
-		return err
-	}
-
-	err = json.Unmarshal(output, &v)
-	if err != nil {
-		klog.Errorf("Unmarshal error while running fsyncLock on secondary : %s \n", err.Error())
-		return err
-	}
-
-	if val, ok := v["ok"].(float64); !ok || int(val) != 1 {
-		return fmt.Errorf("unable to lock the secondary host. got response: %v", v)
-	}
-	klog.Infof("secondary %s locked.", mongohost)
 	return nil
 }
 
 func waitForSecondarySync(mongohost string) error {
-	status := make(map[string]interface{})
-	args := append([]interface{}{
-		"config",
-		"--host", mongohost,
-		"--quiet",
-		"--eval", "JSON.stringify(rs.status())",
-	}, mongoCreds...)
-
-	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&status); err != nil {
-		klog.Errorf("Error while running status on secondary : %s ; output : %s \n", mongohost, err.Error())
-		return err
-	}
-
-	members, ok := status["members"].([]map[string]interface{})
-	if !ok {
-		return fmt.Errorf("unable to get members using rs.status(). got response: %v", status)
-	}
-
-	var masterOptime, masterOptimeDate, curOptime, curOptimeDate time.Time
-
-	for _, member := range members {
-		if member["stateStr"] == "PRIMARY" {
-			optime, ok := member["optime"].(map[string]interface{})
-			if !ok {
-				return fmt.Errorf("unable to get optime of primary using rs.status(). got response: %v", member)
-			}
-			optimedate, ok := member["optimeDate"]
-			if !ok {
-				return fmt.Errorf("unable to get optimedate of primary using rs.status(). got response: %v", member)
-			}
-
-			masterOptime, ok = optime["ts"].(time.Time)
-			if !ok {
-				return fmt.Errorf("unable to get timestamp of primary using rs.status(). got response: %v", optime)
-			}
-			masterOptimeDate = optimedate.(time.Time)
-			break
-		}
-	}
+	klog.Infoln("Attempting to sync secondary with primary")
 
 	for {
-		synced := false
+		status := make(map[string]interface{})
+		args := append([]interface{}{
+			"config",
+			"--host", mongohost,
+			"--quiet",
+			"--eval", "JSON.stringify(rs.status())",
+		}, mongoCreds...)
+
+		if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&status); err != nil {
+			klog.Errorf("Error while running status on secondary : %s ; output : %s \n", mongohost, err.Error())
+			return err
+		}
+
+		members, ok := status["members"].([]interface{})
+		if !ok {
+			return fmt.Errorf("unable to get members using rs.status(). got response: %v", status)
+		}
+
+		var masterOptimeDate, curOptimeDate time.Time
+
 		for _, member := range members {
-			if member["stateStr"] == "SECONDARY" && member["name"] == mongohost {
 
-				optime, ok := member["optime"].(map[string]interface{})
+			memberInfo, ok := member.(map[string]interface{})
+			if !ok {
+				return fmt.Errorf("unable to get member info of primary using rs.status(). got response: %v", member)
+			}
+
+			if memberInfo["stateStr"] == "PRIMARY" {
+				optimedate, ok := memberInfo["optimeDate"].(string)
 				if !ok {
-					return fmt.Errorf("unable to get optime of secondary using rs.status(). got response: %v", member)
-				}
-				optimedate, ok := member["optimeDate"]
-				if !ok {
-					return fmt.Errorf("unable to get optimedate of secondary using rs.status(). got response: %v", member)
+					return fmt.Errorf("unable to get optimedate of primary using rs.status(). got response: %v", memberInfo)
 				}
 
-				curOptime, ok = optime["ts"].(time.Time)
-				if !ok {
-					return fmt.Errorf("unable to get timestamp of primary using rs.status(). got response: %v", optime)
+				convTime, err := getTime(optimedate)
+				if err != nil {
+					return err
 				}
-				curOptimeDate = optimedate.(time.Time)
+				masterOptimeDate = convTime
+				break
+			}
+		}
+		synced := true
+		for _, member := range members {
 
-				if curOptime == masterOptime && curOptimeDate == masterOptimeDate {
-					synced = true
+			memberInfo, ok := member.(map[string]interface{})
+			if !ok {
+				return fmt.Errorf("unable to get member info of secondary using rs.status(). got response: %v", member)
+			}
+
+			if memberInfo["stateStr"] == "SECONDARY" && memberInfo["name"] == mongohost {
+
+				optimedate, ok := memberInfo["optimeDate"].(string)
+				if !ok {
+					return fmt.Errorf("unable to get optimedate of secondary using rs.status(). got response: %v", memberInfo)
+				}
+
+				convTime, err := getTime(optimedate)
+				if err != nil {
+					return err
+				}
+				curOptimeDate = convTime
+				if curOptimeDate.Before(masterOptimeDate) {
+					synced = false
 				}
 				break
 			}

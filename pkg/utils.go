@@ -94,3 +94,14 @@ func containsArg(args []string, checklist sets.String) bool {
 	}
 	return false
 }
+
+func getTime(t string) (time.Time, error) {
+	// Define the layout or format of the input string
+	layout := "2006-01-02T15:04:05Z"
+
+	parsedTime, err := time.Parse(layout, t)
+	if err != nil {
+		return time.Time{}, err
+	}
+	return parsedTime, nil
+}
