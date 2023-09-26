@@ -769,17 +769,50 @@ func lockSecondaryMember(mongohost string) error {
 		klog.Warningln("locking secondary member is skipped. secondary host is empty")
 		return nil
 	}
-	v := make(map[string]interface{})
+
+	// Check if it is already locked
+	x := make(map[string]interface{})
+	args := append([]interface{}{
+		"config",
+		"--host", mongohost,
+		"--quiet",
+		"--eval", "JSON.stringify(db.currentOp())",
+	}, mongoCreds...)
+	output, err := sh.Command(MongoCMD, args...).Output()
+	if err != nil {
+		klog.Errorf("Error while running currentOp on secondary : %s ; output : %s \n", err.Error(), output)
+		return err
+	}
+	err = json.Unmarshal(output, &x)
+	if err != nil {
+		klog.Errorf("Unmarshal error while running currentOp on secondary : %s \n", err.Error())
+		return err
+	}
+
+	val, ok := x["fsyncLock"].(bool)
+	if ok && bool(val) == true {
+		// Already locked
+		err := unlockSecondaryMember(mongohost)
+		if err != nil {
+			return err
+		}
+		if err := waitForSecondarySync(mongohost); err != nil {
+			return err
+		}
+	} else if !ok {
+		return fmt.Errorf("unable to get fsyncLock of secondary using db.currentOp(). got response: %v", x)
+	}
 
 	// lock file
-	args := append([]interface{}{
+	v := make(map[string]interface{})
+	args = append([]interface{}{
 		"config",
 		"--host", mongohost,
 		"--quiet",
 		"--eval", "JSON.stringify(db.fsyncLock())",
 	}, mongoCreds...)
 
-	output, err := sh.Command(MongoCMD, args...).Output()
+	output, err = sh.Command(MongoCMD, args...).Output()
 	if err != nil {
 		klog.Errorf("Error while running fsyncLock on secondary : %s ; output : %s \n", err.Error(), output)
 		return err
@@ -795,6 +828,83 @@ func lockSecondaryMember(mongohost string) error {
 		return fmt.Errorf("unable to lock the secondary host. got response: %v", v)
 	}
 	klog.Infof("secondary %s locked.", mongohost)
+	return nil
+}
+
+func waitForSecondarySync(mongohost string) error {
+	status := make(map[string]interface{})
+	args := append([]interface{}{
+		"config",
+		"--host", mongohost,
+		"--quiet",
+		"--eval", "JSON.stringify(rs.status())",
+	}, mongoCreds...)
+
+	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&status); err != nil {
+		klog.Errorf("Error while running status on secondary : %s ; output : %s \n", mongohost, err.Error())
+		return err
+	}
+
+	members, ok := status["members"].([]map[string]interface{})
+	if !ok {
+		return fmt.Errorf("unable to get members using rs.status(). got response: %v", status)
+	}
+
+	var masterOptime, masterOptimeDate, curOptime, curOptimeDate time.Time
+
+	for _, member := range members {
+		if member["stateStr"] == "PRIMARY" {
+			optime, ok := member["optime"].(map[string]interface{})
+			if !ok {
+				return fmt.Errorf("unable to get optime of primary using rs.status(). got response: %v", member)
+			}
+			optimedate, ok := member["optimeDate"]
+			if !ok {
+				return fmt.Errorf("unable to get optimedate of primary using rs.status(). got response: %v", member)
+			}
+
+			masterOptime, ok = optime["ts"].(time.Time)
+			if !ok {
+				return fmt.Errorf("unable to get timestamp of primary using rs.status(). got response: %v", optime)
+			}
+			masterOptimeDate = optimedate.(time.Time)
+			break
+		}
+	}
+
+	for {
+		synced := false
+		for _, member := range members {
+			if member["stateStr"] == "SECONDARY" && member["name"] == mongohost {
+
+				optime, ok := member["optime"].(map[string]interface{})
+				if !ok {
+					return fmt.Errorf("unable to get optime of secondary using rs.status(). got response: %v", member)
+				}
+				optimedate, ok := member["optimeDate"]
+				if !ok {
+					return fmt.Errorf("unable to get optimedate of secondary using rs.status(). got response: %v", member)
+				}
+
+				curOptime, ok = optime["ts"].(time.Time)
+				if !ok {
+					return fmt.Errorf("unable to get timestamp of primary using rs.status(). got response: %v", optime)
+				}
+				curOptimeDate = optimedate.(time.Time)
+
+				if curOptime == masterOptime && curOptimeDate == masterOptimeDate {
+					synced = true
+				}
+				break
+			}
+		}
+		if synced {
+			break
+		}
+
+		klog.Infoln("Waiting... database is not synced yet")
+		time.Sleep(5 * time.Second)
+	}
 	return nil
 }
 
