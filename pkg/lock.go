@@ -26,7 +26,7 @@ import (
 )
 
 func setupConfigServer(configSVRDSN, secondaryHost string) error {
-	klog.Infoln("Attempting to setup configserver", configSVRDSN)
+	klog.Infof("Attempting to setup configserver %s\n", configSVRDSN)
 
 	if secondaryHost == "" {
 		klog.Warningln("locking configserver is skipped. secondary host is empty")
@@ -89,7 +89,7 @@ func setupConfigServer(configSVRDSN, secondaryHost string) error {
 }
 
 func lockSecondaryMember(mongohost string) error {
-	klog.Infoln("Attempting to lock secondary member", mongohost)
+	klog.Infof("Attempting to lock secondary member %s\n", mongohost)
 
 	if mongohost == "" {
 		klog.Warningln("locking secondary member is skipped. secondary host is empty")
@@ -120,12 +120,12 @@ func lockSecondaryMember(mongohost string) error {
 	if val, ok := v["ok"].(float64); !ok || int(val) != 1 {
 		return fmt.Errorf("unable to lock the secondary host. got response: %v", v)
 	}
-	klog.Infof("secondary %s locked.", mongohost)
+	klog.Infof("secondary %s locked.\n", mongohost)
 	return nil
 }
 
 func checkIfSecondaryLockedAndSync(mongohost string) error {
-	klog.Infoln("Checking if secondary %s is already locked.", mongohost)
+	klog.Infof("Checking if secondary %s is already locked\n", mongohost)
 
 	x := make(map[string]interface{})
 	args := append([]interface{}{
@@ -160,7 +160,7 @@ func checkIfSecondaryLockedAndSync(mongohost string) error {
 }
 
 func waitForSecondarySync(mongohost string) error {
-	klog.Infoln("Attempting to sync secondary with primary")
+	klog.Infof("Attempting to sync secondary %s with primary\n", mongohost)
 
 	for {
 		status := make(map[string]interface{})
@@ -231,6 +231,7 @@ func waitForSecondarySync(mongohost string) error {
 			}
 		}
 		if synced {
+			klog.Infoln("database successfully synced")
 			break
 		}
 
@@ -241,7 +242,7 @@ func waitForSecondarySync(mongohost string) error {
 }
 
 func unlockSecondaryMember(mongohost string) error {
-	klog.Infoln("Attempting to unlock secondary member", mongohost)
+	klog.Infof("Attempting to unlock secondary member %s\n", mongohost)
 	if mongohost == "" {
 		klog.Warningln("skipped unlocking secondary member. secondary host is empty")
 		return nil
@@ -268,6 +269,6 @@ func unlockSecondaryMember(mongohost string) error {
 	if val, ok := v["ok"].(float64); !ok || int(val) != 1 {
 		return fmt.Errorf("unable to lock the secondary host. got response: %v", v)
 	}
-	klog.Infof("secondary %s unlocked.", mongohost)
+	klog.Infof("secondary %s unlocked\n", mongohost)
 	return nil
 }
