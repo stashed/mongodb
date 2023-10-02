@@ -257,7 +257,6 @@ gomodules.xyz/wait
 # gomodules.xyz/x v0.0.15
 ## explicit; go 1.18
 gomodules.xyz/x/arrays
-gomodules.xyz/x/strings
 gomodules.xyz/x/version
 # google.golang.org/appengine v1.6.7
 ## explicit; go 1.11

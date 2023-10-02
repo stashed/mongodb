@@ -35,7 +35,6 @@ import (
 	license "go.bytebuilders.dev/license-verifier/kubernetes"
 	"gomodules.xyz/flags"
 	"gomodules.xyz/pointer"
-	go_str "gomodules.xyz/x/strings"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -430,7 +429,7 @@ func (opt *mongoOptions) getHostRestoreStats(err error) []api_v1beta1.HostRestor
 func (opt *mongoOptions) getSnapshotForHost(hostname string, rules []api_v1beta1.Rule) string {
 	var hostSnapshot string
 	for _, rule := range rules {
-		if len(rule.TargetHosts) == 0 || go_str.Contains(rule.TargetHosts, hostname) {
+		if len(rule.TargetHosts) == 0 || containsString(rule.TargetHosts, hostname) {
 			hostSnapshot = rule.Snapshots[0]
 			// if rule has empty targetHost then check further rules to see if any other rule with non-empty targetHost matches
 			if len(rule.TargetHosts) == 0 {
