@@ -635,7 +635,7 @@ func disabelBalancer(mongosHost string) error {
 
 	err = json.Unmarshal(output, &v)
 	if err != nil {
-		klog.Errorf("Unmarshal error while stopping balancer : %s \n", err.Error())
+		klog.Errorf("Unmarshal error while stopping balancer : %s ; output = %s \n", err.Error(), output)
 		return err
 	}
 
@@ -813,6 +813,7 @@ func unlockSecondaryMember(mongohost string) error {
 		"--quiet",
 		"--eval", "JSON.stringify(db.fsyncUnlock())",
 	}, mongoCreds...)
+
 	output, err := sh.Command(MongoCMD, args...).Output()
 	if err != nil {
 		klog.Errorf("Error while running fsyncUnlock on secondary : %s ; output : %s \n", err.Error(), output)
