@@ -667,6 +667,7 @@ func getPrimaryNSecondaryMember(mongoDSN string) (primary, secondary string, err
 		}
 
 		if secHost != primary {
+			klog.Infof("Primary %s & Secondary %s found for mongoDSN %s \n", primary, secHost, mongoDSN)
 			return primary, secHost, nil
 		}
 	}
@@ -683,10 +684,18 @@ func disabelBalancer(mongosHost string) error {
 		"config",
 		"--host", mongosHost,
 		"--quiet",
-		"--eval", "JSON.stringify(sh.stopBalancer())",
+		"--eval", "JSON.stringify(sh.stopBalancer(600000,1000))",
 	}, mongoCreds...)
 	// disable balancer
-	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+	output, err := sh.Command(MongoCMD, args...).Output()
+	if err != nil {
+		klog.Errorf("Error while stopping balancer : %s ; output : %s \n", err.Error(), output)
+		return err
+	}
+
+	err = json.Unmarshal(output, &v)
+	if err != nil {
+		klog.Errorf("Unmarshal error while stopping balancer : %s ; output = %s \n", err.Error(), output)
 		return err
 	}
 
@@ -702,8 +711,10 @@ func disabelBalancer(mongosHost string) error {
 		"--eval", "while(sh.isBalancerRunning().mode != 'off'){ print('waiting for balancer to stop...'); sleep(1000);}",
 	}, mongoCreds...)
 	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").Run(); err != nil {
+		klog.Errorf("Error while waiting for the balancer to stop : %s \n", err.Error())
 		return err
 	}
+	klog.Info("Balancer successfully Disabled.")
 	return nil
 }
 
@@ -719,14 +730,33 @@ func enableBalancer(mongosHost string) error {
 		"--quiet",
 		"--eval", "JSON.stringify(sh.setBalancerState(true))",
 	}, mongoCreds...)
-	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+
+	var (
+		output []byte
+		err    error
+	)
+	cmd := sh.Command(MongoCMD, args...)
+	for i := 0; i < 10; i++ {
+		output, err = cmd.Output()
+		if err != nil {
+			klog.Errorf("Try #%d : Error on setBalancerState command : %s, output : %s .\n", i, err.Error(), output)
+			time.Sleep(time.Second)
+		} else {
+			break
+		}
+	}
+
+	err = json.Unmarshal(output, &v)
+	if err != nil {
+		klog.Errorf("Unmarshal error while enabling balancer : %+v , output : %s \n", err.Error(), output)
 		return err
 	}
 
 	if val, ok := v["ok"].(float64); !ok || int(val) != 1 {
-		return fmt.Errorf("unable to disable balancer. got response: %v", v)
+		return fmt.Errorf("unable to enable balancer. got response: %v", v)
 	}
 
+	klog.Info("Balancer successfully re-enabled.")
 	return nil
 }
 
@@ -745,7 +775,16 @@ func lockConfigServer(configSVRDSN, secondaryHost string) error {
 		"--quiet",
 		"--eval", "JSON.stringify(db.BackupControl.findAndModify({query: { _id: 'BackupControlDocument' }, update: { $inc: { counter : 1 } }, new: true, upsert: true, writeConcern: { w: 'majority', wtimeout: 15000 }}));",
 	}, mongoCreds...)
-	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+
+	output, err := sh.Command(MongoCMD, args...).Output()
+	if err != nil {
+		klog.Errorf("Error while running findAndModify to lock configServer : %s ; output : %s \n", err.Error(), output)
+		return err
+	}
+
+	err = json.Unmarshal(output, &v)
+	if err != nil {
+		klog.Errorf("Unmarshal error while running findAndModify to lock configServer : %s \n", err.Error())
 		return err
 	}
 	val, ok := v["counter"].(float64)
@@ -801,14 +840,23 @@ func lockSecondaryMember(mongohost string) error {
 		"--quiet",
 		"--eval", "JSON.stringify(db.fsyncLock())",
 	}, mongoCreds...)
-	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+
+	output, err := sh.Command(MongoCMD, args...).Output()
+	if err != nil {
+		klog.Errorf("Error while running fsyncLock on secondary : %s ; output : %s \n", err.Error(), output)
+		return err
+	}
+
+	err = json.Unmarshal(output, &v)
+	if err != nil {
+		klog.Errorf("Unmarshal error while running fsyncLock on secondary : %s \n", err.Error())
 		return err
 	}
 
 	if val, ok := v["ok"].(float64); !ok || int(val) != 1 {
 		return fmt.Errorf("unable to lock the secondary host. got response: %v", v)
 	}
-
+	klog.Infof("secondary %s locked.", mongohost)
 	return nil
 }
 
@@ -827,14 +875,22 @@ func unlockSecondaryMember(mongohost string) error {
 		"--quiet",
 		"--eval", "JSON.stringify(db.fsyncUnlock())",
 	}, mongoCreds...)
-	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+
+	output, err := sh.Command(MongoCMD, args...).Output()
+	if err != nil {
+		klog.Errorf("Error while running fsyncUnlock on secondary : %s ; output : %s \n", err.Error(), output)
+		return err
+	}
+	err = json.Unmarshal(output, &v)
+	if err != nil {
+		klog.Errorf("Unmarshal error while running fsyncUnlock on secondary : %s \n", err.Error())
 		return err
 	}
 
 	if val, ok := v["ok"].(float64); !ok || int(val) != 1 {
 		return fmt.Errorf("unable to lock the secondary host. got response: %v", v)
 	}
-
+	klog.Infof("secondary %s unlocked.", mongohost)
 	return nil
 }
 
