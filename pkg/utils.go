@@ -95,6 +95,15 @@ func containsArg(args []string, checklist sets.String) bool {
 	return false
 }
 
+func containsString(a []string, e string) bool {
+	for _, s := range a {
+		if s == e {
+			return true
+		}
+	}
+	return false
+}
+
 func getTime(t string) (time.Time, error) {
 	// Define the layout or format of the input string
 	layout := "2006-01-02T15:04:05Z"
