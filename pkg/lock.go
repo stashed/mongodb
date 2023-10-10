@@ -129,10 +129,10 @@ func checkIfSecondaryLockedAndSync(mongohost string) error {
 
 	x := make(map[string]interface{})
 	args := append([]interface{}{
-		"config",
+		"admin",
 		"--host", mongohost,
 		"--quiet",
-		"--eval", "JSON.stringify(db.currentOp())",
+		"--eval", "rs.secondaryOk(); JSON.stringify(db.runCommand({currentOp:1}))",
 	}, mongoCreds...)
 	output, err := sh.Command(MongoCMD, args...).Output()
 	if err != nil {
