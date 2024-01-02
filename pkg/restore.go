@@ -349,7 +349,7 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 			// 3. --nsInclude
 			// 4. --nsExclude
 			// xref: https://docs.mongodb.com/manual/reference/program/mongorestore/#cmdoption-mongorestore-oplogreplay
-			forbiddenArgs := sets.NewString(
+			forbiddenArgs := sets.New[string](
 				"-d", "--db",
 				"-c", "--collection",
 				"--nsInclude",
