@@ -427,7 +427,7 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 			// 1. --db
 			// 2. --collection
 			// xref: https://docs.mongodb.com/manual/reference/program/mongodump/#cmdoption-mongodump-oplog
-			forbiddenArgs := sets.NewString(
+			forbiddenArgs := sets.New[string](
 				"-d", "--db",
 				"-c", "--collection",
 			)
