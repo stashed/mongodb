@@ -83,7 +83,7 @@ func waitForDBReady(host string, port, waitTimeout int32) {
 	}
 }
 
-func containsArg(args []string, checklist sets.String) bool {
+func containsArg(args []string, checklist sets.Set[string]) bool {
 	for i := range args {
 		a := strings.FieldsFunc(args[i], func(r rune) bool {
 			return r == '='
