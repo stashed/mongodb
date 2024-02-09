@@ -527,6 +527,7 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 		}
 
 		if err := setupConfigServer(parameters.ConfigServer, secondary); err != nil {
+			klog.Errorf("error while setup config server. error: %v", err)
 			return nil, err
 		}
 
