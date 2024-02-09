@@ -32,13 +32,13 @@ func setupConfigServer(configSVRDSN, secondaryHost string) error {
 		klog.Warningln("locking configserver is skipped. secondary host is empty")
 		return nil
 	}
-	v := make(map[string]interface{})
+	x := make(map[string]interface{})
 	// findAndModify BackupControlDocument. skip single quote inside single quote: https://stackoverflow.com/a/28786747/4628962
 	args := append([]interface{}{
 		"config",
 		"--host", configSVRDSN,
 		"--quiet",
-		"--eval", "db.BackupControl.findAndModify({query: { _id: 'BackupControlDocument' }, update: { $inc: { counter : 1 } }, new: true, upsert: true, writeConcern: { w: 'majority', wtimeout: 15000 }});",
+		"--eval", `JSON.stringify(db.BackupControl.findAndModify({query: { _id: 'BackupControlDocument' }, update:  { $inc: { counter : 1 } } , new: true, upsert: true, writeConcern: { w: 'majority', wtimeout: 15000 }}));`,
 	}, mongoCreds...)
 
 	output, err := sh.Command(MongoCMD, args...).Output()
@@ -46,18 +46,19 @@ func setupConfigServer(configSVRDSN, secondaryHost string) error {
 		klog.Errorf("Error while running findAndModify to setup configServer : %s ; output : %s \n", err.Error(), output)
 		return err
 	}
-
-	err = json.Unmarshal(output, &v)
+	err = json.Unmarshal(output, &x)
 	if err != nil {
 		klog.Errorf("Unmarshal error while running findAndModify to setup configServer : %s \n", err.Error())
 		return err
 	}
-	val, ok := v["counter"].(float64)
+
+	val, ok := x["counter"].(float64)
 	if !ok || int(val) == 0 {
-		return fmt.Errorf("unable to modify BackupControlDocument. got response: %v", v)
+		return fmt.Errorf("unable to modify BackupControlDocument. got response: %v", x)
 	}
 	val2 := float64(0)
 	timer := 0 // wait approximately 5 minutes.
+	v2 := make([]map[string]interface{}, 0)
 	for timer < 60 && (int(val2) == 0 || int(val) != int(val2)) {
 		timer++
 		// find backupDocument from secondary configServer
@@ -65,24 +66,25 @@ func setupConfigServer(configSVRDSN, secondaryHost string) error {
 			"config",
 			"--host", secondaryHost,
 			"--quiet",
-			"--eval", "rs.secondaryOk(); db.BackupControl.find({ '_id' : 'BackupControlDocument' }).readConcern('majority');",
+			"--eval", `"db.getMongo().setReadPref('secondary'); JSON.stringify(db.BackupControl.find({ '_id' : 'BackupControlDocument' }).readConcern('majority').toArray());"`,
 		}, mongoCreds...)
-
-		if err := sh.Command(MongoCMD, args...).UnmarshalJSON(&v); err != nil {
+		if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v2); err != nil {
 			return err
 		}
 
-		val2, ok = v["counter"].(float64)
-		if !ok {
-			return fmt.Errorf("unable to get BackupControlDocument. got response: %v", v)
+		if len(v2) > 0 {
+			val2, ok = v2[0]["counter"].(float64)
+			if !ok {
+				return fmt.Errorf("unable to get BackupControlDocument. got response: %v", x)
+			}
 		}
 		if int(val) != int(val2) {
-			klog.V(5).Infof("BackupDocument counter in secondary %v is not same. Expected %v, but got %v. Full response: %v", secondaryHost, val, val2, v)
+			klog.V(5).Infof("BackupDocument counter in secondary is not same. Expected %v, but got %v . Full response: %v", val, val2, x)
 			time.Sleep(time.Second * 5)
 		}
 	}
 	if timer >= 60 {
-		return fmt.Errorf("timeout while waiting for BackupDocument counter in secondary %v to be same as primary. Expected %v, but got %v. Full response: %v", secondaryHost, val, val2, v)
+		return fmt.Errorf("timeout while waiting for BackupDocument counter in secondary to be same as primary. Expected %v, but got %v. Full response: %v", val, val2, x)
 	}
 
 	return nil
@@ -129,10 +131,10 @@ func checkIfSecondaryLockedAndSync(mongohost string) error {
 
 	x := make(map[string]interface{})
 	args := append([]interface{}{
-		"config",
+		"admin",
 		"--host", mongohost,
 		"--quiet",
-		"--eval", "JSON.stringify(db.currentOp())",
+		"--eval", "db.getMongo().setReadPref('secondary'); JSON.stringify(db.runCommand({currentOp:1}))",
 	}, mongoCreds...)
 	output, err := sh.Command(MongoCMD, args...).Output()
 	if err != nil {
