@@ -7,7 +7,7 @@ toolchain go1.22.2
 require (
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.8.0
-	go.bytebuilders.dev/license-verifier/kubernetes v0.13.4
+	go.bytebuilders.dev/license-verifier/kubernetes v0.14.0
 	gomodules.xyz/flags v0.1.3
 	gomodules.xyz/go-sh v0.1.0
 	gomodules.xyz/logs v0.0.7
@@ -26,7 +26,7 @@ require (
 
 require (
 	github.com/Masterminds/semver/v3 v3.2.1 // indirect
-	github.com/PuerkitoBio/purell v1.2.0 // indirect
+	github.com/PuerkitoBio/purell v1.2.1 // indirect
 	github.com/armon/circbuf v0.0.0-20190214190532-5111143e8da2 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
@@ -70,8 +70,8 @@ require (
 	github.com/yudai/gojsondiff v1.0.0 // indirect
 	github.com/yudai/golcs v0.0.0-20170316035057-ecda9a501e82 // indirect
 	github.com/zeebo/xxh3 v1.0.2 // indirect
-	go.bytebuilders.dev/license-proxyserver v0.0.7-0.20231225202028-31122ab82502 // indirect
-	go.bytebuilders.dev/license-verifier v0.13.4 // indirect
+	go.bytebuilders.dev/license-proxyserver v0.0.9 // indirect
+	go.bytebuilders.dev/license-verifier v0.14.0 // indirect
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
 	golang.org/x/net v0.23.0 // indirect
 	golang.org/x/oauth2 v0.15.0 // indirect
@@ -87,7 +87,6 @@ require (
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
-	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/apiextensions-apiserver v0.29.2 // indirect
