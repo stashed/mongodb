@@ -18,6 +18,7 @@ package pkg
 
 import (
 	"fmt"
+	"net/url"
 	"os/exec"
 	"strings"
 	"time"
@@ -113,4 +114,14 @@ func getTime(t string) (time.Time, error) {
 		return time.Time{}, err
 	}
 	return parsedTime, nil
+}
+
+func isSrvConnection(connectionString string) (bool, error) {
+	parsedURL, err := url.Parse(connectionString)
+	if err != nil {
+		return false, err
+	}
+
+	// Check if the scheme is "mongodb+srv"
+	return parsedURL.Scheme == "mongodb+srv", nil
 }

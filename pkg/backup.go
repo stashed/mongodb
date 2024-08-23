@@ -267,11 +267,24 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 		return nil, err
 	}
 
-	port, err := appBinding.Port()
-	if err != nil {
-		return nil, err
+	var isSrv bool
+	port := int32(27017)
+	if appBinding.Spec.ClientConfig.URL != nil {
+		isSrv, err = isSrvConnection(*appBinding.Spec.ClientConfig.URL)
+		if err != nil {
+			return nil, err
+		}
 	}
 
+	// Checked for Altlas and DigitalOcean srv format connection string don't give port.
+	// mongodump --uri format not support port.
+
+	if !isSrv {
+		port, err = appBinding.Port()
+		if err != nil {
+			return nil, err
+		}
+	}
 	waitForDBReady(hostname, port, opt.waitTimeout)
 
 	// unmarshal parameter is the field has value
@@ -372,7 +385,7 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 		userAuth := []interface{}{
 			fmt.Sprintf("--username=%s", authSecret.Data[MongoUserKey]),
 			fmt.Sprintf("--password=%s", authSecret.Data[MongoPasswordKey]),
-			"--authenticationDatabase", opt.authenticationDatabase,
+			fmt.Sprintf("--authenticationDatabase=%s", opt.authenticationDatabase),
 		}
 		mongoCreds = append(mongoCreds, userAuth...)
 		dumpCreds = append(dumpCreds, userAuth...)
@@ -387,19 +400,19 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 			BackupPaths:     opt.defaultBackupOptions.BackupPaths,
 		}
 
+		uri := opt.buildMongoURI(mongoDSN, port, isStandalone, isSrv)
+
 		// setup pipe command
 		backupCmd := restic.Command{
 			Name: MongoDumpCMD,
-			Args: append([]interface{}{
-				"--host", mongoDSN,
+			Args: []interface{}{
+				"--uri", fmt.Sprintf("\"%s\"", uri),
 				"--archive",
-			}, dumpCreds...),
+			},
 		}
 		userArgs := strings.Fields(opt.mongoArgs)
 
-		if isStandalone {
-			backupCmd.Args = append(backupCmd.Args, fmt.Sprintf("--port=%d", port))
-		} else {
+		if !isStandalone {
 			// - port is already added in mongoDSN with replicasetName/host:port format.
 			// - oplog is enabled automatically for replicasets.
 			// Don't use --oplog if user specify any of these arguments through opt.mongoArgs
@@ -556,6 +569,39 @@ func cleanup() {
 			klog.Errorln(err)
 		}
 	}
+}
+
+func (opt *mongoOptions) buildMongoURI(mongoDSN string, port int32, isStandalone, isSrv bool) string {
+	userName := getOptionValue(dumpCreds, "--username")
+	password := getOptionValue(dumpCreds, "--password")
+	authDbName := getOptionValue(dumpCreds, "--authenticationDatabase")
+
+	prefix := "mongodb"
+	portStr := fmt.Sprintf(":%d", port)
+	if isSrv {
+		prefix += "+srv"
+		portStr = ""
+	}
+	if !isStandalone {
+		portStr = ""
+	}
+
+	return fmt.Sprintf("%s://%s:%s@%s%s/%s?authSource=%s",
+		prefix, userName, password, mongoDSN, portStr, authDbName, authDbName)
+}
+
+func getOptionValue(args []interface{}, option string) string {
+	for _, arg := range args {
+		strArg, ok := arg.(string)
+		if !ok {
+			continue
+		}
+		// assuming value has '='
+		if strings.HasPrefix(strArg, option+"=") {
+			return strings.TrimPrefix(strArg, option+"=")
+		}
+	}
+	return ""
 }
 
 func (opt *mongoOptions) getHostBackupStats(err error) []api_v1beta1.HostBackupStats {
