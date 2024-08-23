@@ -331,7 +331,12 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 		}
 	}
 
+	var tlsEnable bool
 	if appBinding.Spec.ClientConfig.CABundle != nil {
+		tlsEnable = true
+	}
+
+	if tlsEnable {
 		if tlsSecret == nil {
 			return nil, errors.Wrap(err, "spec.tlsSecret needs to be set in appbinding for TLS secured database.")
 		}
@@ -346,8 +351,8 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 		}
 		dumpCreds = []interface{}{
 			"--ssl",
-			"--sslCAFile", filepath.Join(opt.setupOptions.ScratchDir, MongoTLSCertFileName),
-			"--sslPEMKeyFile", filepath.Join(opt.setupOptions.ScratchDir, MongoClientPemFileName),
+			fmt.Sprintf("--sslCAFile=%s", filepath.Join(opt.setupOptions.ScratchDir, MongoTLSCertFileName)),
+			fmt.Sprintf("--sslPEMKeyFile=%s", filepath.Join(opt.setupOptions.ScratchDir, MongoClientPemFileName)),
 		}
 
 		// get certificate secret to get client certificate
@@ -374,9 +379,9 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 			return nil, errors.Wrap(err, "unable to get user from ssl.")
 		}
 		userAuth := []interface{}{
-			"-u", user,
-			"--authenticationMechanism", "MONGODB-X509",
-			"--authenticationDatabase", "$external",
+			fmt.Sprintf("--username=%s", user),
+			"--authenticationMechanism=MONGODB-X509",
+			"--authenticationDatabase=$external",
 		}
 		mongoCreds = append(mongoCreds, userAuth...)
 		dumpCreds = append(dumpCreds, userAuth...)
@@ -400,7 +405,7 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 			BackupPaths:     opt.defaultBackupOptions.BackupPaths,
 		}
 
-		uri := opt.buildMongoURI(mongoDSN, port, isStandalone, isSrv)
+		uri := opt.buildMongoURI(mongoDSN, port, isStandalone, isSrv, tlsEnable)
 
 		// setup pipe command
 		backupCmd := restic.Command{
@@ -410,6 +415,13 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 				"--archive",
 			},
 		}
+
+		if tlsEnable {
+			backupCmd.Args = append(backupCmd.Args,
+				fmt.Sprintf("--sslCAFile=%s", getOptionValue(dumpCreds, "--sslCAFile")),
+				fmt.Sprintf("--sslPEMKeyFile=%s", getOptionValue(dumpCreds, "--sslPEMKeyFile")))
+		}
+
 		userArgs := strings.Fields(opt.mongoArgs)
 
 		if !isStandalone {
@@ -569,25 +581,6 @@ func cleanup() {
 			klog.Errorln(err)
 		}
 	}
-}
-
-func (opt *mongoOptions) buildMongoURI(mongoDSN string, port int32, isStandalone, isSrv bool) string {
-	userName := getOptionValue(dumpCreds, "--username")
-	password := getOptionValue(dumpCreds, "--password")
-	authDbName := getOptionValue(dumpCreds, "--authenticationDatabase")
-
-	prefix := "mongodb"
-	portStr := fmt.Sprintf(":%d", port)
-	if isSrv {
-		prefix += "+srv"
-		portStr = ""
-	}
-	if !isStandalone {
-		portStr = ""
-	}
-
-	return fmt.Sprintf("%s://%s:%s@%s%s/%s?authSource=%s",
-		prefix, userName, password, mongoDSN, portStr, authDbName, authDbName)
 }
 
 func getOptionValue(args []interface{}, option string) string {

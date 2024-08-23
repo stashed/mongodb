@@ -125,3 +125,27 @@ func isSrvConnection(connectionString string) (bool, error) {
 	// Check if the scheme is "mongodb+srv"
 	return parsedURL.Scheme == "mongodb+srv", nil
 }
+
+func (opt *mongoOptions) buildMongoURI(mongoDSN string, port int32, isStandalone, isSrv, tlsEnable bool) string {
+	prefix := "mongodb"
+	portStr := fmt.Sprintf(":%d", port)
+	if isSrv {
+		prefix += "+srv"
+		portStr = ""
+	}
+	if !isStandalone {
+		portStr = ""
+	}
+
+	authDbName := getOptionValue(dumpCreds, "--authenticationDatabase")
+	userName := getOptionValue(dumpCreds, "--username")
+	if !tlsEnable {
+		password := getOptionValue(dumpCreds, "--password")
+		return fmt.Sprintf("%s://%s:%s@%s%s/dbnew?authSource=%s",
+			prefix, userName, password, mongoDSN, portStr, authDbName)
+	}
+
+	authMechanism := getOptionValue(dumpCreds, "--authenticationMechanism")
+	return fmt.Sprintf("%s://%s@%s%s/dbnew?authSource=%s&authMechanism=%s&ssl=true",
+		prefix, userName, mongoDSN, portStr, authDbName, authMechanism)
+}
