@@ -127,37 +127,33 @@ func isSrvConnection(connectionString string) (bool, error) {
 }
 
 func (opt *mongoOptions) buildMongoURI(mongoDSN string, port int32, isStandalone, isSrv, tlsEnable bool) string {
-	prefix := "mongodb"
+	prefix, ssl := "mongodb", ""
 	portStr := fmt.Sprintf(":%d", port)
 	if isSrv {
 		prefix += "+srv"
-		portStr = ""
 	}
-	if !isStandalone {
+	if !isStandalone || isSrv {
 		portStr = ""
-	}
-	backupdb := "" // full
-	if strings.Contains(opt.mongoArgs, "--db") {
-		args := strings.Fields(opt.mongoArgs)
-		for _, arg := range args {
-			if strings.Contains(arg, "--db") {
-				backupdb = strings.Split(arg, "=")[1]
-			}
-		}
 	}
 
+	backupDb := getBackupDB(opt.mongoArgs) // "" stands for all databases.
 	authDbName := getOptionValue(dumpCreds, "--authenticationDatabase")
 	userName := getOptionValue(dumpCreds, "--username")
+	password := getOptionValue(dumpCreds, "--password")
+	authMechanism := getOptionValue(dumpCreds, "--authenticationMechanism")
 
-	if !tlsEnable {
-		password := getOptionValue(dumpCreds, "--password")
-		return fmt.Sprintf("%s://%s:%s@%s%s/%s?authSource=%s",
-			prefix, userName, password, mongoDSN, portStr, backupdb, authDbName)
+	if password != "" {
+		password = fmt.Sprintf(":%s", password)
+	}
+	if authMechanism == "" {
+		authMechanism = "SCRAM-SHA-256"
+	}
+	if tlsEnable {
+		ssl = "&ssl=true"
 	}
 
-	authMechanism := getOptionValue(dumpCreds, "--authenticationMechanism")
-	return fmt.Sprintf("%s://%s@%s%s/%s?authSource=%s&authMechanism=%s&ssl=true",
-		prefix, userName, mongoDSN, portStr, backupdb, authDbName, authMechanism)
+	return fmt.Sprintf("%s://%s%s@%s%s/%s?authSource=%s&authMechanism=%s%s",
+		prefix, userName, password, mongoDSN, portStr, backupDb, authDbName, authMechanism, ssl)
 }
 
 // remove "shard0/" prefix from shard0/simple-shard0-0.simple-shard0-pods.demo.svc:27017,simple-shard0-1.simple-shard0-pods.demo.svc:27017
@@ -167,4 +163,17 @@ func extractHost(host string) string {
 		host = host[index+1:]
 	}
 	return host
+}
+
+func getBackupDB(mongoArgs string) string {
+	backupdb := "" // full
+	if strings.Contains(mongoArgs, "--db") {
+		args := strings.Fields(mongoArgs)
+		for _, arg := range args {
+			if strings.Contains(arg, "--db") {
+				backupdb = strings.Split(arg, "=")[1]
+			}
+		}
+	}
+	return backupdb
 }
