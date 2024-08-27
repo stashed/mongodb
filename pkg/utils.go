@@ -18,6 +18,7 @@ package pkg
 
 import (
 	"fmt"
+	"net/url"
 	"os/exec"
 	"strings"
 	"time"
@@ -113,4 +114,66 @@ func getTime(t string) (time.Time, error) {
 		return time.Time{}, err
 	}
 	return parsedTime, nil
+}
+
+func isSrvConnection(connectionString string) (bool, error) {
+	parsedURL, err := url.Parse(connectionString)
+	if err != nil {
+		return false, err
+	}
+
+	// Check if the scheme is "mongodb+srv"
+	return parsedURL.Scheme == "mongodb+srv", nil
+}
+
+func (opt *mongoOptions) buildMongoURI(mongoDSN string, port int32, isStandalone, isSrv, tlsEnable bool) string {
+	prefix, ssl := "mongodb", ""
+	portStr := fmt.Sprintf(":%d", port)
+	if isSrv {
+		prefix += "+srv"
+	}
+	if !isStandalone || isSrv {
+		portStr = ""
+	}
+
+	backupDb := getBackupDB(opt.mongoArgs) // "" stands for all databases.
+	authDbName := getOptionValue(dumpCreds, "--authenticationDatabase")
+	userName := getOptionValue(dumpCreds, "--username")
+	password := getOptionValue(dumpCreds, "--password")
+	authMechanism := getOptionValue(dumpCreds, "--authenticationMechanism")
+
+	if password != "" {
+		password = fmt.Sprintf(":%s", password)
+	}
+	if authMechanism == "" {
+		authMechanism = "SCRAM-SHA-256"
+	}
+	if tlsEnable {
+		ssl = "&ssl=true"
+	}
+
+	return fmt.Sprintf("%s://%s%s@%s%s/%s?authSource=%s&authMechanism=%s%s",
+		prefix, userName, password, mongoDSN, portStr, backupDb, authDbName, authMechanism, ssl)
+}
+
+// remove "shard0/" prefix from shard0/simple-shard0-0.simple-shard0-pods.demo.svc:27017,simple-shard0-1.simple-shard0-pods.demo.svc:27017
+func extractHost(host string) string {
+	index := strings.Index(host, "/")
+	if index != -1 {
+		host = host[index+1:]
+	}
+	return host
+}
+
+func getBackupDB(mongoArgs string) string {
+	backupdb := "" // full
+	if strings.Contains(mongoArgs, "--db") {
+		args := strings.Fields(mongoArgs)
+		for _, arg := range args {
+			if strings.Contains(arg, "--db") {
+				backupdb = strings.Split(arg, "=")[1]
+			}
+		}
+	}
+	return backupdb
 }
