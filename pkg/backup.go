@@ -267,11 +267,24 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 		return nil, err
 	}
 
-	port, err := appBinding.Port()
-	if err != nil {
-		return nil, err
+	var isSrv bool
+	port := int32(27017)
+	if appBinding.Spec.ClientConfig.URL != nil {
+		isSrv, err = isSrvConnection(*appBinding.Spec.ClientConfig.URL)
+		if err != nil {
+			return nil, err
+		}
 	}
 
+	// Checked for Altlas and DigitalOcean srv format connection string don't give port.
+	// mongodump not support both --uri and --port.
+
+	if !isSrv {
+		port, err = appBinding.Port()
+		if err != nil {
+			return nil, err
+		}
+	}
 	waitForDBReady(hostname, port, opt.waitTimeout)
 
 	// unmarshal parameter is the field has value
@@ -318,7 +331,12 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 		}
 	}
 
+	var tlsEnable bool
 	if appBinding.Spec.ClientConfig.CABundle != nil {
+		tlsEnable = true
+	}
+
+	if tlsEnable {
 		if tlsSecret == nil {
 			return nil, errors.Wrap(err, "spec.tlsSecret needs to be set in appbinding for TLS secured database.")
 		}
@@ -333,8 +351,8 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 		}
 		dumpCreds = []interface{}{
 			"--ssl",
-			"--sslCAFile", filepath.Join(opt.setupOptions.ScratchDir, MongoTLSCertFileName),
-			"--sslPEMKeyFile", filepath.Join(opt.setupOptions.ScratchDir, MongoClientPemFileName),
+			fmt.Sprintf("--sslCAFile=%s", filepath.Join(opt.setupOptions.ScratchDir, MongoTLSCertFileName)),
+			fmt.Sprintf("--sslPEMKeyFile=%s", filepath.Join(opt.setupOptions.ScratchDir, MongoClientPemFileName)),
 		}
 
 		// get certificate secret to get client certificate
@@ -361,9 +379,9 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 			return nil, errors.Wrap(err, "unable to get user from ssl.")
 		}
 		userAuth := []interface{}{
-			"-u", user,
-			"--authenticationMechanism", "MONGODB-X509",
-			"--authenticationDatabase", "$external",
+			fmt.Sprintf("--username=%s", user),
+			"--authenticationMechanism=MONGODB-X509",
+			"--authenticationDatabase=$external",
 		}
 		mongoCreds = append(mongoCreds, userAuth...)
 		dumpCreds = append(dumpCreds, userAuth...)
@@ -372,7 +390,7 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 		userAuth := []interface{}{
 			fmt.Sprintf("--username=%s", authSecret.Data[MongoUserKey]),
 			fmt.Sprintf("--password=%s", authSecret.Data[MongoPasswordKey]),
-			"--authenticationDatabase", opt.authenticationDatabase,
+			fmt.Sprintf("--authenticationDatabase=%s", opt.authenticationDatabase),
 		}
 		mongoCreds = append(mongoCreds, userAuth...)
 		dumpCreds = append(dumpCreds, userAuth...)
@@ -387,19 +405,32 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 			BackupPaths:     opt.defaultBackupOptions.BackupPaths,
 		}
 
+		uri := opt.buildMongoURI(mongoDSN, port, isStandalone, isSrv, tlsEnable)
+
 		// setup pipe command
 		backupCmd := restic.Command{
 			Name: MongoDumpCMD,
-			Args: append([]interface{}{
-				"--host", mongoDSN,
+			Args: []interface{}{
+				"--uri", fmt.Sprintf("\"%s\"", uri),
 				"--archive",
-			}, dumpCreds...),
+			},
 		}
-		userArgs := strings.Fields(opt.mongoArgs)
 
-		if isStandalone {
-			backupCmd.Args = append(backupCmd.Args, fmt.Sprintf("--port=%d", port))
-		} else {
+		if tlsEnable {
+			backupCmd.Args = append(backupCmd.Args,
+				fmt.Sprintf("--sslCAFile=%s", getOptionValue(dumpCreds, "--sslCAFile")),
+				fmt.Sprintf("--sslPEMKeyFile=%s", getOptionValue(dumpCreds, "--sslPEMKeyFile")))
+		}
+
+		var userArgs []string
+		for _, arg := range strings.Fields(opt.mongoArgs) {
+			// illegal argument combination: cannot specify --db and --uri
+			if !strings.Contains(arg, "--db") {
+				userArgs = append(userArgs, arg)
+			}
+		}
+
+		if !isStandalone {
 			// - port is already added in mongoDSN with replicasetName/host:port format.
 			// - oplog is enabled automatically for replicasets.
 			// Don't use --oplog if user specify any of these arguments through opt.mongoArgs
@@ -556,6 +587,20 @@ func cleanup() {
 			klog.Errorln(err)
 		}
 	}
+}
+
+func getOptionValue(args []interface{}, option string) string {
+	for _, arg := range args {
+		strArg, ok := arg.(string)
+		if !ok {
+			continue
+		}
+		// assuming value has '='
+		if strings.HasPrefix(strArg, option+"=") {
+			return strings.TrimPrefix(strArg, option+"=")
+		}
+	}
+	return ""
 }
 
 func (opt *mongoOptions) getHostBackupStats(err error) []api_v1beta1.HostBackupStats {
