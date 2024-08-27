@@ -277,7 +277,7 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 	}
 
 	// Checked for Altlas and DigitalOcean srv format connection string don't give port.
-	// mongodump --uri format not support port.
+	// mongodump not support both --uri and --port.
 
 	if !isSrv {
 		port, err = appBinding.Port()
@@ -422,7 +422,13 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 				fmt.Sprintf("--sslPEMKeyFile=%s", getOptionValue(dumpCreds, "--sslPEMKeyFile")))
 		}
 
-		userArgs := strings.Fields(opt.mongoArgs)
+		var userArgs []string
+		for _, arg := range strings.Fields(opt.mongoArgs) {
+			// illegal argument combination: cannot specify --db and --uri
+			if !strings.Contains(arg, "--db") {
+				userArgs = append(userArgs, arg)
+			}
+		}
 
 		if !isStandalone {
 			// - port is already added in mongoDSN with replicasetName/host:port format.

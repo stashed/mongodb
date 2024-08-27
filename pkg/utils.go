@@ -136,16 +136,35 @@ func (opt *mongoOptions) buildMongoURI(mongoDSN string, port int32, isStandalone
 	if !isStandalone {
 		portStr = ""
 	}
+	backupdb := "" // full
+	if strings.Contains(opt.mongoArgs, "--db") {
+		args := strings.Fields(opt.mongoArgs)
+		for _, arg := range args {
+			if strings.Contains(arg, "--db") {
+				backupdb = strings.Split(arg, "=")[1]
+			}
+		}
+	}
 
 	authDbName := getOptionValue(dumpCreds, "--authenticationDatabase")
 	userName := getOptionValue(dumpCreds, "--username")
+
 	if !tlsEnable {
 		password := getOptionValue(dumpCreds, "--password")
-		return fmt.Sprintf("%s://%s:%s@%s%s/dbnew?authSource=%s",
-			prefix, userName, password, mongoDSN, portStr, authDbName)
+		return fmt.Sprintf("%s://%s:%s@%s%s/%s?authSource=%s",
+			prefix, userName, password, mongoDSN, portStr, backupdb, authDbName)
 	}
 
 	authMechanism := getOptionValue(dumpCreds, "--authenticationMechanism")
-	return fmt.Sprintf("%s://%s@%s%s/dbnew?authSource=%s&authMechanism=%s&ssl=true",
-		prefix, userName, mongoDSN, portStr, authDbName, authMechanism)
+	return fmt.Sprintf("%s://%s@%s%s/%s?authSource=%s&authMechanism=%s&ssl=true",
+		prefix, userName, mongoDSN, portStr, backupdb, authDbName, authMechanism)
+}
+
+// remove "shard0/" prefix from shard0/simple-shard0-0.simple-shard0-pods.demo.svc:27017,simple-shard0-1.simple-shard0-pods.demo.svc:27017
+func extractHost(host string) string {
+	index := strings.Index(host, "/")
+	if index != -1 {
+		host = host[index+1:]
+	}
+	return host
 }

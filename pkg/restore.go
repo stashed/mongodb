@@ -334,6 +334,7 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 		}
 
 		uri := opt.buildMongoURI(mongoDSN, port, isStandalone, isSrv, tlsEnable)
+
 		// setup pipe command
 		restoreCmd := restic.Command{
 			Name: MongoRestoreCMD,
@@ -348,7 +349,14 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 				fmt.Sprintf("--sslPEMKeyFile=%s", getOptionValue(dumpCreds, "--sslPEMKeyFile")))
 		}
 
-		userArgs := strings.Fields(opt.mongoArgs)
+		var userArgs []string
+		for _, arg := range strings.Fields(opt.mongoArgs) {
+			// illegal argument combination: cannot specify --db and --uri
+			if !strings.Contains(arg, "--db") {
+				userArgs = append(userArgs, arg)
+			}
+		}
+
 		if !isStandalone {
 			// - port is already added in mongoDSN with replicasetName/host:port format.
 			// - oplog is enabled automatically for replicasets.
@@ -392,11 +400,11 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 	// ref: https://docs.mongodb.com/manual/tutorial/backup-sharded-cluster-with-database-dumps/
 
 	if parameters.ConfigServer != "" {
-		opt.dumpOptions = append(opt.dumpOptions, getDumpOpts(parameters.ConfigServer, MongoConfigSVRHostKey, false))
+		opt.dumpOptions = append(opt.dumpOptions, getDumpOpts(extractHost(parameters.ConfigServer), MongoConfigSVRHostKey, false))
 	}
 
 	for key, host := range parameters.ReplicaSets {
-		opt.dumpOptions = append(opt.dumpOptions, getDumpOpts(host, key, false))
+		opt.dumpOptions = append(opt.dumpOptions, getDumpOpts(extractHost(host), key, false))
 	}
 
 	// if parameters.ReplicaSets is nil, then perform normal backup with clientconfig.Service.Name mongo dsn
