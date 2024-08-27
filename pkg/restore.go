@@ -210,9 +210,23 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 		return nil, err
 	}
 
-	port, err := appBinding.Port()
-	if err != nil {
-		return nil, err
+	var isSrv bool
+	port := int32(27017)
+	if appBinding.Spec.ClientConfig.URL != nil {
+		isSrv, err = isSrvConnection(*appBinding.Spec.ClientConfig.URL)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// Checked for Altlas and DigitalOcean srv format connection string don't give port.
+	// mongodump --uri format not support port.
+
+	if !isSrv {
+		port, err = appBinding.Port()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// unmarshal parameter is the field has value
@@ -255,8 +269,12 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 			return nil, err
 		}
 	}
-
+	var tlsEnable bool
 	if appBinding.Spec.ClientConfig.CABundle != nil {
+		tlsEnable = true
+	}
+
+	if tlsEnable {
 		if err := os.WriteFile(filepath.Join(opt.setupOptions.ScratchDir, MongoTLSCertFileName), appBinding.Spec.ClientConfig.CABundle, os.ModePerm); err != nil {
 			return nil, errors.Wrap(err, "failed to write key for CA certificate")
 		}
@@ -267,8 +285,8 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 		}
 		dumpCreds = []interface{}{
 			"--ssl",
-			"--sslCAFile", filepath.Join(opt.setupOptions.ScratchDir, MongoTLSCertFileName),
-			"--sslPEMKeyFile", filepath.Join(opt.setupOptions.ScratchDir, MongoClientPemFileName),
+			fmt.Sprintf("--sslCAFile=%s", filepath.Join(opt.setupOptions.ScratchDir, MongoTLSCertFileName)),
+			fmt.Sprintf("--sslPEMKeyFile=%s", filepath.Join(opt.setupOptions.ScratchDir, MongoClientPemFileName)),
 		}
 
 		// get certificate secret to get client certificate
@@ -295,9 +313,9 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 			return nil, errors.Wrap(err, "unable to get user from ssl.")
 		}
 		userAuth := []interface{}{
-			"-u", user,
-			"--authenticationMechanism", "MONGODB-X509",
-			"--authenticationDatabase", "$external",
+			fmt.Sprintf("--username=%s", user),
+			"--authenticationMechanism=MONGODB-X509",
+			"--authenticationDatabase=$external",
 		}
 		mongoCreds = append(mongoCreds, userAuth...)
 		dumpCreds = append(dumpCreds, userAuth...)
@@ -306,7 +324,7 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 		userAuth := []interface{}{
 			fmt.Sprintf("--username=%s", authSecret.Data[MongoUserKey]),
 			fmt.Sprintf("--password=%s", authSecret.Data[MongoPasswordKey]),
-			"--authenticationDatabase", opt.authenticationDatabase,
+			fmt.Sprintf("--authenticationDatabase=%s", opt.authenticationDatabase),
 		}
 		mongoCreds = append(mongoCreds, userAuth...)
 		dumpCreds = append(dumpCreds, userAuth...)
@@ -320,19 +338,32 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 			FileName:   opt.defaultDumpOptions.FileName,
 			Snapshot:   opt.getSnapshotForHost(hostKey, restoreSession.Spec.Target.Rules),
 		}
+
+		uri := opt.buildMongoURI(mongoDSN, port, isStandalone, isSrv, tlsEnable)
+
 		// setup pipe command
 		restoreCmd := restic.Command{
 			Name: MongoRestoreCMD,
-			Args: append([]interface{}{
-				"--host", mongoDSN,
+			Args: []interface{}{
+				"--uri", fmt.Sprintf("\"%s\"", uri),
 				"--archive",
-			}, dumpCreds...),
+			},
+		}
+		if tlsEnable {
+			restoreCmd.Args = append(restoreCmd.Args,
+				fmt.Sprintf("--sslCAFile=%s", getOptionValue(dumpCreds, "--sslCAFile")),
+				fmt.Sprintf("--sslPEMKeyFile=%s", getOptionValue(dumpCreds, "--sslPEMKeyFile")))
 		}
 
-		userArgs := strings.Fields(opt.mongoArgs)
-		if isStandalone {
-			restoreCmd.Args = append(restoreCmd.Args, fmt.Sprintf("--port=%d", port))
-		} else {
+		var userArgs []string
+		for _, arg := range strings.Fields(opt.mongoArgs) {
+			// illegal argument combination: cannot specify --db and --uri
+			if !strings.Contains(arg, "--db") {
+				userArgs = append(userArgs, arg)
+			}
+		}
+
+		if !isStandalone {
 			// - port is already added in mongoDSN with replicasetName/host:port format.
 			// - oplog is enabled automatically for replicasets.
 			// Don't use --oplogReplay if user specify any of these arguments through opt.mongoArgs
@@ -375,11 +406,11 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 	// ref: https://docs.mongodb.com/manual/tutorial/backup-sharded-cluster-with-database-dumps/
 
 	if parameters.ConfigServer != "" {
-		opt.dumpOptions = append(opt.dumpOptions, getDumpOpts(parameters.ConfigServer, MongoConfigSVRHostKey, false))
+		opt.dumpOptions = append(opt.dumpOptions, getDumpOpts(extractHost(parameters.ConfigServer), MongoConfigSVRHostKey, false))
 	}
 
 	for key, host := range parameters.ReplicaSets {
-		opt.dumpOptions = append(opt.dumpOptions, getDumpOpts(host, key, false))
+		opt.dumpOptions = append(opt.dumpOptions, getDumpOpts(extractHost(host), key, false))
 	}
 
 	// if parameters.ReplicaSets is nil, then perform normal backup with clientconfig.Service.Name mongo dsn
