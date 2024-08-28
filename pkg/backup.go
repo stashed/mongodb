@@ -367,7 +367,6 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 		if !ok {
 			crt, ok := tlsSecret.Data[core.TLSCertKey]
 			if !ok {
-				fmt.Println("here.........................")
 				return nil, errors.Wrap(err, "unable to retrieve tls.crt from secret.")
 			}
 			key, ok := tlsSecret.Data[core.TLSPrivateKeyKey]
@@ -397,7 +396,7 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 		dumpCreds = append(dumpCreds, []interface{}{
 			fmt.Sprintf("--username=%s", username),
 			fmt.Sprintf("--password=%s", authSecret.Data[MongoPasswordKey]),
-			"--authenticationDatabase", opt.authenticationDatabase,
+			fmt.Sprintf("--authenticationDatabase=%s", opt.authenticationDatabase),
 		}...)
 
 	} else {
@@ -414,7 +413,7 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 		dumpCreds = append(dumpCreds, []interface{}{
 			fmt.Sprintf("--username=%s", username),
 			fmt.Sprintf("--password=%s", authSecret.Data[MongoPasswordKey]),
-			"--authenticationDatabase", opt.authenticationDatabase,
+			fmt.Sprintf("--authenticationDatabase=%s", opt.authenticationDatabase),
 		}...)
 	}
 
