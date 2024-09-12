@@ -443,13 +443,7 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 				fmt.Sprintf("--sslPEMKeyFile=%s", getOptionValue(dumpCreds, "--sslPEMKeyFile")))
 		}
 
-		var userArgs []string
-		for _, arg := range strings.Fields(opt.mongoArgs) {
-			// illegal argument combination: cannot specify --db and --uri
-			if !strings.Contains(arg, "--db") {
-				userArgs = append(userArgs, arg)
-			}
-		}
+		userArgs := strings.Fields(opt.mongoArgs)
 
 		if !isStandalone {
 			// - port is already added in mongoDSN with replicasetName/host:port format.
@@ -468,7 +462,10 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 		}
 
 		for _, arg := range userArgs {
-			backupCmd.Args = append(backupCmd.Args, arg)
+			// illegal argument combination: cannot specify --db and --uri
+			if !strings.Contains(arg, "--db") {
+				backupCmd.Args = append(backupCmd.Args, arg)
+			}
 		}
 
 		// append the backup command into the pipe
