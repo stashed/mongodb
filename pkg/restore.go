@@ -364,13 +364,7 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 				fmt.Sprintf("--sslPEMKeyFile=%s", getOptionValue(dumpCreds, "--sslPEMKeyFile")))
 		}
 
-		var userArgs []string
-		for _, arg := range strings.Fields(opt.mongoArgs) {
-			// illegal argument combination: cannot specify --db and --uri
-			if !strings.Contains(arg, "--db") {
-				userArgs = append(userArgs, arg)
-			}
-		}
+		userArgs := strings.Fields(opt.mongoArgs)
 
 		if !isStandalone {
 			// - port is already added in mongoDSN with replicasetName/host:port format.
@@ -393,7 +387,10 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 		}
 
 		for _, arg := range userArgs {
-			restoreCmd.Args = append(restoreCmd.Args, arg)
+			// illegal argument combination: cannot specify --db and --uri
+			if !strings.Contains(arg, "--db") {
+				restoreCmd.Args = append(restoreCmd.Args, arg)
+			}
 		}
 
 		// add the restore command to the pipeline

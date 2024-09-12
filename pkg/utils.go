@@ -175,21 +175,23 @@ func (opt *mongoOptions) buildMongoURI(mongoDSN string, port int32, isStandalone
 // remove "shard0/" prefix from shard0/simple-shard0-0.simple-shard0-pods.demo.svc:27017,simple-shard0-1.simple-shard0-pods.demo.svc:27017
 func extractHost(host string) string {
 	index := strings.Index(host, "/")
-	if index != -1 {
+	if index != -1 && index+1 < len(host) {
 		host = host[index+1:]
+	}
+	if index+1 >= len(host) {
+		host = ""
 	}
 	return host
 }
 
 func getBackupDB(mongoArgs string) string {
-	backupdb := "" // full
-	if strings.Contains(mongoArgs, "--db") {
+	if strings.Contains(mongoArgs, "--db=") {
 		args := strings.Fields(mongoArgs)
 		for _, arg := range args {
-			if strings.Contains(arg, "--db") {
-				backupdb = strings.Split(arg, "=")[1]
+			if strings.HasPrefix(arg, "--db=") {
+				return strings.TrimPrefix(arg, "--db=")
 			}
 		}
 	}
-	return backupdb
+	return ""
 }
