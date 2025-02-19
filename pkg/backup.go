@@ -863,41 +863,41 @@ func enableBalancer(mongosHost string) error {
 }
 
 func checkRoleExists(mongoDSN string, roleName string) (bool, error) {
-	v := make(map[string]interface{})
 	args := append([]interface{}{
 		"admin",
 		"--host", mongoDSN,
 		"--quiet",
 		"--eval", `JSON.stringify(db.getRole("` + roleName + `"))`,
 	}, mongoCreds...)
-	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+	output, err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").Output()
+	if err != nil {
 		return false, err
 	}
 
-	if val, ok := v["role"].(string); ok && val == roleName {
-		return true, nil
+	if strings.Contains(string(output), "null") {
+		return false, nil
 	}
 
-	return false, nil
+	return true, nil
 }
 
 func checkUserExists(mongoDSN string, userName string) (bool, error) {
-	v := make(map[string]interface{})
 	args := append([]interface{}{
 		"admin",
 		"--host", mongoDSN,
 		"--quiet",
 		"--eval", `JSON.stringify(db.getUser("` + userName + `"))`,
 	}, mongoCreds...)
-	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+	output, err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").Output()
+	if err != nil {
 		return false, err
 	}
 
-	if val, ok := v["user"].(string); ok && val == userName {
-		return true, nil
+	if strings.Contains(string(output), "null") {
+		return false, nil
 	}
 
-	return false, nil
+	return true, nil
 }
 
 func createStashRoleAndUser(mongoDSN string, pass string) error {
@@ -925,7 +925,18 @@ func createStashBackupRole(mongoDSN string) error {
 			"--eval", `JSON.stringify(db.runCommand({createRole: "` + StashRoleName + `",privileges:[{resource:{db:"config",collection:"system.preimages"},actions:["find"]},{resource:{db:"config",collection:"system.sharding_ddl_coordinators"},actions:["find"]},{resource:{db:"config",collection:"system.*"},actions:["find"]}],roles: []}))`,
 		}, mongoCreds...)
 
-		if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+		output, err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").Output()
+		if err != nil {
+			return err
+		}
+
+		output, err = extractJSON(string(output))
+		if err != nil {
+			return err
+		}
+
+		err = json.Unmarshal(output, &v)
+		if err != nil {
 			return err
 		}
 
@@ -952,7 +963,18 @@ func createStashBackupUser(mongoDSN string, pass string) error {
 			"--quiet",
 			"--eval", `JSON.stringify(db.runCommand({createUser: "` + StashUserName + `" ,pwd: "` + pass + `", roles:[{role:"backup", db:"admin"}, {role: "` + StashRoleName + `",db:"admin"}]}))`,
 		}, mongoCreds...)
-		if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+		output, err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").Output()
+		if err != nil {
+			return err
+		}
+
+		output, err = extractJSON(string(output))
+		if err != nil {
+			return err
+		}
+
+		err = json.Unmarshal(output, &v)
+		if err != nil {
 			return err
 		}
 
@@ -964,24 +986,18 @@ func createStashBackupUser(mongoDSN string, pass string) error {
 }
 
 func handleReshard(configsvrDSN string) (bool, error) {
-	v := make([]interface{}, 0)
 	args := append([]interface{}{
 		"config",
 		"--host", configsvrDSN,
 		"--quiet",
 		"--eval", `JSON.stringify(db.getCollectionNames())`,
 	}, mongoCreds...)
-	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
+	output, err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").Output()
+	if err != nil {
+		klog.Errorf("Error while calling getCollectionNames : %s ; output : %s \n", err.Error(), output)
 		return false, err
 	}
-
-	exists := false
-	for _, name := range v {
-		if name.(string) == "reshardingOperations" {
-			exists = true
-			break
-		}
-	}
+	exists := strings.Contains(string(output), "reshardingOperations")
 	if !exists {
 		return false, nil
 	}
@@ -1012,7 +1028,16 @@ func handleReshard(configsvrDSN string) (bool, error) {
 		"--quiet",
 		"--eval", `JSON.stringify(db.adminCommand( { renameCollection: "config.reshardingOperations", to: "config.reshardingOperations_temp", dropTarget: true}))`,
 	}, mongoCreds...)
-	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&res); err != nil {
+	output, err = sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").Output()
+	if err != nil {
+		return false, err
+	}
+	output, err = extractJSON(string(output))
+	if err != nil {
+		return false, err
+	}
+	err = json.Unmarshal(output, &res)
+	if err != nil {
 		return false, err
 	}
 	if val, ok := res["ok"].(float64); !ok || int(val) != 1 {
@@ -1030,7 +1055,16 @@ func renameTempReshardCollection(configsvrDSN string) error {
 		"--quiet",
 		"--eval", `JSON.stringify(db.adminCommand( { renameCollection: "config.reshardingOperations_temp", to: "config.reshardingOperations" } ))`,
 	}, mongoCreds...)
-	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&res); err != nil {
+	output, err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").Output()
+	if err != nil {
+		return err
+	}
+	output, err = extractJSON(string(output))
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(output, &res)
+	if err != nil {
 		return err
 	}
 	if val, ok := res["ok"].(float64); !ok || int(val) != 1 {

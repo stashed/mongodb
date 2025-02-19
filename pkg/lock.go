@@ -41,7 +41,7 @@ func setupConfigServer(configSVRDSN, secondaryHost string) error {
 		"--eval", "db.BackupControl.findAndModify({query: { _id: 'BackupControlDocument' }, update: { $inc: { counter : 1 } }, new: true, upsert: true, writeConcern: { w: 'majority', wtimeout: 15000 }});",
 	}, mongoCreds...)
 
-	output, err := sh.Command(MongoCMD, args...).Output()
+	output, err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").Output()
 	if err != nil {
 		klog.Errorf("Error while running findAndModify to setup configServer : %s ; output : %s \n", err.Error(), output)
 		return err
