@@ -35,7 +35,6 @@ LABEL org.opencontainers.image.source https://github.com/stashed/mongodb
 COPY --from=0 /restic /bin/restic
 COPY bin/{ARG_OS}_{ARG_ARCH}/{ARG_BIN} /{ARG_BIN}
 
-# https://github.com/docker-library/mongo/blob/master/6.0/Dockerfile#L12
-USER 999
+USER 65534
 
 ENTRYPOINT ["/{ARG_BIN}"]
