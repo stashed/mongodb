@@ -82,6 +82,16 @@ func setupConfigServer(configSVRDSN, secondaryHost string) error {
 			return err
 		}
 
+		output, err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").Output()
+		if err != nil {
+			return err
+		}
+
+		output, err = extractJSON(string(output))
+		if err != nil {
+			return err
+		}
+
 		err = json.Unmarshal(output, &v)
 		if err != nil {
 			return err
