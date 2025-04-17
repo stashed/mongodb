@@ -72,15 +72,6 @@ func setupConfigServer(configSVRDSN, secondaryHost string) error {
 			"--quiet",
 			"--eval", "rs.secondaryOk(); db.BackupControl.find({ '_id' : 'BackupControlDocument' }).readConcern('majority');",
 		}, mongoCreds...)
-		output, err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").Output()
-		if err != nil {
-			return err
-		}
-
-		output, err = extractJSON(string(output))
-		if err != nil {
-			return err
-		}
 
 		output, err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").Output()
 		if err != nil {
