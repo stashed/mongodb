@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"net/url"
 	"os/exec"
+	"regexp"
 	"strings"
 	"time"
 
@@ -178,4 +179,16 @@ func getBackupDB(mongoArgs string) string {
 		}
 	}
 	return ""
+}
+
+// extractJSON is needed due to ignore unnecessary character like /x1b from output before unmarshal
+func extractJSON(input string) ([]byte, error) {
+	// Regular expression to match JSON objects (assuming JSON starts with `{` and ends with `}`)
+	re := regexp.MustCompile(`\{.*\}`)
+	jsonPart := re.FindString(string(input))
+	if jsonPart == "" {
+		klog.Infoln("output from MongoDB:", input)
+		return nil, fmt.Errorf("no JSON part found in the output from MongoDB")
+	}
+	return []byte(jsonPart), nil
 }
