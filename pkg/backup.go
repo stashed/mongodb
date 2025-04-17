@@ -110,7 +110,7 @@ func NewCmdBackup() *cobra.Command {
 			go func() {
 				rcvSig := <-sigChan
 				cleanup()
-				klog.Errorf("Received signal: %s, exiting\n", rcvSig)
+				klog.Errorf("Received signal: %s, exiting signal\n", rcvSig)
 				os.Exit(1)
 			}()
 
