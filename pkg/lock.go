@@ -32,7 +32,7 @@ func setupConfigServer(configSVRDSN, secondaryHost string) error {
 		klog.Warningln("locking configserver is skipped. secondary host is empty")
 		return nil
 	}
-	x := make(map[string]interface{})
+	v := make(map[string]interface{})
 	// findAndModify BackupControlDocument. skip single quote inside single quote: https://stackoverflow.com/a/28786747/4628962
 	args := append([]interface{}{
 		"config",
@@ -46,15 +46,20 @@ func setupConfigServer(configSVRDSN, secondaryHost string) error {
 		klog.Errorf("Error while running findAndModify to setup configServer : %s ; output : %s \n", err.Error(), output)
 		return err
 	}
-	err = json.Unmarshal(output, &x)
+	output, err = extractJSON(string(output))
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(output, &v)
 	if err != nil {
 		klog.Errorf("Unmarshal error while running findAndModify to setup configServer : %s \n", err.Error())
 		return err
 	}
 
-	val, ok := x["counter"].(float64)
+	val, ok := v["counter"].(float64)
 	if !ok || int(val) == 0 {
-		return fmt.Errorf("unable to modify BackupControlDocument. got response: %v", x)
+		return fmt.Errorf("unable to modify BackupControlDocument. got response: %v", v)
 	}
 	val2 := float64(0)
 	timer := 0 // wait approximately 5 minutes.
@@ -68,23 +73,35 @@ func setupConfigServer(configSVRDSN, secondaryHost string) error {
 			"--quiet",
 			"--eval", `"db.getMongo().setReadPref('secondary'); JSON.stringify(db.BackupControl.find({ '_id' : 'BackupControlDocument' }).readConcern('majority').toArray());"`,
 		}, mongoCreds...)
-		if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v2); err != nil {
+
+		output, err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").Output()
+		if err != nil {
+			return err
+		}
+
+		output, err = extractJSON(string(output))
+		if err != nil {
+			return err
+		}
+
+		err = json.Unmarshal(output, &v)
+		if err != nil {
 			return err
 		}
 
 		if len(v2) > 0 {
 			val2, ok = v2[0]["counter"].(float64)
 			if !ok {
-				return fmt.Errorf("unable to get BackupControlDocument. got response: %v", x)
+				return fmt.Errorf("unable to get BackupControlDocument. got response: %v", v)
 			}
 		}
 		if int(val) != int(val2) {
-			klog.V(5).Infof("BackupDocument counter in secondary is not same. Expected %v, but got %v . Full response: %v", val, val2, x)
+			klog.V(5).Infof("BackupDocument counter in secondary is not same. Expected %v, but got %v . Full response: %v", val, val2, v)
 			time.Sleep(time.Second * 5)
 		}
 	}
 	if timer >= 60 {
-		return fmt.Errorf("timeout while waiting for BackupDocument counter in secondary to be same as primary. Expected %v, but got %v. Full response: %v", val, val2, x)
+		return fmt.Errorf("timeout while waiting for BackupDocument counter in secondary to be same as primary. Expected %v, but got %v. Full response: %v", val, val2, v)
 	}
 
 	return nil
@@ -110,6 +127,11 @@ func lockSecondaryMember(mongohost string) error {
 	output, err := sh.Command(MongoCMD, args...).Output()
 	if err != nil {
 		klog.Errorf("Error while running fsyncLock on secondary : %s ; output : %s \n", err.Error(), output)
+		return err
+	}
+
+	output, err = extractJSON(string(output))
+	if err != nil {
 		return err
 	}
 
@@ -141,6 +163,12 @@ func checkIfSecondaryLockedAndSync(mongohost string) error {
 		klog.Errorf("Error while running currentOp on secondary : %s ; output : %s \n", err.Error(), output)
 		return err
 	}
+
+	output, err = extractJSON(string(output))
+	if err != nil {
+		return err
+	}
+
 	err = json.Unmarshal(output, &x)
 	if err != nil {
 		klog.Errorf("Unmarshal error while running currentOp on secondary : %s \n", err.Error())
@@ -173,8 +201,18 @@ func waitForSecondarySync(mongohost string) error {
 			"--eval", "JSON.stringify(rs.status())",
 		}, mongoCreds...)
 
-		if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&status); err != nil {
-			klog.Errorf("Error while running status on secondary : %s ; output : %s \n", mongohost, err.Error())
+		output, err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").Output()
+		if err != nil {
+			return err
+		}
+
+		output, err = extractJSON(string(output))
+		if err != nil {
+			return err
+		}
+
+		err = json.Unmarshal(output, &status)
+		if err != nil {
 			return err
 		}
 
@@ -263,6 +301,12 @@ func unlockSecondaryMember(mongohost string) error {
 		klog.Errorf("Error while running fsyncUnlock on secondary : %s ; output : %s \n", err.Error(), output)
 		return err
 	}
+
+	output, err = extractJSON(string(output))
+	if err != nil {
+		return err
+	}
+
 	err = json.Unmarshal(output, &v)
 	if err != nil {
 		klog.Errorf("Unmarshal error while running fsyncUnlock on secondary : %s \n", err.Error())
