@@ -32,7 +32,7 @@ func setupConfigServer(configSVRDSN, secondaryHost string) error {
 		klog.Warningln("locking configserver is skipped. secondary host is empty")
 		return nil
 	}
-	x := make(map[string]interface{})
+	v := make(map[string]interface{})
 	// findAndModify BackupControlDocument. skip single quote inside single quote: https://stackoverflow.com/a/28786747/4628962
 	args := append([]interface{}{
 		"config",
@@ -52,15 +52,15 @@ func setupConfigServer(configSVRDSN, secondaryHost string) error {
 		return err
 	}
 
-	err = json.Unmarshal(output, &x)
+	err = json.Unmarshal(output, &v)
 	if err != nil {
 		klog.Errorf("Unmarshal error while running findAndModify to setup configServer : %s \n", err.Error())
 		return err
 	}
 
-	val, ok := x["counter"].(float64)
+	val, ok := v["counter"].(float64)
 	if !ok || int(val) == 0 {
-		return fmt.Errorf("unable to modify BackupControlDocument. got response: %v", x)
+		return fmt.Errorf("unable to modify BackupControlDocument. got response: %v", v)
 	}
 	val2 := float64(0)
 	timer := 0 // wait approximately 5 minutes.
@@ -74,6 +74,7 @@ func setupConfigServer(configSVRDSN, secondaryHost string) error {
 			"--quiet",
 			"--eval", `"db.getMongo().setReadPref('secondary'); JSON.stringify(db.BackupControl.find({ '_id' : 'BackupControlDocument' }).readConcern('majority').toArray());"`,
 		}, mongoCreds...)
+
 		output, err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").Output()
 		if err != nil {
 			return err
@@ -92,16 +93,16 @@ func setupConfigServer(configSVRDSN, secondaryHost string) error {
 		if len(v2) > 0 {
 			val2, ok = v2["counter"].(float64)
 			if !ok {
-				return fmt.Errorf("unable to get BackupControlDocument. got response: %v", x)
+				return fmt.Errorf("unable to get BackupControlDocument. got response: %v", v)
 			}
 		}
 		if int(val) != int(val2) {
-			klog.V(5).Infof("BackupDocument counter in secondary is not same. Expected %v, but got %v . Full response: %v", val, val2, x)
+			klog.V(5).Infof("BackupDocument counter in secondary is not same. Expected %v, but got %v . Full response: %v", val, val2, v)
 			time.Sleep(time.Second * 5)
 		}
 	}
 	if timer >= 60 {
-		return fmt.Errorf("timeout while waiting for BackupDocument counter in secondary to be same as primary. Expected %v, but got %v. Full response: %v", val, val2, x)
+		return fmt.Errorf("timeout while waiting for BackupDocument counter in secondary to be same as primary. Expected %v, but got %v. Full response: %v", val, val2, v)
 	}
 
 	return nil
