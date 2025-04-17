@@ -647,20 +647,7 @@ func getPrimaryNSecondaryMember(mongoDSN string) (primary, secondary string, sec
 		"--eval", "JSON.stringify(rs.isMaster())",
 	}, mongoCreds...)
 	// even --quiet doesn't skip replicaset PrimaryConnection log. so take tha last line. issue tracker: https://jira.mongodb.org/browse/SERVER-27159
-	output, err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").Output()
-	if err != nil {
-		klog.Errorf("Error while running isMaster : %s ; output : %s \n", err.Error(), output)
-		return "", "", secondaryMembers, err
-	}
-
-	output, err = extractJSON(string(output))
-	if err != nil {
-		return "", "", secondaryMembers, err
-	}
-
-	err = json.Unmarshal(output, &v)
-	if err != nil {
-		klog.Errorf("Unmarshal error while running isMaster : %+v , output : %s \n", err.Error(), output)
+	if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&v); err != nil {
 		return "", "", secondaryMembers, err
 	}
 
@@ -707,11 +694,6 @@ func disabelBalancer(mongosHost string) error {
 	output, err := sh.Command(MongoCMD, args...).Output()
 	if err != nil {
 		klog.Errorf("Error while stopping balancer : %s ; output : %s \n", err.Error(), output)
-		return err
-	}
-
-	output, err = extractJSON(string(output))
-	if err != nil {
 		return err
 	}
 
@@ -766,11 +748,6 @@ func enableBalancer(mongosHost string) error {
 		} else {
 			break
 		}
-	}
-
-	output, err = extractJSON(string(output))
-	if err != nil {
-		return err
 	}
 
 	err = json.Unmarshal(output, &v)
