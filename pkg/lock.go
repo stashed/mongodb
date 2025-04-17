@@ -47,11 +47,6 @@ func setupConfigServer(configSVRDSN, secondaryHost string) error {
 		return err
 	}
 
-	output, err = extractJSON(string(output))
-	if err != nil {
-		return err
-	}
-
 	err = json.Unmarshal(output, &v)
 	if err != nil {
 		klog.Errorf("Unmarshal error while running findAndModify to setup configServer : %s \n", err.Error())
@@ -73,18 +68,7 @@ func setupConfigServer(configSVRDSN, secondaryHost string) error {
 			"--eval", "rs.secondaryOk(); db.BackupControl.find({ '_id' : 'BackupControlDocument' }).readConcern('majority');",
 		}, mongoCreds...)
 
-		output, err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").Output()
-		if err != nil {
-			return err
-		}
-
-		output, err = extractJSON(string(output))
-		if err != nil {
-			return err
-		}
-
-		err = json.Unmarshal(output, &v)
-		if err != nil {
+		if err := sh.Command(MongoCMD, args...).UnmarshalJSON(&v); err != nil {
 			return err
 		}
 
@@ -127,11 +111,6 @@ func lockSecondaryMember(mongohost string) error {
 		return err
 	}
 
-	output, err = extractJSON(string(output))
-	if err != nil {
-		return err
-	}
-
 	err = json.Unmarshal(output, &v)
 	if err != nil {
 		klog.Errorf("Unmarshal error while running fsyncLock on secondary : %s \n", err.Error())
@@ -158,11 +137,6 @@ func checkIfSecondaryLockedAndSync(mongohost string) error {
 	output, err := sh.Command(MongoCMD, args...).Output()
 	if err != nil {
 		klog.Errorf("Error while running currentOp on secondary : %s ; output : %s \n", err.Error(), output)
-		return err
-	}
-
-	output, err = extractJSON(string(output))
-	if err != nil {
 		return err
 	}
 
@@ -198,18 +172,8 @@ func waitForSecondarySync(mongohost string) error {
 			"--eval", "JSON.stringify(rs.status())",
 		}, mongoCreds...)
 
-		output, err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").Output()
-		if err != nil {
-			return err
-		}
-
-		output, err = extractJSON(string(output))
-		if err != nil {
-			return err
-		}
-
-		err = json.Unmarshal(output, &status)
-		if err != nil {
+		if err := sh.Command(MongoCMD, args...).Command("/usr/bin/tail", "-1").UnmarshalJSON(&status); err != nil {
+			klog.Errorf("Error while running status on secondary : %s ; output : %s \n", mongohost, err.Error())
 			return err
 		}
 
@@ -296,11 +260,6 @@ func unlockSecondaryMember(mongohost string) error {
 	output, err := sh.Command(MongoCMD, args...).Output()
 	if err != nil {
 		klog.Errorf("Error while running fsyncUnlock on secondary : %s ; output : %s \n", err.Error(), output)
-		return err
-	}
-
-	output, err = extractJSON(string(output))
-	if err != nil {
 		return err
 	}
 
