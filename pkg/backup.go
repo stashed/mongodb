@@ -566,6 +566,10 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 	if err != nil {
 		return nil, err
 	}
+	err = resticWrapper.EnsureNoExclusiveLock(opt.kubeClient, opt.namespace)
+	if err != nil {
+		return nil, err
+	}
 	// hide password, don't print cmd
 	resticWrapper.HideCMD()
 
