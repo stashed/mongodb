@@ -1,8 +1,6 @@
 module stash.appscode.dev/mongodb
 
-go 1.23.0
-
-toolchain go1.24.4
+go 1.25.5
 
 require (
 	github.com/pkg/errors v0.9.1
