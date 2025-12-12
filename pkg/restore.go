@@ -272,12 +272,12 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 		if err := os.WriteFile(filepath.Join(opt.setupOptions.ScratchDir, MongoTLSCertFileName), appBinding.Spec.ClientConfig.CABundle, os.ModePerm); err != nil {
 			return nil, errors.Wrap(err, "failed to write key for CA certificate")
 		}
-		mongoCreds = []interface{}{
+		mongoCreds = []any{
 			"--tls",
 			"--tlsCAFile", filepath.Join(opt.setupOptions.ScratchDir, MongoTLSCertFileName),
 			"--tlsCertificateKeyFile", filepath.Join(opt.setupOptions.ScratchDir, MongoClientPemFileName),
 		}
-		dumpCreds = []interface{}{
+		dumpCreds = []any{
 			"--ssl",
 			fmt.Sprintf("--sslCAFile=%s", filepath.Join(opt.setupOptions.ScratchDir, MongoTLSCertFileName)),
 			fmt.Sprintf("--sslPEMKeyFile=%s", filepath.Join(opt.setupOptions.ScratchDir, MongoClientPemFileName)),
@@ -306,7 +306,7 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 		if err != nil {
 			return nil, errors.Wrap(err, "unable to get user from ssl.")
 		}
-		userAuth := []interface{}{
+		userAuth := []any{
 			fmt.Sprintf("--username=%s", user),
 			"--authenticationMechanism=MONGODB-X509",
 			"--authenticationDatabase=$external",
@@ -315,7 +315,7 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 		dumpCreds = append(dumpCreds, userAuth...)
 
 	} else {
-		userAuth := []interface{}{
+		userAuth := []any{
 			fmt.Sprintf("--username=%s", authSecret.Data[MongoUserKey]),
 			fmt.Sprintf("--password=%s", authSecret.Data[MongoPasswordKey]),
 			fmt.Sprintf("--authenticationDatabase=%s", opt.authenticationDatabase),
@@ -338,7 +338,7 @@ func (opt *mongoOptions) restoreMongoDB(targetRef api_v1beta1.TargetRef) (*resti
 		// setup pipe command
 		restoreCmd := restic.Command{
 			Name: MongoRestoreCMD,
-			Args: []interface{}{
+			Args: []any{
 				"--uri", fmt.Sprintf("\"%s\"", uri),
 				"--archive",
 			},
