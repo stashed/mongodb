@@ -58,8 +58,8 @@ import (
 var (
 	MongoCMD     = "/usr/bin/mongo"
 	OpenSSLCMD   = "/usr/bin/openssl"
-	mongoCreds   []interface{}
-	dumpCreds    []interface{}
+	mongoCreds   []any
+	dumpCreds    []any
 	cleanupFuncs []func() error
 )
 
@@ -349,12 +349,12 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 		if err := os.WriteFile(filepath.Join(opt.setupOptions.ScratchDir, MongoTLSCertFileName), appBinding.Spec.ClientConfig.CABundle, os.ModePerm); err != nil {
 			return nil, err
 		}
-		mongoCreds = []interface{}{
+		mongoCreds = []any{
 			"--tls",
 			"--tlsCAFile", filepath.Join(opt.setupOptions.ScratchDir, MongoTLSCertFileName),
 			"--tlsCertificateKeyFile", filepath.Join(opt.setupOptions.ScratchDir, MongoClientPemFileName),
 		}
-		dumpCreds = []interface{}{
+		dumpCreds = []any{
 			"--ssl",
 			fmt.Sprintf("--sslCAFile=%s", filepath.Join(opt.setupOptions.ScratchDir, MongoTLSCertFileName)),
 			fmt.Sprintf("--sslPEMKeyFile=%s", filepath.Join(opt.setupOptions.ScratchDir, MongoClientPemFileName)),
@@ -383,7 +383,7 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 		if err != nil {
 			return nil, errors.Wrap(err, "unable to get user from ssl.")
 		}
-		userAuth := []interface{}{
+		userAuth := []any{
 			fmt.Sprintf("--username=%s", user),
 			"--authenticationMechanism=MONGODB-X509",
 			"--authenticationDatabase=$external",
@@ -393,14 +393,14 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 		if parameters.ConfigServer == "" {
 			username = string(authSecret.Data[MongoUserKey])
 		}
-		dumpCreds = append(dumpCreds, []interface{}{
+		dumpCreds = append(dumpCreds, []any{
 			fmt.Sprintf("--username=%s", username),
 			fmt.Sprintf("--password=%s", authSecret.Data[MongoPasswordKey]),
 			fmt.Sprintf("--authenticationDatabase=%s", opt.authenticationDatabase),
 		}...)
 
 	} else {
-		userAuth := []interface{}{
+		userAuth := []any{
 			fmt.Sprintf("--username=%s", authSecret.Data[MongoUserKey]),
 			fmt.Sprintf("--password=%s", authSecret.Data[MongoPasswordKey]),
 			fmt.Sprintf("--authenticationDatabase=%s", opt.authenticationDatabase),
@@ -410,7 +410,7 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 		if parameters.ConfigServer == "" {
 			username = string(authSecret.Data[MongoUserKey])
 		}
-		dumpCreds = append(dumpCreds, []interface{}{
+		dumpCreds = append(dumpCreds, []any{
 			fmt.Sprintf("--username=%s", username),
 			fmt.Sprintf("--password=%s", authSecret.Data[MongoPasswordKey]),
 			fmt.Sprintf("--authenticationDatabase=%s", opt.authenticationDatabase),
@@ -431,7 +431,7 @@ func (opt *mongoOptions) backupMongoDB(targetRef api_v1beta1.TargetRef) (*restic
 		// setup pipe command
 		backupCmd := restic.Command{
 			Name: MongoDumpCMD,
-			Args: []interface{}{
+			Args: []any{
 				"--uri", fmt.Sprintf("\"%s\"", uri),
 				"--archive",
 			},
@@ -665,7 +665,7 @@ func cleanup() {
 	}
 }
 
-func getOptionValue(args []interface{}, option string) string {
+func getOptionValue(args []any, option string) string {
 	for _, arg := range args {
 		strArg, ok := arg.(string)
 		if !ok {
@@ -717,9 +717,9 @@ func getSSLUser(path string) (string, error) {
 
 func getPrimaryNSecondaryMember(mongoDSN string) (primary, secondary string, secondaryMembers []string, err error) {
 	klog.Infoln("finding primary and secondary instances of", mongoDSN)
-	v := make(map[string]interface{})
+	v := make(map[string]any)
 
-	args := append([]interface{}{
+	args := append([]any{
 		"config",
 		"--host", mongoDSN,
 		"--quiet",
@@ -748,7 +748,7 @@ func getPrimaryNSecondaryMember(mongoDSN string) (primary, secondary string, sec
 		return "", "", secondaryMembers, fmt.Errorf("unable to get primary instance using rs.isMaster(). got response: %v", v)
 	}
 
-	hosts, ok := v["hosts"].([]interface{})
+	hosts, ok := v["hosts"].([]any)
 	if !ok {
 		return "", "", secondaryMembers, fmt.Errorf("unable to get hosts using rs.isMaster(). got response: %v", v)
 	}
@@ -774,9 +774,9 @@ func getPrimaryNSecondaryMember(mongoDSN string) (primary, secondary string, sec
 // run from mongos instance
 func disabelBalancer(mongosHost string) error {
 	klog.Infoln("Disabling balancer of ", mongosHost)
-	v := make(map[string]interface{})
+	v := make(map[string]any)
 
-	args := append([]interface{}{
+	args := append([]any{
 		"config",
 		"--host", mongosHost,
 		"--quiet",
@@ -805,7 +805,7 @@ func disabelBalancer(mongosHost string) error {
 	}
 
 	// wait for balancer to stop
-	args = append([]interface{}{
+	args = append([]any{
 		"config",
 		"--host", mongosHost,
 		"--quiet",
@@ -822,10 +822,10 @@ func disabelBalancer(mongosHost string) error {
 func enableBalancer(mongosHost string) error {
 	// run separate shell to dump indices
 	klog.Infoln("Enabling balancer of ", mongosHost)
-	v := make(map[string]interface{})
+	v := make(map[string]any)
 
 	// enable balancer
-	args := append([]interface{}{
+	args := append([]any{
 		"config",
 		"--host", mongosHost,
 		"--quiet",
@@ -867,7 +867,7 @@ func enableBalancer(mongosHost string) error {
 }
 
 func checkRoleExists(mongoDSN string, roleName string) (bool, error) {
-	args := append([]interface{}{
+	args := append([]any{
 		"admin",
 		"--host", mongoDSN,
 		"--quiet",
@@ -886,7 +886,7 @@ func checkRoleExists(mongoDSN string, roleName string) (bool, error) {
 }
 
 func checkUserExists(mongoDSN string, userName string) (bool, error) {
-	args := append([]interface{}{
+	args := append([]any{
 		"admin",
 		"--host", mongoDSN,
 		"--quiet",
@@ -920,9 +920,9 @@ func createStashBackupRole(mongoDSN string) error {
 	}
 	if !exists {
 		klog.Infoln("creating role " + StashRoleName)
-		v := make(map[string]interface{})
+		v := make(map[string]any)
 
-		args := append([]interface{}{
+		args := append([]any{
 			"admin",
 			"--host", mongoDSN,
 			"--quiet",
@@ -959,9 +959,9 @@ func createStashBackupUser(mongoDSN string, pass string) error {
 	}
 	if !exists {
 		klog.Infoln("creating user " + StashUserName)
-		v := make(map[string]interface{})
+		v := make(map[string]any)
 
-		args := append([]interface{}{
+		args := append([]any{
 			"admin",
 			"--host", mongoDSN,
 			"--quiet",
@@ -990,7 +990,7 @@ func createStashBackupUser(mongoDSN string, pass string) error {
 }
 
 func handleReshard(configsvrDSN string) (bool, error) {
-	args := append([]interface{}{
+	args := append([]any{
 		"config",
 		"--host", configsvrDSN,
 		"--quiet",
@@ -1006,7 +1006,7 @@ func handleReshard(configsvrDSN string) (bool, error) {
 		return false, nil
 	}
 
-	args = append([]interface{}{
+	args = append([]any{
 		"config",
 		"--host", configsvrDSN,
 		"--quiet",
@@ -1025,8 +1025,8 @@ func handleReshard(configsvrDSN string) (bool, error) {
 		return false, nil
 	}
 
-	res := make(map[string]interface{})
-	args = append([]interface{}{
+	res := make(map[string]any)
+	args = append([]any{
 		"config",
 		"--host", configsvrDSN,
 		"--quiet",
@@ -1052,8 +1052,8 @@ func handleReshard(configsvrDSN string) (bool, error) {
 }
 
 func renameTempReshardCollection(configsvrDSN string) error {
-	res := make(map[string]interface{})
-	args := append([]interface{}{
+	res := make(map[string]any)
+	args := append([]any{
 		"config",
 		"--host", configsvrDSN,
 		"--quiet",
