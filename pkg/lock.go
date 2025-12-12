@@ -33,9 +33,9 @@ func setupConfigServer(configSVRDSN, secondaryHost string) error {
 		klog.Warningln("locking configserver is skipped. secondary host is empty")
 		return nil
 	}
-	v := make(map[string]interface{})
+	v := make(map[string]any)
 	// findAndModify BackupControlDocument. skip single quote inside single quote: https://stackoverflow.com/a/28786747/4628962
-	args := append([]interface{}{
+	args := append([]any{
 		"config",
 		"--host", configSVRDSN,
 		"--quiet",
@@ -73,7 +73,7 @@ func setupConfigServer(configSVRDSN, secondaryHost string) error {
 	for timer < 60 && (int(val2) == 0 || int(val) != int(val2)) {
 		timer++
 		// find backupDocument from secondary configServer
-		args = append([]interface{}{
+		args = append([]any{
 			"config",
 			"--host", secondaryHost,
 			"--quiet",
@@ -120,8 +120,8 @@ func lockSecondaryMember(mongohost string) error {
 	}
 
 	// lock file
-	v := make(map[string]interface{})
-	args := append([]interface{}{
+	v := make(map[string]any)
+	args := append([]any{
 		"config",
 		"--host", mongohost,
 		"--quiet",
@@ -155,8 +155,8 @@ func lockSecondaryMember(mongohost string) error {
 func checkIfSecondaryLockedAndSync(mongohost string) error {
 	klog.Infof("Checking if secondary %s is already locked\n", mongohost)
 
-	x := make(map[string]interface{})
-	args := append([]interface{}{
+	x := make(map[string]any)
+	args := append([]any{
 		"config",
 		"--host", mongohost,
 		"--quiet",
@@ -197,8 +197,8 @@ func waitForSecondarySync(mongohost string) error {
 	klog.Infof("Attempting to sync secondary %s with primary\n", mongohost)
 
 	for {
-		status := make(map[string]interface{})
-		args := append([]interface{}{
+		status := make(map[string]any)
+		args := append([]any{
 			"config",
 			"--host", mongohost,
 			"--quiet",
@@ -220,7 +220,7 @@ func waitForSecondarySync(mongohost string) error {
 			return err
 		}
 
-		members, ok := status["members"].([]interface{})
+		members, ok := status["members"].([]any)
 		if !ok {
 			return fmt.Errorf("unable to get members using rs.status(). got response: %v", status)
 		}
@@ -229,7 +229,7 @@ func waitForSecondarySync(mongohost string) error {
 
 		for _, member := range members {
 
-			memberInfo, ok := member.(map[string]interface{})
+			memberInfo, ok := member.(map[string]any)
 			if !ok {
 				return fmt.Errorf("unable to get member info of primary using rs.status(). got response: %v", member)
 			}
@@ -251,7 +251,7 @@ func waitForSecondarySync(mongohost string) error {
 		synced := true
 		for _, member := range members {
 
-			memberInfo, ok := member.(map[string]interface{})
+			memberInfo, ok := member.(map[string]any)
 			if !ok {
 				return fmt.Errorf("unable to get member info of secondary using rs.status(). got response: %v", member)
 			}
@@ -291,10 +291,10 @@ func unlockSecondaryMember(mongohost string) error {
 		klog.Warningln("skipped unlocking secondary member. secondary host is empty")
 		return nil
 	}
-	v := make(map[string]interface{})
+	v := make(map[string]any)
 
 	// unlock file
-	args := append([]interface{}{
+	args := append([]any{
 		"config",
 		"--host", mongohost,
 		"--quiet",
